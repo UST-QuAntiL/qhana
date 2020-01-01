@@ -122,6 +122,12 @@ class Database:
     # NOTE: Mybe b.c. there are several costume entries in table Kostuem
     # NOTE: that have the same ID (but why?)
     def get_costumes(self) -> List[Costume]:
+        # NOTE: This apprach does not perform good!
+        # NOTE: Here, we do 4 transactions to the db for
+        # NOTE: each costume entry!
+        # TODO: Use different approach to load the costume attributes,
+        # TODO: i.e. safe a keys list [KostuemID, RollenID, FilmID]
+        # TODO: and iteraite throught this list afterwards.
         costumes : List[Costume] = []
         invalid_entries = 0
 
