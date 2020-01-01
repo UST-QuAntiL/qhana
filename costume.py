@@ -1,15 +1,28 @@
+# This class represents a costume in the simplified model
+# NOTE: We use stereotyp although it is not defined in the simplified model
+
 class Costume:
-    def __init__(self):
-        self.id: int = 0
+    def __init__(self) -> None:
         self.dominant_color: str = ""
         self.dominant_condition: str = ""
         self.dominant_traits: [str] = []
+        self.stereotypes: [str] = []
         self.gender: str = ""
         self.dominant_age_impression: str = ""
         self.genres: [str] = []
     
-    def print(self):
-        print("Costume number: " + self.id)
+    # Returns the costume in a single string
+    def __str__(self) -> str:
+        output = self.dominant_color + ", "
+        output += self.dominant_condition + ", "
+        output += str(self.dominant_traits) + ", "
+        output += str(self.stereotypes) + ", "
+        output += self.gender + ", "
+        output += self.dominant_age_impression + ", "
+        output += str(self.genres)
+        return output
+
+    def print(self) -> None:
         print("Dominant color: " + self.dominant_color)
         print("Dominant condition: " + self.dominant_condition)
         print("Dominant traits: ", end = '')
@@ -17,6 +30,12 @@ class Costume:
             print(self.dominant_traits[0])
         for i in range(1, len(self.dominant_traits)):
             print(", " + self.dominant_traits[i], end = '')
+        print()
+        print("Stereotypes: ", end = '')
+        if len(self.stereotypes) > 0:
+            print(self.stereotypes[0])
+        for i in range(1, len(self.stereotypes)):
+            print(", " + self.stereotypes[i], end = '')
         print()
         print("Gender: " + self.gender)
         print("dominant age impression: " + self.dominant_age_impression)

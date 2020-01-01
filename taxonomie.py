@@ -13,5 +13,5 @@ class Taxonomie():
             output += child.__str__(level + 1)
         return output
     
-    def add_child(self, child):
+    def add_child(self, child) -> None:
         self.children.append(child)
