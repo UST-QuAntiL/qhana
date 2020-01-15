@@ -9,16 +9,7 @@ import subprocess
 import os
 from networkx.readwrite import json_graph
 import simplejson as json
-import enum
-
-class Attribute(enum.Enum):
-    color = 1
-    traits = 2
-    condition = 3
-    stereotype = 4
-    gender = 5
-    age_impression = 6
-    genre = 7
+from attribute import Attribute
 
 class Taxonomie():
     def __init__(self) -> None:
