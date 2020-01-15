@@ -208,7 +208,7 @@ class Database:
                         invalid_entries += 1
                         continue
                     else:
-                        costume.gender = row_gender_age[0]
+                        costume.gender = row_gender_age[0].pop()
                         costume.dominant_age_impression = row_gender_age[1]
 
                 # Get genres from table FilmGenre

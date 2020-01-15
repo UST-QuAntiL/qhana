@@ -1,11 +1,14 @@
+from typing import Any
+from attribute import Attribute
+
 # This class represents a costume in the simplified model
 # NOTE: We use stereotyp although it is not defined in the simplified model
 
 class Costume:
     def __init__(self) -> None:
         self.dominant_color: str = ""
-        self.dominant_condition: str = ""
         self.dominant_traits: [str] = []
+        self.dominant_condition: str = ""
         self.stereotypes: [str] = []
         self.gender: str = ""
         self.dominant_age_impression: str = ""
