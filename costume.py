@@ -13,12 +13,13 @@ class Costume:
     
     # Returns the costume in a single string
     def __str__(self) -> str:
-        output = self.dominant_color + ", "
-        output += self.dominant_condition + ", "
+        output = "Costume: "
+        output += str(self.dominant_color) + ", "
+        output += str(self.dominant_condition) + ", "
         output += str(self.dominant_traits) + ", "
         output += str(self.stereotypes) + ", "
-        output += self.gender + ", "
-        output += self.dominant_age_impression + ", "
+        output += str(self.gender) + ", "
+        output += str(self.dominant_age_impression) + ", "
         output += str(self.genres)
         return output
 

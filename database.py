@@ -5,13 +5,19 @@ from typing import List
 from typing import Dict
 from typing import Any
 from configparser import ConfigParser
-from taxonomie import Taxonomie
 from costume import Costume
+import networkx as nx
+from networkx import Graph
 
 class Database:
     def __init__(self) -> None:
         self.connection = None
+        return
     
+    def __del__(self) -> None:
+        self.close()
+        return
+
     # Opens the database using the config.ini file
     def open(self, filename = "config.ini") -> None:
         try:
@@ -57,10 +63,11 @@ class Database:
 
     # Returns the taxonomie, i.e. the root node
     # given the name of the taxonomie table
-    def get_taxonomie(self, name: str) -> Taxonomie:
+    def get_graph(self, name: str) -> Graph:
         nodes = dict()
         # Format is (child, parent)
         rows = self.get_taxonomie_table(name)
+        graph = nx.DiGraph()
         root_node = None
 
         for row in rows:
@@ -69,56 +76,64 @@ class Database:
 
             # If parent is none, this is the root node
             if parent is None:
-                root_node = Taxonomie(child)
+                root_node = child
                 nodes[child] = root_node
                 rows.remove(row)
                 continue
 
             child_node = nodes.get(child, None)
             if child_node is None:
-                child_node = Taxonomie(child)
+                child_node = child
                 nodes[child] = child_node
 
             parent_node = nodes.get(parent, None)
             if parent_node is None:
-                parent_node = Taxonomie(parent)
+                parent_node = parent
                 nodes[parent] = parent_node
 
-            parent_node.add_child(child_node)
+            graph.add_node(parent)
+            graph.add_node(child)
+            graph.add_edge(parent, child)
         
         if root_node is None:
             raise Exception("No root node found in color taxonomie")
+
+        if nx.algorithms.tree.recognition.is_tree(graph) == False:
+            raise Exception(name + " is not a tree")
         
-        return root_node
+        return graph
 
-    def get_color(self) -> Taxonomie:
-        return self.get_taxonomie("farbendomaene")
+    def get_color(self) -> Graph:
+        return self.get_graph("farbendomaene")
     
-    def get_traits(self) -> Taxonomie:
-        return self.get_taxonomie("charaktereigenschaftsdomaene")
+    def get_traits(self) -> Graph:
+        return self.get_graph("charaktereigenschaftsdomaene")
 
-    def get_condition(self) -> Taxonomie:
-        return self.get_taxonomie("zustandsdomaene")
+    def get_condition(self) -> Graph:
+        return self.get_graph("zustandsdomaene")
 
-    def get_stereotype(self) -> Taxonomie:
-        return self.get_taxonomie("stereotypdomaene")
+    def get_stereotype(self) -> Graph:
+        return self.get_graph("stereotypdomaene")
 
-    def get_gender(self) -> Taxonomie:
-        # Creates a taxonomie of gender as there
+    def get_gender(self) -> Graph:
+        # Creates a graph of gender as there
         # is no taxonomie in the database
-        root_node = Taxonomie("Geschlecht")
-        root_node.add_child(Taxonomie("weiblich"))
-        root_node.add_child(Taxonomie("männlich"))
-        return root_node
+        graph = nx.DiGraph()
+        graph.add_node("Geschlecht")
+        graph.add_node("weiblich")
+        graph.add_node("weiblich")
+        graph.add_edge("Geschlecht", "weiblich")
+        graph.add_edge("Geschlecht", "männlich")
+        return graph
 
-    def get_age_impression(self) -> Taxonomie:
-        return self.get_taxonomie("alterseindruckdomaene")
+    def get_age_impression(self) -> Graph:
+        return self.get_graph("alterseindruckdomaene")
 
-    def get_genre(self) -> Taxonomie:
-        return self.get_taxonomie("genredomaene")
+    def get_genre(self) -> Graph:
+        return self.get_graph("genredomaene")
 
     # Returns a list of all costumes in the database
-    # NOTE: Currently there are clones of costumes but i dont know why
+    # NOTE: Currently there are clones of costumes but I dont know why
     # NOTE: Mybe b.c. there are several costume entries in table Kostuem
     # NOTE: that have the same ID (but why?)
     def get_costumes(self) -> List[Costume]:
@@ -215,13 +230,3 @@ class Database:
         print(str(invalid_entries) + " from " + str(len(rows_costume)) + " are invalid")
 
         return costumes
-
-if __name__ == '__main__':
-    database = Database()
-    database.open()
-    costumes = database.get_costumes()
-
-    for costume in costumes:
-        print(costume)
-
-    database.close()
