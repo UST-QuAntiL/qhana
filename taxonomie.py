@@ -191,73 +191,15 @@ class Taxonomie():
         self.load_from_file(Attribute.genre)
         return
 
-    # Applies wu palmer similaritie measure on two taxonomie elements
-    def wu_palmer(self, attribute: Attribute, first: str, second: str) -> float:
-        # Get directed graph
-        d_graph = self.get_graph(attribute)
-
-        # Get undirected graph
-        ud_graph = d_graph.to_undirected()
-
-        # Get lowest reachable node from both
-        lowest_common_ancestor = nx.algorithms.lowest_common_ancestors.lowest_common_ancestor(d_graph, first, second)
-
-        # Get root of graph
-        root = [n for n,d in d_graph.in_degree() if d == 0][0]
-
-        # Count edges - weight is 1 per default
-        d1 = nx.algorithms.shortest_paths.generic.shortest_path_length(ud_graph, first, lowest_common_ancestor)
-        d2 = nx.algorithms.shortest_paths.generic.shortest_path_length(ud_graph, second, lowest_common_ancestor)
-        d3 = nx.algorithms.shortest_paths.generic.shortest_path_length(ud_graph, lowest_common_ancestor, root)
-
-        return 2 * d3 / (d1 + d2 + 2* d3)
-
-    # Applies wu palmer similaritie measure on two sets
-    def wu_palmer_set(self, attribute: Attribute, first: [str], second: [str]) -> float:
-        sum1 = 0.0
-        sum2 = 0.0
-        result = 0.0
-
-        # Sum over a in first
-        for a in first:
-            # Get maximum wu_palmer(a, b) with b in second
-            max = 0.0
-            for b in second:
-                temp = self.wu_palmer(attribute, a, b)
-                if temp > max:
-                    max = temp
-            
-            sum1 += max
-        
-        # Normalize to size of first
-        sum1 /= len(first)
-
-        # Sum over b in second
-        for b in second:
-            # Get maximum wu_palmer(b, a) with a in first
-            max = 0.0
-            for a in first:
-                temp = self.wu_palmer(attribute, b, a)
-                if temp > max:
-                    max = temp
-            
-            sum2 += max
-
-        # Normalize to size of second
-        sum2 /= len(second)
-
-        # Combine both sums
-        return 0.5 * (sum1 + sum2)
-
-
 if __name__ == '__main__':
     tax = Taxonomie()
-    tax.load_from_database()
+    #tax.load_from_database()
+    tax.load_all_from_file()
     #tax.safe_all_to_file()
     #tax.load_from_file(Attribute.color)
-    #tax.plot(Attribute.color)
-    print("Brauntöne - Orange: " + str(tax.wu_palmer_compare(Attribute.color, "Brauntöne", "Orange")))
-    print("Farben - Dunkelviolett: " + str(tax.wu_palmer_compare(Attribute.color, "Farben", "Dunkelviolett")))
-    print("Grüntöne - Farbe: " + str(tax.wu_palmer_compare(Attribute.color, "Grüntöne", "Farben")))
+    tax.plot(Attribute.color)
+    #print("Brauntöne - Orange: " + str(tax.wu_palmer_compare(Attribute.color, "Brauntöne", "Orange")))
+    #print("Farben - Dunkelviolett: " + str(tax.wu_palmer_compare(Attribute.color, "Farben", "Dunkelviolett")))
+    #print("Grüntöne - Farbe: " + str(tax.wu_palmer_compare(Attribute.color, "Grüntöne", "Farben")))
 
     del tax
