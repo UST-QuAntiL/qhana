@@ -8,8 +8,12 @@ from configparser import ConfigParser
 from costume import Costume
 import networkx as nx
 from networkx import Graph
+from singleton import Singleton
 
-class Database:
+"""
+Respresents the database class for db connection
+"""
+class Database(Singleton):
     def __init__(self) -> None:
         self.connection = None
         return

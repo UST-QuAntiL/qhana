@@ -79,7 +79,7 @@ class SymMaxMean(AttributeComparer):
             # Get maximum element_compare(b, a) with a in first
             max = 0.0
             for a in first:
-                temp = self.elementComparer(base, b, a)
+                temp = self.elementComparer.compare(base, b, a)
                 if temp > max:
                     max = temp
             

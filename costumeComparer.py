@@ -3,6 +3,8 @@ import elementComparer as elemcomp
 import attributeComparer as attrcomp
 import aggregator as aggre
 import enum
+from taxonomie import Taxonomie
+from attribute import Attribute
 
 """ 
 Defines an enum to specify what should be done
@@ -35,14 +37,58 @@ class CostumeComparer:
 
     def compare(self, first: Costume, second: Costume) -> float:
         tax = Taxonomie()
-        tax.load_all_from_file()
+        tax.load_all()
 
         aggregation_values = []
 
-        aggregation_values.append(tax.wu_palmer(Attribute.color, first.dominant_color, second.dominant_color))
-        #aggregation_values.append(tax.wu_palmer_set(Attribute.traits, first.dominant_traits, second.dominant_traits))
-        aggregation_values.append(tax.wu_palmer(Attribute.condition, first.dominant_condition, second.dominant_condition))
-        aggregation_values.append(tax.wu_palmer_set(Attribute.stereotype, first.stereotypes, second.stereotypes))
-        aggregation_values.append(tax.wu_palmer(Attribute.gender, first.gender, second.gender))
-        aggregation_values.append(tax.wu_palmer(Attribute.age_impression, first.dominant_age_impression, second.dominant_age_impression))
-        aggregation_values.append(tax.wu_palmer_set(Attribute.genre, first.genres, second.genres))
+        # Compare color
+        aggregation_values.append(
+            self.elementComparer.compare(
+                tax.get_graph(Attribute.color), 
+                first.dominant_color, 
+                second.dominant_color))
+
+
+        # Compare traits
+        #aggregation_values.append(
+        #    self.attributeComparer.compare(
+        #        tax.get_graph(Attribute.traits), 
+        #        first.dominant_traits, 
+        #        second.dominant_traits))
+
+        # Compare condition
+        aggregation_values.append(
+            self.elementComparer.compare(
+                tax.get_graph(Attribute.condition), 
+                first.dominant_condition, 
+                second.dominant_condition))
+
+        # Compare traits
+        aggregation_values.append(
+            self.attributeComparer.compare(
+                tax.get_graph(Attribute.stereotype), 
+                first.stereotypes, 
+                second.stereotypes))
+
+        # Compare condition
+        aggregation_values.append(
+            self.elementComparer.compare(
+                tax.get_graph(Attribute.gender), 
+                first.gender, 
+                second.gender))
+
+        # Compare condition
+        aggregation_values.append(
+            self.elementComparer.compare(
+                tax.get_graph(Attribute.age_impression), 
+                first.dominant_age_impression, 
+                second.dominant_age_impression))
+
+        # Compare traits
+        aggregation_values.append(
+            self.attributeComparer.compare(
+                tax.get_graph(Attribute.genre), 
+                first.genres, 
+                second.genres))
+
+        return self.attributeAggregator.aggregate(aggregation_values)

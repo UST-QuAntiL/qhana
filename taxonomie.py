@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Dict
 import networkx as nx
 from networkx import Graph
 from database import Database
@@ -10,8 +11,12 @@ import os
 from networkx.readwrite import json_graph
 import simplejson as json
 from attribute import Attribute
+from singleton import Singleton
 
-class Taxonomie():
+"""
+Represents all taxonomies from kostuem repository
+"""
+class Taxonomie(Singleton):
     def __init__(self) -> None:
         self.database: Database = Database()
         self.plot_datatype: str = "svg"
@@ -44,8 +49,34 @@ class Taxonomie():
 
         return graph
 
+    # Loads all taxonomies from file. If one file does not exist
+    # load all taxonomies from database
+    def load_all(self) -> None:
+        db_connection_needed: bool = False
+        filenames: Dict[Attribute, str] = {
+            Attribute.color: self.graph_directory + "/" + Attribute.color.name + ".json",
+            Attribute.traits: self.graph_directory + "/" + Attribute.traits.name + ".json",
+            Attribute.condition: self.graph_directory + "/" + Attribute.condition.name + ".json",
+            Attribute.stereotype: self.graph_directory + "/" + Attribute.stereotype.name + ".json",
+            Attribute.gender: self.graph_directory + "/" + Attribute.gender.name + ".json",
+            Attribute.age_impression: self.graph_directory + "/" + Attribute.age_impression.name + ".json",
+            Attribute.genre: self.graph_directory + "/" + Attribute.genre.name + ".json"
+        }
+
+        for attribute in filenames:
+            os.path.isfile(filenames[attribute])
+            if os.path.isfile(filenames[attribute]) == False:
+                db_connection_needed = True
+        
+        if db_connection_needed == True:
+            self.load_all_from_database()
+        else:
+            for attribute in filenames:
+                self.load_from_file(attribute)
+        return
+
     # Loads the taxonomies from database
-    def load_from_database(self) -> None:
+    def load_all_from_database(self) -> None:
         self.database.open()
         self.color = self.database.get_color()
         self.traits = self.database.get_traits()
@@ -56,16 +87,70 @@ class Taxonomie():
         self.genre = self.database.get_genre()
         self.database.close()
 
-        self.all = self.merge(
-            self.all_taxonomie_name,
-            self.color,
-            self.traits,
-            self.condition,
-            self.stereotype,
-            self.gender,
-            self.age_impression,
-            self.genre)
+        #self.all = self.merge(
+        #    self.all_taxonomie_name,
+        #    self.color,
+        #    self.traits,
+        #    self.condition,
+        #    self.stereotype,
+        #    self.gender,
+        #    self.age_impression,
+        #    self.genre)
 
+        return
+
+    # Writes the graph to a data file
+    def safe_to_file(self,  attribute: Attribute) -> None:
+        if os.path.isdir(self.graph_directory) == False:
+            os.mkdir(self.graph_directory)
+
+        name = attribute.name
+
+        filename: str = self.graph_directory + "/" + name + ".json"
+
+        graph = self.get_graph(attribute)
+
+        graph_json = json_graph.node_link_data(graph)
+
+        json.dump(graph_json, open(filename,'w'), indent = 2)
+
+        return
+
+    # Reads the graph from a data file
+    def load_from_file(self, attribute: Attribute) -> None:
+        name = attribute.name
+
+        filename: str = self.graph_directory + "/" + name + ".json"
+
+        with open(filename) as f:
+            graph_json = json.load(f)
+
+        graph = json_graph.node_link_graph(graph_json)
+
+        self.set_graph(attribute, graph)
+
+        return
+
+    # Safes all graphs to data files
+    def safe_all_to_file(self) -> None:
+        self.safe_to_file(Attribute.color)
+        self.safe_to_file(Attribute.traits)
+        self.safe_to_file(Attribute.condition)
+        self.safe_to_file(Attribute.stereotype)
+        self.safe_to_file(Attribute.gender)
+        self.safe_to_file(Attribute.age_impression)
+        self.safe_to_file(Attribute.genre)
+        return
+
+    # Loads all graphs to data files
+    def load_all_from_file(self) -> None:
+        self.load_from_file(Attribute.color)
+        self.load_from_file(Attribute.traits)
+        self.load_from_file(Attribute.condition)
+        self.load_from_file(Attribute.stereotype)
+        self.load_from_file(Attribute.gender)
+        self.load_from_file(Attribute.age_impression)
+        self.load_from_file(Attribute.genre)
         return
 
     # Gets the graph corresponding to the attribute
@@ -117,7 +202,7 @@ class Taxonomie():
         return 0
 
     # Safe the graph to the given attribute as dot 
-    # and png file and displays the created image
+    # and image file and displays the created image
     def plot(self, attribute: Attribute, display: bool = True) -> None:
         if os.path.isdir(self.plot_directory) == False:
             os.mkdir(self.plot_directory)
@@ -136,70 +221,14 @@ class Taxonomie():
         os.startfile(filename, 'open')
 
         return
-    
-    # Writes the graph to a data file
-    def safe_to_file(self,  attribute: Attribute) -> None:
-        if os.path.isdir(self.graph_directory) == False:
-            os.mkdir(self.graph_directory)
 
-        name = attribute.name
-
-        filename: str = self.graph_directory + "/" + name + ".json"
-
-        graph = self.get_graph(attribute)
-
-        graph_json = json_graph.node_link_data(graph)
-
-        json.dump(graph_json, open(filename,'w'), indent = 2)
-
+    # Safe all graph to dot and image files
+    def plot_all(self, display: bool = False) -> None:
+        self.plot(Attribute.color, False)
+        self.plot(Attribute.traits, False)
+        self.plot(Attribute.condition, False)
+        self.plot(Attribute.stereotype, False)
+        self.plot(Attribute.gender, False)
+        self.plot(Attribute.age_impression, False)
+        self.plot(Attribute.genre, False)
         return
-
-    # Reads the graph from a data file
-    def load_from_file(self, attribute: Attribute) -> None:
-        name = attribute.name
-
-        filename: str = self.graph_directory + "/" + name + ".json"
-
-        with open(filename) as f:
-            graph_json = json.load(f)
-
-        graph = json_graph.node_link_graph(graph_json)
-
-        self.set_graph(attribute, graph)
-
-        return
-
-    # Safes all graphs to data files
-    def safe_all_to_file(self) -> None:
-        tax.safe_to_file(Attribute.color)
-        tax.safe_to_file(Attribute.traits)
-        tax.safe_to_file(Attribute.condition)
-        tax.safe_to_file(Attribute.stereotype)
-        tax.safe_to_file(Attribute.gender)
-        tax.safe_to_file(Attribute.age_impression)
-        tax.safe_to_file(Attribute.genre)
-        return
-
-    # Loads all graphs to data files
-    def load_all_from_file(self) -> None:
-        self.load_from_file(Attribute.color)
-        self.load_from_file(Attribute.traits)
-        self.load_from_file(Attribute.condition)
-        self.load_from_file(Attribute.stereotype)
-        self.load_from_file(Attribute.gender)
-        self.load_from_file(Attribute.age_impression)
-        self.load_from_file(Attribute.genre)
-        return
-
-if __name__ == '__main__':
-    tax = Taxonomie()
-    #tax.load_from_database()
-    tax.load_all_from_file()
-    #tax.safe_all_to_file()
-    #tax.load_from_file(Attribute.color)
-    tax.plot(Attribute.color)
-    #print("Brauntöne - Orange: " + str(tax.wu_palmer_compare(Attribute.color, "Brauntöne", "Orange")))
-    #print("Farben - Dunkelviolett: " + str(tax.wu_palmer_compare(Attribute.color, "Farben", "Dunkelviolett")))
-    #print("Grüntöne - Farbe: " + str(tax.wu_palmer_compare(Attribute.color, "Grüntöne", "Farben")))
-
-    del tax
