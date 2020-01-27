@@ -2,6 +2,7 @@ from costume import Costume
 import elementComparer as elemcomp
 import attributeComparer as attrcomp
 import aggregator as aggre
+import transformer as trafo
 import enum
 from taxonomie import Taxonomie
 from attribute import Attribute
@@ -23,6 +24,7 @@ class CostumeComparer:
         elementComparer: elemcomp.ElementComparerType = elemcomp.ElementComparerType.wuPalmer,
         attributeComparer: attrcomp.AttributeComparerType = attrcomp.AttributeComparerType.symMaxMean,
         attributeAggregator: aggre.AggregatorType = aggre.AggregatorType.mean,
+        similarityTransformer: trafo.TransformerType = trafo.TransformerType.linearInverse,
         missingElementAction: attrcomp.MissingElementAction = attrcomp.MissingElementAction.ignore,
         emptyAttributeAction: EmptyAttributeAction = EmptyAttributeAction.ignore) -> None:
 
@@ -30,6 +32,7 @@ class CostumeComparer:
         self.elementComparer = elemcomp.ElementComparerFactory.create(elementComparer)
         self.attributeComparer = attrcomp.AttributeComparerFactory.create(attributeComparer, self.elementComparer)
         self.attributeAggregator = aggre.AggregatorFactory.create(attributeAggregator)
+        self.similarityTransformer = trafo.TransformerFactory.create(similarityTransformer)
 
         self.missingElementAction = missingElementAction
         self.emptyAttributeAction = emptyAttributeAction

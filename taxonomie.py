@@ -201,6 +201,10 @@ class Taxonomie(Singleton):
     def get_count_of_edges(self, attribute: Attribute, first: Any, sedonc: Any) -> int:
         return 0
 
+    # Check if the taxonomie contains the given element
+    def contains(self, attribute: Attribute, element: Any) -> bool:
+        return
+
     # Safe the graph to the given attribute as dot 
     # and image file and displays the created image
     def plot(self, attribute: Attribute, display: bool = True) -> None:

@@ -22,7 +22,7 @@ class Aggregator(metaclass=ABCMeta):
         pass
 
 """ 
-Represents the factory to create element comparer
+Represents the factory to create an aggregator
 """
 class AggregatorFactory:
 

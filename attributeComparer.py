@@ -31,7 +31,7 @@ class AttributeComparer(metaclass=ABCMeta):
         return
 
 """ 
-Represents the factory to create element comparer
+Represents the factory to create an attribute comparer
 """
 class AttributeComparerFactory:
 

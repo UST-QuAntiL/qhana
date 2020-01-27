@@ -19,11 +19,16 @@ def main() -> None:
     costumes = db.get_costumes()
     costumeComparer = CostumeComparer()
 
-    comparedResult = costumeComparer.compare(costumes[len(costumes)-2], costumes[len(costumes)-1])
+    first = 3087
+    second = 3090
 
-    print(costumes[len(costumes)-2])
-    print(costumes[len(costumes)-1])
+    comparedResult = costumeComparer.compare(costumes[first], costumes[second])
+
+    print(costumes[first])
+    print(costumes[second])
     print("Compared result: " + str(round(comparedResult, 2)))
+
+    #print_costumes(costumes)
 
     return
 

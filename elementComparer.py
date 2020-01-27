@@ -25,7 +25,7 @@ class ElementComparer(metaclass=ABCMeta):
         pass
 
 """ 
-Represents the factory to create element comparer
+Represents the factory to create an element comparer
 """
 class ElementComparerFactory:
 
