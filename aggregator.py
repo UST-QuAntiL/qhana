@@ -89,7 +89,7 @@ class MaxAggregator(Aggregator):
     Returns the maximum of the given list of values
     """
     def aggregate(self, values: [float]) -> float:
-        return values.max()
+        return max(values)
 
 """
 Represents the min aggregator
@@ -100,4 +100,4 @@ class MinAggregator(Aggregator):
     Returns the minimum of the given list of values
     """
     def aggregate(self, values: [float]) -> float:
-        return values.min()
+        return min(values)
