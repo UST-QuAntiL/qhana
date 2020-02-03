@@ -165,69 +165,69 @@ class Database(Singleton):
             or row_costume[4] == None:
                 invalid_entries += 1
                 continue
-            else:
-                costume = Costume()
 
-                costume.dominant_color = row_costume[3]
-                costume.dominant_condition = row_costume[4]
+            costume = Costume()
 
-                # Get dominant_traits from table RolleDominanteCharaktereigenschaften
-                query_trait = "SELECT DominanteCharaktereigenschaft FROM RolleDominanteCharaktereigenschaft "
-                query_trait += "WHERE RollenID = %s AND FilmID = %s"
-                cursor.execute(query_trait, (row_costume[1], row_costume[2]))
-                rows_trait = cursor.fetchall()
+            costume.dominant_color = row_costume[3]
+            costume.dominant_condition = row_costume[4]
 
-                if len(rows_trait) == 0:
+            # Get dominant_traits from table RolleDominanteCharaktereigenschaften
+            query_trait = "SELECT DominanteCharaktereigenschaft FROM RolleDominanteCharaktereigenschaft "
+            query_trait += "WHERE RollenID = %s AND FilmID = %s"
+            cursor.execute(query_trait, (row_costume[1], row_costume[2]))
+            rows_trait = cursor.fetchall()
+
+            if len(rows_trait) == 0:
+                invalid_entries += 1
+                continue
+        
+            for row_trait in rows_trait:
+                costume.dominant_traits.append(row_trait[0])
+
+            # Get stereotypes from table RolleStereotyp
+            query_stereotype = "SELECT Stereotyp FROM RolleStereotyp WHERE RollenID = %s AND FilmID = %s"
+            cursor.execute(query_stereotype, (row_costume[1], row_costume[2]))
+            rows_stereotype = cursor.fetchall()
+
+            if len(rows_stereotype) == 0:
+                invalid_entries += 1
+                continue
+        
+            for row_stereotype in rows_stereotype:
+                costume.stereotypes.append(row_stereotype[0])
+
+            # Get gender and dominant_age_impression from table Rolle
+            query_gender_age = "SELECT Geschlecht, DominanterAlterseindruck FROM Rolle WHERE "
+            query_gender_age += "RollenID = %s AND FilmID = %s"
+            cursor.execute(query_gender_age, (row_costume[1], row_costume[2]))
+            rows_gender_age = cursor.fetchall()
+
+            if len(rows_gender_age) == 0:
+                invalid_entries += 1
+                continue
+        
+            for row_gender_age in rows_gender_age:
+                if row_gender_age[0] == None \
+                or row_gender_age[1] == None:
                     invalid_entries += 1
                     continue
-            
-                for row_trait in rows_trait:
-                    costume.dominant_traits.append(row_trait[0])
+                else:
+                    costume.gender = row_gender_age[0].pop()
+                    costume.dominant_age_impression = row_gender_age[1]
 
-                # Get stereotypes from table RolleStereotyp
-                query_stereotype = "SELECT Stereotyp FROM RolleStereotyp WHERE RollenID = %s AND FilmID = %s"
-                cursor.execute(query_stereotype, (row_costume[1], row_costume[2]))
-                rows_stereotype = cursor.fetchall()
+            # Get genres from table FilmGenre
+            query_genre = "SELECT Genre FROM FilmGenre WHERE FilmID = %s"
+            cursor.execute(query_genre, (row_costume[2], ))
+            rows_genre = cursor.fetchall()
 
-                if len(rows_stereotype) == 0:
-                    invalid_entries += 1
-                    continue
-            
-                for row_stereotype in rows_stereotype:
-                    costume.stereotypes.append(row_stereotype[0])
+            if len(rows_genre) == 0:
+                invalid_entries += 1
+                continue
+        
+            for row_genre in rows_genre:
+                costume.genres.append(row_genre[0])
 
-                # Get gender and dominant_age_impression from table Rolle
-                query_gender_age = "SELECT Geschlecht, DominanterAlterseindruck FROM Rolle WHERE "
-                query_gender_age += "RollenID = %s AND FilmID = %s"
-                cursor.execute(query_gender_age, (row_costume[1], row_costume[2]))
-                rows_gender_age = cursor.fetchall()
-
-                if len(rows_gender_age) == 0:
-                    invalid_entries += 1
-                    continue
-            
-                for row_gender_age in rows_gender_age:
-                    if row_gender_age[0] == None \
-                    or row_gender_age[1] == None:
-                        invalid_entries += 1
-                        continue
-                    else:
-                        costume.gender = row_gender_age[0].pop()
-                        costume.dominant_age_impression = row_gender_age[1]
-
-                # Get genres from table FilmGenre
-                query_genre = "SELECT Genre FROM FilmGenre WHERE FilmID = %s"
-                cursor.execute(query_genre, (row_costume[2], ))
-                rows_genre = cursor.fetchall()
-
-                if len(rows_genre) == 0:
-                    invalid_entries += 1
-                    continue
-            
-                for row_genre in rows_genre:
-                    costume.genres.append(row_genre[0])
-
-                costumes.append(costume)
+            costumes.append(costume)
 
         cursor.close()
 
