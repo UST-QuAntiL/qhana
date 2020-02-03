@@ -8,6 +8,9 @@ Defines an enum to list up all available aggregator
 """
 class AggregatorType(enum.Enum):
     mean = 1
+    median = 2
+    max = 3
+    min = 4
 
 """ 
 Represents the abstract aggregator base class
@@ -30,6 +33,12 @@ class AggregatorFactory:
     def create(type: AggregatorType) -> AggregatorType:
         if type == AggregatorType.mean:
             return MeanAggregator()
+        elif type == AggregatorType.median:
+            return MedianAggregator()
+        elif type == AggregatorType.max:
+            return MaxAggregator()
+        elif type == AggregatorType.min:
+            return MinAggregator()
         else:
             raise Exception("Unknown type of aggregator")
 
@@ -48,3 +57,47 @@ class MeanAggregator(Aggregator):
             result += value
         
         return result / len(values)
+
+"""
+Represents the median aggregator
+"""
+class MedianAggregator(Aggregator):
+
+    """ 
+    Returns the median of the given list of values
+    """
+    def aggregate(self, values: [float]) -> float:
+        result = 0.0
+
+        sortedList = values.copy()
+        sortedList.sort()
+
+        # Calculate median: if even number of elements take mean value
+        if len(sortedList) % 2 == 0:
+            result = 0.5 * (sortedList[len(sortedList / 2)] + sortedList[len(sortedList / 2 - 1)])
+        else:
+            result = sortedList[len(sortedList / 2)]
+        
+        return result
+
+"""
+Represents the max aggregator
+"""
+class MaxAggregator(Aggregator):
+
+    """ 
+    Returns the maximum of the given list of values
+    """
+    def aggregate(self, values: [float]) -> float:
+        return values.max()
+
+"""
+Represents the min aggregator
+"""
+class MinAggregator(Aggregator):
+
+    """ 
+    Returns the minimum of the given list of values
+    """
+    def aggregate(self, values: [float]) -> float:
+        return values.min()
