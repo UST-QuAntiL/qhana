@@ -19,6 +19,9 @@ class EmptyAttributeAction(enum.Enum):
 Represents the comparer class for costumes
 """
 class CostumeComparer:
+    """
+    Initializes the costume comparer
+    """
     def __init__(
         self,
         elementComparer: elemcomp.ElementComparerType = elemcomp.ElementComparerType.wuPalmer,
@@ -38,7 +41,11 @@ class CostumeComparer:
         self.emptyAttributeAction = emptyAttributeAction
         return
 
-    def compare(self, first: Costume, second: Costume) -> float:
+    """
+    Returns the similarity between the two given elements based on
+    the given attribute and element comparer
+    """
+    def compare_similarity(self, first: Costume, second: Costume) -> float:
         tax = Taxonomie()
         tax.load_all()
 
@@ -95,3 +102,10 @@ class CostumeComparer:
                 second.genres))
 
         return self.attributeAggregator.aggregate(aggregation_values)
+
+    """
+    Returns the distance between the two given elements based on the 
+    defined similarity transformer, attribute and element comparer
+    """
+    def compare_distance(self, first: Costume, second: Costume) -> float:
+        return self.similarityTransformer.transform(self.compare_similarity(first, second))

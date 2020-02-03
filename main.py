@@ -22,7 +22,7 @@ def main() -> None:
     first = 3087
     second = 3090
 
-    comparedResult = costumeComparer.compare(costumes[first], costumes[second])
+    comparedResult = costumeComparer.compare_distance(costumes[first], costumes[second])
 
     print(costumes[first])
     print(costumes[second])
