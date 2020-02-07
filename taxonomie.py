@@ -222,17 +222,18 @@ class Taxonomie(Singleton):
 
         filename = os.getcwd() + "\\" + filepath + "." + self.plot_datatype
 
-        os.startfile(filename, 'open')
+        if display == True:
+            os.startfile(filename, 'open')
 
         return
 
     # Safe all graph to dot and image files
     def plot_all(self, display: bool = False) -> None:
-        self.plot(Attribute.color, False)
-        self.plot(Attribute.traits, False)
-        self.plot(Attribute.condition, False)
-        self.plot(Attribute.stereotype, False)
-        self.plot(Attribute.gender, False)
-        self.plot(Attribute.age_impression, False)
-        self.plot(Attribute.genre, False)
+        self.plot(Attribute.color, display)
+        self.plot(Attribute.traits, display)
+        self.plot(Attribute.condition, display)
+        self.plot(Attribute.stereotype, display)
+        self.plot(Attribute.gender, display)
+        self.plot(Attribute.age_impression, display)
+        self.plot(Attribute.genre, display)
         return

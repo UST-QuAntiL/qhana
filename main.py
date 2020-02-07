@@ -12,6 +12,11 @@ def print_costumes(costumes: [Costume]) -> None:
         print(str(i) + ": " + str(costumes[i]))
 
 def main() -> None:
+
+    tax = Taxonomie()
+    tax.load_all()
+    tax.plot_all(False)
+
     # Establish connection to db
     db = Database()
     db.open()
