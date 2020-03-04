@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='utf-8'?>
+<interface>
+  <object class="tk.Frame" id="mainwindow">
+    <property name="height">400</property>
+    <property name="width">400</property>
+    <layout>
+      <property name="column">0</property>
+      <property name="propagate">True</property>
+      <property name="row">0</property>
+    </layout>
+    <child>
+      <object class="ttk.Label" id="ueberschrift">
+        <property name="anchor">e</property>
+        <property name="font">{@NSimSun} 20 {}</property>
+        <property name="padding">20</property>
+        <property name="text" translatable="yes">Muse Datenbank </property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">0</property>
+          <property name="sticky">nw</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="tk.Button" id="quit_button">
+        <property name="command">on_quit_button_click</property>
+        <property name="compound">top</property>
+        <property name="cursor">arrow</property>
+        <property name="default">normal</property>
+        <property name="padx">13</property>
+        <property name="pady">7</property>
+        <property name="takefocus">false</property>
+        <property name="text" translatable="yes">quit</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">1</property>
+          <property name="sticky">se</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="tk.Button" id="start_button">
+        <property name="anchor">ne</property>
+        <property name="command">start_button_click</property>
+        <property name="compound">top</property>
+        <property name="cursor">arrow</property>
+        <property name="default">normal</property>
+        <property name="padx">13</property>
+        <property name="pady">7</property>
+        <property name="relief">raised</property>
+        <property name="takefocus">true</property>
+        <property name="text" translatable="yes">Start</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">3</property>
+          <property name="sticky">w</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Combobox" id="taxobox">
+        <property name="cursor">arrow</property>
+        <property name="justify">left</property>
+        <property name="validate">focus</property>
+        <property name="values">age_impression color condition gender stereotype traits</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">1</property>
+          <property name="sticky">sw</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="tk.Label" id="active_label">
+        <property name="anchor">w</property>
+        <property name="compound">top</property>
+        <property name="font">TkDefaultFont</property>
+        <property name="foreground">#fe5643</property>
+        <property name="justify">left</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">3</property>
+          <property name="sticky">e</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="tk.Label" id="svg_shower">
+        <property name="justify">left</property>
+        <property name="relief">flat</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="propagate">True</property>
+          <property name="row">4</property>
+        </layout>
+      </object>
+    </child>
+  </object>
+</interface>
