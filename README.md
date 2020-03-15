@@ -11,7 +11,7 @@ To create the virtual environment, one can use the conda terminal and type in th
 
 `conda env create -f <path>`
 
-with `<path>` being the path to the *planqk.yml* file.
+with \<path\> being the path to the *planqk.yml* file.
 
 The following packages (including their dependencies) are needed and will be installed when using the planqk.yml file:
 
@@ -27,7 +27,7 @@ The following packages (including their dependencies) are needed and will be ins
 In order to get access to the database, one has to create a *config.ini* file such as:
 
 [mysql]<br/>
-host = `<host address or IP>`<br/>
-user = `<username>`<br/>
-password = `<password>`<br/>
+host = \<host address or IP\><br/>
+user = \<username\><br/>
+password = \<password\><br/>
 database = KostuemRepo<br/>
