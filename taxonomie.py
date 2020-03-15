@@ -5,7 +5,6 @@ from networkx import Graph
 from database import Database
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from PIL import Image
 import subprocess
 import os
 from networkx.readwrite import json_graph
@@ -213,14 +212,14 @@ class Taxonomie(Singleton):
 
         name = attribute.name
 
-        filepath: str = self.plot_directory + "\\" + name
+        filepath: str = self.plot_directory + "/" + name
 
         graph = self.get_graph(attribute)
 
         nx.nx_agraph.write_dot(graph, filepath + ".dot")
         subprocess.call(["dot", "-T" + self.plot_datatype, filepath + ".dot", "-o", filepath + "." + self.plot_datatype])
 
-        filename = os.getcwd() + "\\" + filepath + "." + self.plot_datatype
+        filename = os.getcwd() + "/" + filepath + "." + self.plot_datatype
 
         if display == True:
             os.startfile(filename, 'open')
