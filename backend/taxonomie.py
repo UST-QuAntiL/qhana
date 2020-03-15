@@ -2,15 +2,15 @@ from typing import Any
 from typing import Dict
 import networkx as nx
 from networkx import Graph
-from database import Database
+from .database import Database
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import subprocess
 import os
 from networkx.readwrite import json_graph
 import simplejson as json
-from attribute import Attribute
-from singleton import Singleton
+from .attribute import Attribute
+from .singleton import Singleton
 
 """
 Represents all taxonomies from kostuem repository

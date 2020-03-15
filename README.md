@@ -31,3 +31,5 @@ host = \<host address or IP\><br/>
 user = \<username\><br/>
 password = \<password\><br/>
 database = KostuemRepo<br/>
+
+The file must lay in the top directory, i.e. the same directory as the *main.py* script.

@@ -1,11 +1,11 @@
-from costume import Costume
-import elementComparer as elemcomp
-import attributeComparer as attrcomp
-import aggregator as aggre
-from costumeComparer import CostumeComparer
-from database import Database
-from taxonomie import Taxonomie
-from attribute import Attribute
+from backend.costume import Costume
+import backend.elementComparer as elemcomp
+import backend.attributeComparer as attrcomp
+import backend.aggregator as aggre
+from backend.costumeComparer import CostumeComparer
+from backend.database import Database
+from backend.taxonomie import Taxonomie
+from backend.attribute import Attribute
 
 def print_costumes(costumes: [Costume]) -> None:
     for i in range(1, len(costumes)):
@@ -15,7 +15,7 @@ def main() -> None:
 
     tax = Taxonomie()
     tax.load_all()
-    tax.plot_all(False)
+    tax.plot_all(True)
 
     # Establish connection to db
     db = Database()

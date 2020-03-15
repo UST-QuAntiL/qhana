@@ -5,10 +5,10 @@ from typing import List
 from typing import Dict
 from typing import Any
 from configparser import ConfigParser
-from costume import Costume
+from .costume import Costume
 import networkx as nx
 from networkx import Graph
-from singleton import Singleton
+from .singleton import Singleton
 
 """
 Respresents the database class for db connection
