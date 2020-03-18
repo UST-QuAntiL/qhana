@@ -16,13 +16,6 @@ def main() -> None:
     # Initialize logger
     Logger.initialize(LogLevel.Debug)
 
-    Logger.error("error")
-    Logger.warning("warning")
-    Logger.debug("debug")
-
-    return
-
-
     tax = Taxonomie()
     tax.load_all()
     tax.plot_all(False)

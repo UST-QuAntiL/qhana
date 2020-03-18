@@ -1,8 +1,6 @@
 from typing import Any
 from colorama import init, Fore, Back, Style
 from enum import IntEnum
-from .logLevel import LogLevel
-from .singleton import Singleton
 import datetime
 import os
 

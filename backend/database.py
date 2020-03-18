@@ -9,6 +9,7 @@ from .costume import Costume
 import networkx as nx
 from networkx import Graph
 from .singleton import Singleton
+from .logger import Logger, LogLevel
 
 """
 Respresents the database class for db connection
@@ -16,7 +17,6 @@ Respresents the database class for db connection
 class Database(Singleton):
     def __init__(self) -> None:
         self.connection = None
-        self.print_invalid_data = True
         return
     
     def __del__(self) -> None:
@@ -36,21 +36,22 @@ class Database(Singleton):
                 for item in items:
                     connection_string[item[0]] = item[1]
             else:
+                Logger.error('{0} not found in the {1} file'.format(section, filename))
                 raise Exception('{0} not found in the {1} file'.format(section, filename))
         
             self.connection = MySQLConnection(**connection_string)
         
             if self.connection.is_connected():
-                print("Successfully connected to database")
+                Logger.debug("Successfully connected to database")
 
         except Error as error:
-            print(error)
+            Logger.error(str(error) + " The application will quit now.")
             quit()
 
     def close(self) -> None:
         if self.connection is not None and self.connection.is_connected():
             self.connection.close()
-            print("Successfully disconnected from database ")
+            Logger.debug("Successfully disconnected from database")
 
     # Returns the table of a taxonomie.
     # In the kostuemrepo a taxonomie table is a "domaene" table with
@@ -159,18 +160,25 @@ class Database(Singleton):
         rows_costume = cursor.fetchall()
 
         for row_costume in rows_costume:
-            if row_costume[0] == None \
-            or row_costume[1] == None \
-            or row_costume[2] == None \
-            or row_costume[3] == None \
-            or row_costume[4] == None:
+            if row_costume[0] == None:
                 invalid_entries += 1
-                if (self.print_invalid_data):
-                    print(
-                        str(invalid_entries)
-                        + ": some entry in Kostuem is None - KostuemID, RolenID, FilmID: " 
-                        + str(row_costume[0]) + " " + str(row_costume[1]) + " " + str(row_costume[2])
-                    )
+                Logger.warning("Found entry with KostuemID = None. This entry will be skipped.")
+                continue
+            if row_costume[1] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with RollenID = None. This entry will be skipped.")
+                continue
+            if row_costume[2] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with FilmID = None. This entry will be skipped.")
+                continue
+            if row_costume[3] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with DominanteFarbe = None. This entry will be skipped.")
+                continue
+            if row_costume[4] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with DominanterZustand = None. This entry will be skipped.")
                 continue
 
             costume = Costume()
@@ -186,7 +194,12 @@ class Database(Singleton):
 
             if len(rows_trait) == 0:
                 invalid_entries += 1
-                print(str(invalid_entries) + ": no DominanteCharaktereigenschaft associatet with RollenID and FilmID")
+                Logger.warning(
+                    "Found entry with no DominanteCharaktereigenschaft. Associated entries are: " \
+                    + "RollenID = " + str(row_costume[1]) + ", " \
+                    + "FilmID = " + str(row_costume[2]) + ". " \
+                    + "This entry will be skipped." \
+                )
                 continue
         
             for row_trait in rows_trait:
@@ -199,7 +212,12 @@ class Database(Singleton):
 
             if len(rows_stereotype) == 0:
                 invalid_entries += 1
-                print(str(invalid_entries) + ": no Stereotyp associatet with RollenID and FilmID")
+                Logger.warning(
+                    "Found entry with no Stereotyp. Associated entries are: " \
+                    + "RollenID = " + str(row_costume[1]) + ", " \
+                    + "FilmID = " + str(row_costume[2]) + ". " \
+                    + "This entry will be skipped." \
+                )
                 continue
         
             for row_stereotype in rows_stereotype:
@@ -213,18 +231,36 @@ class Database(Singleton):
 
             if len(rows_gender_age) == 0:
                 invalid_entries += 1
-                print(str(invalid_entries) + ": no Geschlecht associatet with RollenID and FilmID")
+                Logger.warning(
+                    "Found entry with no Geschlecht and no DominanterAlterseindruck. Associated entries are: " \
+                    + "RollenID = " + str(row_costume[1]) + ", " \
+                    + "FilmID = " + str(row_costume[2]) + ". " \
+                    + "This entry will be skipped." \
+                )
                 continue
         
             for row_gender_age in rows_gender_age:
-                if row_gender_age[0] == None \
-                or row_gender_age[1] == None:
+                if row_gender_age[0] == None:
                     invalid_entries += 1
-                    print(str(invalid_entries) + ": either Geschlecht or DominanterAlterseindruck is None associatet with RollenID or FilmID")
+                    Logger.warning(
+                        "Found entry with no Geschlecht. Associated entries are: " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
                     continue
-                else:
-                    costume.gender = row_gender_age[0].pop()
-                    costume.dominant_age_impression = row_gender_age[1]
+                if row_gender_age[1] == None:
+                    invalid_entries += 1
+                    Logger.warning(
+                        "Found entry with no DominanterAlterseindruck. Associated entries are: " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue
+                
+                costume.gender = row_gender_age[0].pop()
+                costume.dominant_age_impression = row_gender_age[1]
 
             # Get genres from table FilmGenre
             query_genre = "SELECT Genre FROM FilmGenre WHERE FilmID = %s"
@@ -233,7 +269,11 @@ class Database(Singleton):
 
             if len(rows_genre) == 0:
                 invalid_entries += 1
-                print(str(invalid_entries) + ": no Genre associatet with FilmID")
+                Logger.warning( \
+                    "Found entry with no Genre. Associated entry is: " \
+                    + "FilmID = " + str(row_costume[2]) + ". " \
+                    + "This entry will be skipped." \
+                )
                 continue
         
             for row_genre in rows_genre:
@@ -243,6 +283,10 @@ class Database(Singleton):
 
         cursor.close()
 
-        print(str(invalid_entries) + " from " + str(len(rows_costume)) + " are invalid")
+        if (invalid_entries > 0):
+            Logger.warning(
+                str(invalid_entries) + " costumes from " + str(len(rows_costume)) + " are invalid. " \
+                + "These invalid costumes won't be used for further application." \
+                )
 
         return costumes
