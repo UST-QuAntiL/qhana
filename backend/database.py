@@ -16,6 +16,7 @@ Respresents the database class for db connection
 class Database(Singleton):
     def __init__(self) -> None:
         self.connection = None
+        self.print_invalid_data = True
         return
     
     def __del__(self) -> None:
@@ -164,6 +165,12 @@ class Database(Singleton):
             or row_costume[3] == None \
             or row_costume[4] == None:
                 invalid_entries += 1
+                if (self.print_invalid_data):
+                    print(
+                        str(invalid_entries)
+                        + ": some entry in Kostuem is None - KostuemID, RolenID, FilmID: " 
+                        + str(row_costume[0]) + " " + str(row_costume[1]) + " " + str(row_costume[2])
+                    )
                 continue
 
             costume = Costume()
@@ -179,6 +186,7 @@ class Database(Singleton):
 
             if len(rows_trait) == 0:
                 invalid_entries += 1
+                print(str(invalid_entries) + ": no DominanteCharaktereigenschaft associatet with RollenID and FilmID")
                 continue
         
             for row_trait in rows_trait:
@@ -191,6 +199,7 @@ class Database(Singleton):
 
             if len(rows_stereotype) == 0:
                 invalid_entries += 1
+                print(str(invalid_entries) + ": no Stereotyp associatet with RollenID and FilmID")
                 continue
         
             for row_stereotype in rows_stereotype:
@@ -204,12 +213,14 @@ class Database(Singleton):
 
             if len(rows_gender_age) == 0:
                 invalid_entries += 1
+                print(str(invalid_entries) + ": no Geschlecht associatet with RollenID and FilmID")
                 continue
         
             for row_gender_age in rows_gender_age:
                 if row_gender_age[0] == None \
                 or row_gender_age[1] == None:
                     invalid_entries += 1
+                    print(str(invalid_entries) + ": either Geschlecht or DominanterAlterseindruck is None associatet with RollenID or FilmID")
                     continue
                 else:
                     costume.gender = row_gender_age[0].pop()
@@ -222,6 +233,7 @@ class Database(Singleton):
 
             if len(rows_genre) == 0:
                 invalid_entries += 1
+                print(str(invalid_entries) + ": no Genre associatet with FilmID")
                 continue
         
             for row_genre in rows_genre:

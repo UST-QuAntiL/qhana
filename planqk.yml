@@ -1,13 +1,14 @@
 name: planqk
 channels:
-  - anaconda
   - conda-forge
+  - anaconda
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=main
-  - ca-certificates=2019.11.28=hecc5488_0
+  - ca-certificates=2020.1.1=0
   - cairo=1.14.12=h8948797_3
-  - certifi=2019.11.28=py36h9f0ad1d_1
+  - certifi=2019.11.28=py36_0
+  - colorama=0.4.3=py_0
   - cycler=0.10.0=py_2
   - dbus=1.13.6=he372182_0
   - decorator=4.4.2=py_0
@@ -49,7 +50,7 @@ dependencies:
   - ncurses=6.2=he6710b0_0
   - networkx=2.4=py_0
   - numpy=1.18.1=py36h95a1406_0
-  - openssl=1.1.1d=h516909a_0
+  - openssl=1.1.1=h7b6447c_0
   - pango=1.42.4=h049681c_0
   - pcre=8.44=he1b5a44_0
   - pip=20.0.2=py36_1

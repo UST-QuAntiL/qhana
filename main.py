@@ -6,16 +6,26 @@ from backend.costumeComparer import CostumeComparer
 from backend.database import Database
 from backend.taxonomie import Taxonomie
 from backend.attribute import Attribute
+from backend.logger import Logger, LogLevel
 
 def print_costumes(costumes: [Costume]) -> None:
     for i in range(1, len(costumes)):
         print(str(i) + ": " + str(costumes[i]))
 
 def main() -> None:
+    # Initialize logger
+    Logger.initialize(LogLevel.Debug)
+
+    Logger.error("error")
+    Logger.warning("warning")
+    Logger.debug("debug")
+
+    return
+
 
     tax = Taxonomie()
     tax.load_all()
-    tax.plot_all(True)
+    tax.plot_all(False)
 
     # Establish connection to db
     db = Database()
