@@ -1,7 +1,6 @@
 */__pycache__/*
 *.ini
-*/.vscode/*
-
+.vscode/*
 plots/*
 graphs/*
 log/*

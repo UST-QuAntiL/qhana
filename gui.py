@@ -1,15 +1,15 @@
 import tkinter as tk
 import pygubu
 import sys
-sys.path.append('..')
-from costume import Costume
-import elementComparer as elemcomp
-import attributeComparer as attrcomp
-import aggregator as aggre
-from costumeComparer import CostumeComparer
-from database import Database
-from taxonomie import Taxonomie
-from attribute import Attribute
+#sys.path.append('..\backend')
+from backend.costume import Costume
+import backend.elementComparer as elemcomp
+import backend.attributeComparer as attrcomp
+import backend.aggregator as aggre
+from backend.costumeComparer import CostumeComparer
+from backend.database import Database
+from backend.taxonomie import Taxonomie
+from backend.attribute import Attribute
 import re
 from PIL import Image, ImageTk, PngImagePlugin
 from cairosvg import svg2png
@@ -42,7 +42,7 @@ class Application:
             active_label.configure(text='connection fails ')
         
         taxobox_value = self.builder.get_object('taxobox').get()
-        path = path = "../plots/" + taxobox_value +".svg"
+        path = path = "plots/" + taxobox_value +".svg"
         print(path)
         active_showbox = self.builder.get_object('svg_shower')
         item = svg2png(url=path, parent_width = "50", parent_height = "50")

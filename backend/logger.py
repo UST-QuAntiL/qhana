@@ -1,5 +1,6 @@
 from typing import Any
 from colorama import init, Fore, Back, Style
+init()
 from enum import IntEnum
 import datetime
 import os
@@ -43,8 +44,7 @@ class Logger():
     debug_back = Back.BLACK
 
     @staticmethod
-    def initialize(level: LogLevel = LogLevel.Errors) -> None:
-        init()
+    def initialize(level: LogLevel = LogLevel.Errors) -> None:  
         Logger.level = level
         return
 

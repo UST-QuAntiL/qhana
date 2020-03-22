@@ -8,6 +8,15 @@ from backend.database import Database
 from backend.taxonomie import Taxonomie
 from backend.attribute import Attribute
 from backend.logger import Logger, LogLevel
+import numpy as np
+import re
+from matplotlib import pyplot as plt
+from matplotlib.collections import LineCollection
+from sklearn import manifold
+from sklearn.metrics import euclidean_distances
+from sklearn.decomposition import PCA
+from sklearn.cluster import OPTICS, cluster_optics_dbscan
+import matplotlib.gridspec as gridspec
 
 def parse_args():
     # Create one main parser
@@ -38,11 +47,8 @@ def print_costumes(costumes: [Costume]) -> None:
         print(str(i) + ": " + str(costumes[i]))
 
 def main() -> None:
-    #args = parse_args()
-
-    # Initialize logger
-    Logger.initialize(LogLevel(1))
-
+    #Logger.initialize(LogLevel(2))
+    Logger.error("blabla")
     tax = Taxonomie()
     tax.load_all()
     tax.plot_all(False)
@@ -53,18 +59,142 @@ def main() -> None:
 
     costumes = db.get_costumes()
     costumeComparer = CostumeComparer()
+    #print("Hier 1")
+    #first = 1
+    #second = 3
+    #print("Hier 2")
+    #comparedResult = costumeComparer.compare_distance(costumes[first], costumes[second])
+    #print(costumes[first])
+    #print(costumes[second])
+    #print("Compared result: " + str(round(comparedResult, 2)))
 
-    first = 3087
-    second = 3090
+    #built a similarities matrix
+    count = 13
+    similarities = np.zeros((count-3,count-3))
+    for i in range(3,count):
+        for j in range(3,count):
+            if j < i:
+                print("i= "+ str(i) + " j=" + str(j))
+                comparedResult = costumeComparer.compare_distance(costumes[i], costumes[j])
+                similarities[i-3,j-3] = comparedResult
+                similarities[j-3,i-3] = comparedResult
+    print("similarities")
+    print(similarities)
 
-    comparedResult = costumeComparer.compare_distance(costumes[first], costumes[second])
+    # Multidimensional scaling
+    seed = np.random.RandomState(seed=3)
+    mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed,
+                   dissimilarity="precomputed", n_jobs=1)
+    pos = mds.fit(similarities).embedding_
+    print("Position eukl.")
+    print(pos)
+    stress = mds.fit(similarities).stress_
+    print("Stress Level should be between 0 and 0.15")
+    print("Stress: " + str(round(stress, 4)))
+    # plot multidimensional scaling positions
+    fig = plt.figure(1)
+    ax = plt.axes([0., 0., 1., 1.])
 
-    print(costumes[first])
-    print(costumes[second])
-    print("Compared result: " + str(round(comparedResult, 2)))
+    s = 100
+    plt.scatter(pos[:, 0], pos[:, 1], color='turquoise', s=s, lw=0, label='MDS')
+    plt.legend(scatterpoints=1, loc='best', shadow=False)
+    EPSILON = np.finfo(np.float32).eps
+    #print("similarities.max")
+    #print(similarities.max())
+    similarities = similarities.max() / (similarities + EPSILON) * 100
+    #print("similarities after max/(sim+eps)*100")
+    #print(similarities)
+    np.fill_diagonal(similarities, 0)
+    # Plot the edges
+    #start_idx, end_idx = np.where(pos)
+    # a sequence of (*line0*, *line1*, *line2*), where::
+    #            linen = (x0, y0), (x1, y1), ... (xm, ym)
+    segments = [[pos[i, :], pos[j, :]]
+                for i in range(len(pos)) for j in range(len(pos))]
+    #print("segments")
+    #print(segments)
+    values = np.abs(similarities)
+    #print("Values")
+    #print(values)
+    lc = LineCollection(segments,
+                    zorder=0, cmap=plt.cm.Blues,
+                    norm=plt.Normalize(0, values.max()))
+    lc.set_array(similarities.flatten())
+    lc.set_linewidths(np.full(len(segments), 0.5))
+    ax.add_collection(lc)
+    # describe points
+    style = dict(size=7, color='black')
+    for i in range(3,count):
+        txt = costumes[i]
+        txt = re.sub("(.{20})", "\\1-\n", str(txt), 0, re.DOTALL)
+        plt.annotate(txt, (pos[i-3, 0], pos[i-3, 1]), **style)
+    plt.ylim((-0.6,0.6))
+    plt.xlim((-0.5,0.5))
 
-    #print_costumes(costumes)
+    
 
+    # clustering with optics
+    clust = OPTICS(min_samples=10, xi=.05, min_cluster_size=.05)
+    clust.fit(pos)
+
+    # plot things 
+    
+    labels_050 = cluster_optics_dbscan(reachability=clust.reachability_,
+                                   core_distances=clust.core_distances_,
+                                   ordering=clust.ordering_, eps=0.5)
+    labels_200 = cluster_optics_dbscan(reachability=clust.reachability_,
+                                   core_distances=clust.core_distances_,
+                                   ordering=clust.ordering_, eps=2)
+
+    space = np.arange(len(pos))
+    reachability = clust.reachability_[clust.ordering_]
+    labels = clust.labels_[clust.ordering_]
+
+    plt.figure(figsize=(10, 7))
+    G = gridspec.GridSpec(2, 3)
+    ax1 = plt.subplot(G[0, :])
+    ax2 = plt.subplot(G[1, 0])
+    ax3 = plt.subplot(G[1, 1])
+    ax4 = plt.subplot(G[1, 2])
+
+    # Reachability plot
+    colors = ['g.', 'r.', 'b.', 'y.', 'c.']
+    for klass, color in zip(range(0, 5), colors):
+        Xk = space[labels == klass]
+        Rk = reachability[labels == klass]
+        ax1.plot(Xk, Rk, color, alpha=0.3)
+    ax1.plot(space[labels == -1], reachability[labels == -1], 'k.', alpha=0.3)
+    ax1.plot(space, np.full_like(space, 2., dtype=float), 'k-', alpha=0.5)
+    ax1.plot(space, np.full_like(space, 0.5, dtype=float), 'k-.', alpha=0.5)
+    ax1.set_ylabel('Reachability (epsilon distance)')
+    ax1.set_title('Reachability Plot')
+
+    # OPTICS
+    colors = ['g.', 'r.', 'b.', 'y.', 'c.']
+    for klass, color in zip(range(0, 5), colors):
+        Xk = pos[clust.labels_ == klass]
+        ax2.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.3)
+    ax2.plot(pos[clust.labels_ == -1, 0], pos[clust.labels_ == -1, 1], 'k+', alpha=0.1)
+    ax2.set_title('Automatic Clustering\nOPTICS')
+
+    # DBSCAN at 0.5
+    colors = ['g', 'greenyellow', 'olive', 'r', 'b', 'c']
+    for klass, color in zip(range(0, 6), colors):
+        Xk = pos[labels_050 == klass]
+        ax3.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.3, marker='.')
+    ax3.plot(pos[labels_050 == -1, 0], pos[labels_050 == -1, 1], 'k+', alpha=0.1)
+    ax3.set_title('Clustering at 0.5 epsilon cut\nDBSCAN')
+
+    # DBSCAN at 2.
+    colors = ['g.', 'm.', 'y.', 'c.']
+    for klass, color in zip(range(0, 4), colors):
+        Xk = pos[labels_200 == klass]
+        ax4.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.3)
+    ax4.plot(pos[labels_200 == -1, 0], pos[labels_200 == -1, 1], 'k+', alpha=0.1)
+    ax4.set_title('Clustering at 2.0 epsilon cut\nDBSCAN')
+
+    plt.tight_layout()
+    plt.show()
     return
 
 if __name__== "__main__":
