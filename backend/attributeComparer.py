@@ -1,4 +1,4 @@
-from elementComparer import ElementComparer
+from .elementComparer import ElementComparer
 from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any

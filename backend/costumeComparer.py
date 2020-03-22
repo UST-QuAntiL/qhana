@@ -1,11 +1,11 @@
-from costume import Costume
-import elementComparer as elemcomp
-import attributeComparer as attrcomp
-import aggregator as aggre
-import transformer as trafo
+from .costume import Costume
+from . import elementComparer as elemcomp
+from . import attributeComparer as attrcomp
+from . import aggregator as aggre
+from . import transformer as trafo
 import enum
-from taxonomie import Taxonomie
-from attribute import Attribute
+from .taxonomie import Taxonomie
+from .attribute import Attribute
 
 """ 
 Defines an enum to specify what should be done
