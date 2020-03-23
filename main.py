@@ -48,10 +48,10 @@ def print_costumes(costumes: [Costume]) -> None:
 
 def main() -> None:
     #Logger.initialize(LogLevel(2))
-    Logger.error("blabla")
-    tax = Taxonomie()
-    tax.load_all()
-    tax.plot_all(False)
+    #Logger.error("blabla")
+    #tax = Taxonomie()
+    #tax.load_all()
+    #tax.plot_all(False)
 
     # Establish connection to db
     db = Database()
@@ -69,7 +69,7 @@ def main() -> None:
     #print("Compared result: " + str(round(comparedResult, 2)))
 
     #built a similarities matrix
-    count = 13
+    count = 6
     similarities = np.zeros((count-3,count-3))
     for i in range(3,count):
         for j in range(3,count):
@@ -134,7 +134,7 @@ def main() -> None:
     
 
     # clustering with optics
-    clust = OPTICS(min_samples=10, xi=.05, min_cluster_size=.05)
+    clust = OPTICS(min_samples=3, xi=.05, min_cluster_size=.05)
     clust.fit(pos)
 
     # plot things 
