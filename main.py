@@ -17,6 +17,8 @@ from sklearn.metrics import euclidean_distances
 from sklearn.decomposition import PCA
 from sklearn.cluster import OPTICS, cluster_optics_dbscan
 import matplotlib.gridspec as gridspec
+from backend.similarities import Similarities
+from typing import List
 
 def parse_args():
     # Create one main parser
@@ -47,7 +49,7 @@ def print_costumes(costumes: [Costume]) -> None:
         print(str(i) + ": " + str(costumes[i]))
 
 def main() -> None:
-    #Logger.initialize(LogLevel(2))
+    Logger.initialize(LogLevel(2))
     #Logger.error("blabla")
     #tax = Taxonomie()
     #tax.load_all()
@@ -59,28 +61,26 @@ def main() -> None:
 
     costumes = db.get_costumes()
     costumeComparer = CostumeComparer()
+
     #print("Hier 1")
-    #first = 1
-    #second = 3
+    #first = len(costumes)-1
+    #second = 17
     #print("Hier 2")
     #comparedResult = costumeComparer.compare_distance(costumes[first], costumes[second])
     #print(costumes[first])
     #print(costumes[second])
     #print("Compared result: " + str(round(comparedResult, 2)))
 
-    #built a similarities matrix
-    count = 6
-    similarities = np.zeros((count-3,count-3))
-    for i in range(3,count):
-        for j in range(3,count):
-            if j < i:
-                print("i= "+ str(i) + " j=" + str(j))
-                comparedResult = costumeComparer.compare_distance(costumes[i], costumes[j])
-                similarities[i-3,j-3] = comparedResult
-                similarities[j-3,i-3] = comparedResult
+    
+    #built a similarity matrix
+    simi =Similarities.only_costumes(costumes)
+    similarities = simi.create_matrix_limited(0,20)
     print("similarities")
     print(similarities)
-
+    costumes_simi: List[Costume] = simi.get_list_costumes()
+    #for i in simi.get_last_sequenz():
+    #    print("index="+str(i)+ " : " +str(costumes_simi[i]))
+    
     # Multidimensional scaling
     seed = np.random.RandomState(seed=3)
     mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed,
@@ -124,10 +124,12 @@ def main() -> None:
     ax.add_collection(lc)
     # describe points
     style = dict(size=7, color='black')
-    for i in range(3,count):
-        txt = costumes[i]
+    count: int = 0
+    for i in simi.get_last_sequenz():
+        txt = str(i)+". " +str(costumes_simi[i])
         txt = re.sub("(.{20})", "\\1-\n", str(txt), 0, re.DOTALL)
-        plt.annotate(txt, (pos[i-3, 0], pos[i-3, 1]), **style)
+        plt.annotate(txt, (pos[count, 0], pos[count, 1]), **style)
+        count += 1
     plt.ylim((-0.6,0.6))
     plt.xlim((-0.5,0.5))
 
@@ -196,6 +198,7 @@ def main() -> None:
     plt.tight_layout()
     plt.show()
     return
+
 
 if __name__== "__main__":
     main()
