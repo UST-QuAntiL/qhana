@@ -126,8 +126,8 @@ def old_main() -> None:
     #built a similarity matrix
     simi =Similarities.only_costumes(costumes)
     similarities = simi.create_matrix_limited(0,20)
-    print("similarities")
-    print(similarities)
+    Logger.normal("similarities")
+    Logger.normal("\n"+str(similarities))
     costumes_simi: List[Costume] = simi.get_list_costumes()
     #for i in simi.get_last_sequenz():
     #    print("index="+str(i)+ " : " +str(costumes_simi[i]))
@@ -137,11 +137,11 @@ def old_main() -> None:
     mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed,
                    dissimilarity="precomputed", n_jobs=1)
     pos = mds.fit(similarities).embedding_
-    print("Position eukl.")
-    print(pos)
+    Logger.normal("Position eukl.")
+    Logger.normal("\n" + str(pos))
     stress = mds.fit(similarities).stress_
-    print("Stress Level should be between 0 and 0.15")
-    print("Stress: " + str(round(stress, 4)))
+    Logger.normal("Stress Level should be between 0 and 0.15")
+    Logger.normal("Stress: " + str(round(stress, 4)))
     # plot multidimensional scaling positions
     fig = plt.figure(1)
     ax = plt.axes([0., 0., 1., 1.])
@@ -181,8 +181,8 @@ def old_main() -> None:
         txt = re.sub("(.{20})", "\\1-\n", str(txt), 0, re.DOTALL)
         plt.annotate(txt, (pos[count, 0], pos[count, 1]), **style)
         count += 1
-    plt.ylim((-0.6,0.6))
-    plt.xlim((-0.5,0.5))
+    #plt.ylim((-0.6,0.6))
+    #plt.xlim((-0.5,0.5))
 
     
 

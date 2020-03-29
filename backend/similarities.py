@@ -6,8 +6,7 @@ import numpy as np
 from typing import List
 import random as rd
 
-# to do show, write , 
-
+# class creates and manage similarity matrizes 
 class Similarities():
     """
     Initializes similarties 
@@ -101,7 +100,7 @@ class Similarities():
         self.__last_sequenz = costumes_index
         # create for valid costumes the similarity_matrix
         total_number: int = len(costumes_index)
-        similarity_matrix = np.zeros((total_number,total_number))
+        similarity_matrix: np.matrix = np.zeros((total_number,total_number))
         for i in range(len(costumes_index)):
             for j in range(len(costumes_index)):
                 if j < i:
