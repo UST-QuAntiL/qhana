@@ -125,9 +125,9 @@ def old_main() -> None:
     
     #built a similarity matrix
     simi =Similarities.only_costumes(costumes)
-    similarities = simi.create_matrix_limited(0,20)
+    similarities = simi.create_matrix_limited(0,3)
     Logger.normal("similarities")
-    Logger.normal("\n"+str(similarities))
+    Logger.normal(str(similarities))
     costumes_simi: List[Costume] = simi.get_list_costumes()
     #for i in simi.get_last_sequenz():
     #    print("index="+str(i)+ " : " +str(costumes_simi[i]))
@@ -138,7 +138,7 @@ def old_main() -> None:
                    dissimilarity="precomputed", n_jobs=1)
     pos = mds.fit(similarities).embedding_
     Logger.normal("Position eukl.")
-    Logger.normal("\n" + str(pos))
+    Logger.normal(str(pos))
     stress = mds.fit(similarities).stress_
     Logger.normal("Stress Level should be between 0 and 0.15")
     Logger.normal("Stress: " + str(round(stress, 4)))

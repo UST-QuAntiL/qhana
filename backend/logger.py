@@ -74,6 +74,10 @@ class Logger():
             fore = Logger.debug_fore
             back = Logger.debug_back
         
+        # for strings with more than one row
+        empty: str = " " * len(output_header)
+        message = message.replace("\n", "\n"+ empty)
+
         log_message = output_header + message
 
         print(fore + back + log_message + Style.RESET_ALL)
