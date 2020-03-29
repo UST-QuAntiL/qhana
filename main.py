@@ -19,42 +19,93 @@ from sklearn.cluster import OPTICS, cluster_optics_dbscan
 import matplotlib.gridspec as gridspec
 from backend.similarities import Similarities
 from typing import List
+import sys
 
-def parse_args():
-    # Create one main parser
-    parser = argparse.ArgumentParser(description='PlanQK - Machine Learning with Taxonomies')
-    subparsers = parser.add_subparsers(required=True)
+# Used for creating the namespaces from parsing
+def parse_args(parser, commands):
+    # Divide argv by commands
+    split_argv = [[]]
+    for c in sys.argv[1:]:
+        if c in commands.choices:
+            split_argv.append([c])
+        else:
+            split_argv[-1].append(c)
+    # Initialize namespace
+    args = argparse.Namespace()
+    for c in commands.choices:
+        setattr(args, c, None)
+    # Parse each command
+    parser.parse_args(split_argv[0], namespace=args)  # Without command
+    for argv in split_argv[1:]:  # Commands
+        n = argparse.Namespace()
+        setattr(args, argv[0], n)
+        parser.parse_args(argv, namespace=n)
+    return args
 
-    # Add one sub parser for each task, i.e. printing (utils), clustering, ...
-    utils_parser = subparsers.add_parser('utils')
-    clustering_parser = subparsers.add_parser('clustering')
+def parse():
+    parser = argparse.ArgumentParser()
 
-    # All arguments for global parser
-    parser.add_argument('--log_level',
+    # Add global arguments
+    parser.add_argument('-ll', '--log_level',
         dest='log_level',
-        help='log level for the current session: 0 - Nothing, 1 - Errors [default], 2 - Warnings, 3 - Debug',
+        help='log level for the current session: 0 - nothing, 1 - errors [default], 2 - warnings, 3 - debug',
         default=1,
+        required=False,
         type=int
     )
 
-    # All arguments for utils parser
+    # Add additional global arguments here, like above
 
-    # All arguments for clustering parser
+    # Add commands entry in parser
+    commands = parser.add_subparsers(title='commands')
 
-    args = parser.parse_args()
-    return args
+    # Add parser for validate_database
+    validate_database_parser = commands.add_parser('validate_database',
+        description='check if the data is consistent with the taxonomies')
+    validate_database_parser.add_argument('-o', '--output_file',
+        dest='output_file',
+        help='specifies the filename for the output [default: /log/<datetime>_db_validation.log]',
+        default=None,
+        required=False,
+        type=str
+    )
+
+    # Add parser for others (just the other main routine)
+    # This should not be needed in the future when
+    # all commands are real commands with their own
+    # parameters etc.
+    validate_database_parser = commands.add_parser('old_main',
+        description='runs the old main method (just for compatibility)')
+
+    # Add additional commands arguments here, like above
+
+    # Parse all the arguments and commands
+    args = parse_args(parser, commands)
+    
+    # Set global arguments first
+    Logger.initialize(args.log_level)
+
+    # Check which command is being used and run it
+    if args.validate_database is not None:
+        validate_database(args.validate_database)
+    elif args.others is not None:
+        old_main()
+    else:
+        Logger.normal("Wrong command. Please run -h for see available commands.")
+
+    return
+
+def validate_database(command_args):
+    db = Database()
+    db.open()
+    db.validate_all_costumes(command_args.output_file)
+    return
 
 def print_costumes(costumes: [Costume]) -> None:
     for i in range(1, len(costumes)):
         print(str(i) + ": " + str(costumes[i]))
 
-def main() -> None:
-    Logger.initialize(LogLevel(2))
-    #Logger.error("blabla")
-    #tax = Taxonomie()
-    #tax.load_all()
-    #tax.plot_all(False)
-
+def old_main() -> None:
     # Establish connection to db
     db = Database()
     db.open()
@@ -199,6 +250,9 @@ def main() -> None:
     plt.show()
     return
 
+def main() -> None:
+    parse()
+    return
 
 if __name__== "__main__":
     main()

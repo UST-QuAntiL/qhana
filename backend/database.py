@@ -10,6 +10,7 @@ import networkx as nx
 from networkx import Graph
 from .singleton import Singleton
 from .logger import Logger, LogLevel
+import datetime
 
 """
 Respresents the database class for db connection
@@ -17,6 +18,7 @@ Respresents the database class for db connection
 class Database(Singleton):
     def __init__(self) -> None:
         self.connection = None
+        self.connected = False
         return
     
     def __del__(self) -> None:
@@ -43,6 +45,7 @@ class Database(Singleton):
         
             if self.connection.is_connected():
                 Logger.debug("Successfully connected to database")
+                self.connected = True
 
         except Error as error:
             Logger.error(str(error) + " The application will quit now.")
@@ -51,6 +54,7 @@ class Database(Singleton):
     def close(self) -> None:
         if self.connection is not None and self.connection.is_connected():
             self.connection.close()
+            self.connected = False
             Logger.debug("Successfully disconnected from database")
 
     # Returns the table of a taxonomie.
@@ -290,3 +294,140 @@ class Database(Singleton):
                 )
 
         return costumes
+
+    # Check if the given costume contains data
+    # that cannot be found within the taxonomies
+    def validate_costum(costume) -> (bool, str):
+        # load all taxonomies
+        color = self.get_color()
+        traits = self.get_traits()
+        condition = self.get_condition()
+        stereotype = self.get_stereotype()
+        gender = self.get_gender()
+        age_impression = self.get_age_impression()
+        genre = self.get_genre()
+
+        if not color.has_node(costume.dominant_color):
+            return (False, "cominant_color")
+        
+        for trait in costume.dominant_traits:
+            if not traits.has_node(trait):
+                return (False, "dominant_trait")
+
+        if not condition.has_node(costume.dominant_condition):
+            return (False, "dominant_condition")
+
+        for _stereotype in costume.stereotypes:
+            if not stereotype.has_node(_stereotype):
+                return (False, "stereotype")
+
+        if not gender.has_node(costume.gender):
+            return (False, "gender")
+
+        if not age_impression.has_node(costume.dominant_age_impression):
+            return (False, "dominant_age_impression")
+
+        for _genre in costume.genres:
+            if not genre.has_node(_genre):
+                return (False, "genre")
+        
+        return (True, "")
+
+    # Compares the costumes and their data with the
+    # taxonomies and check for inconsistencies
+    # file: specifies a separate file for the output
+    # if None: log/yyyy_mm_dd_hh_ss_db_validation.log
+    # will be used
+    def validate_all_costumes(self, file=None) -> None:
+        Logger.normal("Running validation of the database.")
+
+        if self.connected == False:
+            Logger.error("Validation not possible because we are currently not connected to a database.")
+        if file == None:
+            file = "log/" + datetime.datetime.today().strftime("%Y_%m_%d_%H_%M_%S") + "_db_validation.log"
+
+        # load all taxonomies
+        color = self.get_color()
+        traits = self.get_traits()
+        condition = self.get_condition()
+        stereotype = self.get_stereotype()
+        gender = self.get_gender()
+        age_impression = self.get_age_impression()
+        genre = self.get_genre()
+
+        # load all costumes
+        costumes = self.get_costumes()
+
+        output_string = ""
+
+        found_errors = []
+
+        invalid_costumes = 0
+        is_current_costume_invalid = False
+
+        # compare all costumes with taxonomies
+        for costume in costumes:
+            if not color.has_node(costume.dominant_color):
+                error = costume.dominant_color + " could not be found in color taxonomie. "
+                is_current_costume_invalid = True
+                if error not in found_errors:
+                    found_errors.append(error)
+                    output_string += error + " costume: " + str(costume) + "\n"
+            
+            for trait in costume.dominant_traits:
+                if not traits.has_node(trait):
+                    error = trait + " could not be found in traits taxonomie. "
+                    is_current_costume_invalid = True
+                    if error not in found_errors:
+                        found_errors.append(error)
+                        output_string += error + " costume: " + str(costume) + "\n"
+
+            if not condition.has_node(costume.dominant_condition):
+                error = costume.dominant_condition + " could not be found in condition taxonomie. "
+                is_current_costume_invalid = True
+                if error not in found_errors:
+                    found_errors.append(error)
+                    output_string += error + " costume: " + str(costume) + "\n"
+
+            for _stereotype in costume.stereotypes:
+                if not stereotype.has_node(_stereotype):
+                    error = _stereotype + " could not be found in stereotype taxonomie. "
+                    is_current_costume_invalid = True
+                    if error not in found_errors:
+                        found_errors.append(error)
+                        output_string += error + " costume: " + str(costume) + "\n"
+
+            if not gender.has_node(costume.gender):
+                error = costume.gender + " could not be found in gender taxonomie. "
+                is_current_costume_invalid = True
+                if error not in found_errors:
+                    found_errors.append(error)
+                    output_string += error + " costume: " + str(costume) + "\n"
+
+            if not age_impression.has_node(costume.dominant_age_impression):
+                error = costume.dominant_age_impression + " could not be found in age_impression taxonomie. "
+                is_current_costume_invalid = True
+                if error not in found_errors:
+                    found_errors.append(error)
+                    output_string += error + " costume: " + str(costume) + "\n"
+
+            for _genre in costume.genres:
+                if not genre.has_node(_genre):
+                    error = _genre + " could not be found in genre taxonomie. "
+                    is_current_costume_invalid = True
+                    is_current_costume_invalid = True
+                    if error not in found_errors:
+                        found_errors.append(error)
+                        output_string += error + " costume: " + str(costume) + "\n"
+            
+            if is_current_costume_invalid:
+                invalid_costumes += 1
+                is_current_costume_invalid = False
+
+        with open(file, "w+") as file_object:
+            file_object.write(output_string)
+
+        Logger.normal(str(invalid_costumes) + " / " + str(len(costumes)) + " are invalid")
+        Logger.normal("Validation output has been written to " + file)
+
+        return
