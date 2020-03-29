@@ -88,7 +88,7 @@ def parse():
     # Check which command is being used and run it
     if args.validate_database is not None:
         validate_database(args.validate_database)
-    elif args.others is not None:
+    elif args.old_main is not None:
         old_main()
     else:
         Logger.normal("Wrong command. Please run -h for see available commands.")
