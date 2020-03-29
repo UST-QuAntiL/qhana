@@ -124,8 +124,8 @@ def old_main() -> None:
 
     
     #built a similarity matrix
-    simi =Similarities.only_costumes(costumes)
-    similarities = simi.create_matrix_limited(0,3)
+    simi =Similarities.only_costumes(costumes,True)
+    similarities = simi.create_matrix_limited(0,70)
     Logger.normal("similarities")
     Logger.normal(str(similarities))
     costumes_simi: List[Costume] = simi.get_list_costumes()
@@ -187,7 +187,7 @@ def old_main() -> None:
     
 
     # clustering with optics
-    clust = OPTICS(min_samples=3, xi=.05, min_cluster_size=.05)
+    clust = OPTICS(min_samples=5, xi=.05, min_cluster_size=.05)
     clust.fit(pos)
 
     # plot things 

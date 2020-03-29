@@ -14,27 +14,34 @@ class Similarities():
     def __init__(
         self,
         costumeComparer: CostumeComparer = CostumeComparer(),
-        costumes: List[Costume] = []
+        costumes: List[Costume] = [],
+        bool_memory: bool = False
     ) -> None:
         self.__costumeComparer = costumeComparer
         self.__invalid_costumes_index: List[int] = []
         self.__valid_costumes_index: List[int] = []
         self.__last_sequenz: List[int] = []
+        self.__bool_memory = bool_memory
         if len(costumes) == 0:
             db = Database()
             db.open()
             self.__costumes = db.get_costumes()
         else:
             self.__costumes = costumes
+        if self.__bool_memory:
+            self.__memory = np.eye(len(self.__costumes),len(self.__costumes)) + np.ones((len(self.__costumes),len(self.__costumes))) * (-1.0)
+            Logger.warning("Memory in Similarity Class was activated. This needs {0} Bytes ({1} MB) more memory space.".format(round(self.__memory.size* self.__memory.itemsize,0),round(self.__memory.size/1000000* self.__memory.itemsize,2)))
+        else:
+            Logger.warning("Memory in Similarity Class was not activated.")
         return
     @classmethod
-    def only_costumes(self, costumes: List[Costume]= []):
+    def only_costumes(self, costumes: List[Costume]= [], bool_memory: bool = False):
         costumeComparer: CostumeComparer = CostumeComparer()
-        return Similarities(costumeComparer,costumes)
+        return Similarities(costumeComparer,costumes, bool_memory)
     @classmethod
-    def only_costumeComparer(self, costumeComparer: CostumeComparer = CostumeComparer()):
+    def only_costumeComparer(self, costumeComparer: CostumeComparer = CostumeComparer(),bool_memory: bool = False):
         costumes: List[Costume] = []
-        return Similarities(costumeComparer,costumes)
+        return Similarities(costumeComparer,costumes,bool_memory)
 
     # getter methodes
     # get invalid_costumes_index
@@ -49,6 +56,16 @@ class Similarities():
     # get List of Costumes
     def get_list_costumes(self) -> List[Costume]:
         return self.__costumes
+    # get bool memory
+    def get_bool_memory(self) -> bool:
+        return self.__bool_memory
+    # get memory
+    def get_memory(self) -> np.matrix:
+        if self.__bool_memory:
+            return self.__memory
+        else:
+            Logger.error("No Memory initialized. The Programm will be quit know.")
+            quit()
 
     # create limited similarity matrix
     def create_matrix_limited(self, first:int,last:int) -> np.matrix:
@@ -104,10 +121,24 @@ class Similarities():
         for i in range(len(costumes_index)):
             for j in range(len(costumes_index)):
                 if j < i:
-                    comparedResult = self.__costumeComparer.compare_distance(costumes[costumes_index[i]], costumes[costumes_index[j]])
-                    Logger.debug("compared result from costume {0} with costume {1} is {2} ".format(str(costumes_index[i]),str(costumes_index[j]),str(round(comparedResult, 2))))
-                    similarity_matrix[i,j] = comparedResult
-                    similarity_matrix[j,i] = comparedResult
+                    if not self.__bool_memory:
+                        comparedResult = self.__costumeComparer.compare_distance(costumes[costumes_index[i]], costumes[costumes_index[j]])
+                        Logger.debug("compared result from costume {0} with costume {1} is {2} (No Memory initialized).".format(str(costumes_index[i]),str(costumes_index[j]),str(round(comparedResult, 2))))
+                        similarity_matrix[i,j] = comparedResult
+                        similarity_matrix[j,i] = comparedResult
+                    else:
+                        if self.__memory[costumes_index[i],costumes_index[j]] < -0.5:
+                            comparedResult = self.__costumeComparer.compare_distance(costumes[costumes_index[i]], costumes[costumes_index[j]])
+                            Logger.debug("Not Recovered from Memory: compared result from costume {0} with costume {1} is {2} (Memory initalized).".format(str(costumes_index[i]),str(costumes_index[j]),str(round(comparedResult, 2))))
+                            similarity_matrix[i,j] = comparedResult
+                            similarity_matrix[j,i] = comparedResult
+                            self.__memory[costumes_index[i],costumes_index[j]] = comparedResult
+                            self.__memory[costumes_index[j],costumes_index[i]] = comparedResult
+                        else:
+                            comparedResult = self.__memory[costumes_index[i],costumes_index[j]]
+                            Logger.debug("    Recovered from Memory: compared result from costume {0} with costume {1} is {2} (Memory initialized).".format(str(costumes_index[i]),str(costumes_index[j]),str(round(comparedResult, 2))))
+                            similarity_matrix[i,j] = comparedResult
+                            similarity_matrix[j,i] = comparedResult
         return similarity_matrix
     # create similarity matrix for all valid costumes List
     def create_matrix_all(self) -> np.matrix:
