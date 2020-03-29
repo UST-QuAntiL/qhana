@@ -23,6 +23,7 @@ The following packages (including their dependencies) are needed and will be ins
 | matplotlib             | https://anaconda.org/conda-forge/matplotlib          |
 | simplejson             | https://anaconda.org/anaconda/simplejson             |
 | colorama               | https://anaconda.org/anaconda/colorama               |
+| scikit-learn           | https://anaconda.org/anaconda/scikit-learn           |
 
 ## Access to the database
 In order to get access to the database, one has to create a *config.ini* file such as:
