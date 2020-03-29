@@ -93,6 +93,12 @@ class Logger():
         return
 
     @staticmethod
+    def normal(message: str) -> None:
+        if int(Logger.level) >= 1:
+            Logger.log(message, LogLevel.Debug)
+        return
+
+    @staticmethod
     def error(message: str) -> None:
         if int(Logger.level) >= 1:
             Logger.log(message, LogLevel.Errors)
