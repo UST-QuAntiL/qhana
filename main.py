@@ -20,6 +20,8 @@ import matplotlib.gridspec as gridspec
 from backend.similarities import Similarities
 from typing import List
 import sys
+from backend.timer import Timer
+import backend.scaling as scal
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -122,67 +124,36 @@ def old_main() -> None:
     #print(costumes[second])
     #print("Compared result: " + str(round(comparedResult, 2)))
 
-    
-    #built a similarity matrix
+    # built timer object
+    check: Timer = Timer()    
+
+    # built a similarity matrix
     simi =Similarities.only_costumes(costumes,True)
-    similarities = simi.create_matrix_limited(0,70)
+    check.start()
+    similarities = simi.create_matrix_limited(0,8)
+    check.stop()
     Logger.normal("similarities")
     Logger.normal(str(similarities))
     costumes_simi: List[Costume] = simi.get_list_costumes()
-    #for i in simi.get_last_sequenz():
-    #    print("index="+str(i)+ " : " +str(costumes_simi[i]))
+    for i in simi.get_last_sequenz():
+        print("index="+str(i)+ " : " +str(costumes_simi[i]))
     
+    
+
     # Multidimensional scaling
-    seed = np.random.RandomState(seed=3)
-    mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed,
-                   dissimilarity="precomputed", n_jobs=1)
-    pos = mds.fit(similarities).embedding_
+    #Object
+    mds = scal.ScalingFactory.create(scal.ScalingType.mds)
+    mds.set_max_iter(3000)
+    mds.set_eps(1e-9)
+    mds.set_dissimilarity("precomputed")
+    mds.set_dimensions(2)
+    pos = mds.scaling(similarities)
     Logger.normal("Position eukl.")
     Logger.normal(str(pos))
-    stress = mds.fit(similarities).stress_
+    stress = mds.stress_level()
     Logger.normal("Stress Level should be between 0 and 0.15")
-    Logger.normal("Stress: " + str(round(stress, 4)))
-    # plot multidimensional scaling positions
-    fig = plt.figure(1)
-    ax = plt.axes([0., 0., 1., 1.])
-
-    s = 100
-    plt.scatter(pos[:, 0], pos[:, 1], color='turquoise', s=s, lw=0, label='MDS')
-    plt.legend(scatterpoints=1, loc='best', shadow=False)
-    EPSILON = np.finfo(np.float32).eps
-    #print("similarities.max")
-    #print(similarities.max())
-    similarities = similarities.max() / (similarities + EPSILON) * 100
-    #print("similarities after max/(sim+eps)*100")
-    #print(similarities)
-    np.fill_diagonal(similarities, 0)
-    # Plot the edges
-    #start_idx, end_idx = np.where(pos)
-    # a sequence of (*line0*, *line1*, *line2*), where::
-    #            linen = (x0, y0), (x1, y1), ... (xm, ym)
-    segments = [[pos[i, :], pos[j, :]]
-                for i in range(len(pos)) for j in range(len(pos))]
-    #print("segments")
-    #print(segments)
-    values = np.abs(similarities)
-    #print("Values")
-    #print(values)
-    lc = LineCollection(segments,
-                    zorder=0, cmap=plt.cm.Blues,
-                    norm=plt.Normalize(0, values.max()))
-    lc.set_array(similarities.flatten())
-    lc.set_linewidths(np.full(len(segments), 0.5))
-    ax.add_collection(lc)
-    # describe points
-    style = dict(size=7, color='black')
-    count: int = 0
-    for i in simi.get_last_sequenz():
-        txt = str(i)+". " +str(costumes_simi[i])
-        txt = re.sub("(.{20})", "\\1-\n", str(txt), 0, re.DOTALL)
-        plt.annotate(txt, (pos[count, 0], pos[count, 1]), **style)
-        count += 1
-    #plt.ylim((-0.6,0.6))
-    #plt.xlim((-0.5,0.5))
+    Logger.normal("Stress: " + str(stress))
+    mds.d2_plot(simi.get_last_sequenz(),simi.get_list_costumes())
 
     
 
