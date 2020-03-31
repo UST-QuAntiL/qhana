@@ -22,6 +22,9 @@ from typing import List
 import sys
 from backend.timer import Timer
 import backend.scaling as scal
+import backend.clustering as clu
+import backend.dataForPlots as dfp
+import backend.plotsForCluster as pfc
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -109,11 +112,12 @@ def print_costumes(costumes: [Costume]) -> None:
 
 def old_main() -> None:
     # Establish connection to db
+    
     db = Database()
     db.open()
 
     costumes = db.get_costumes()
-    costumeComparer = CostumeComparer()
+    #costumeComparer = CostumeComparer()
 
     #print("Hier 1")
     #first = len(costumes)-1
@@ -130,13 +134,13 @@ def old_main() -> None:
     # built a similarity matrix
     simi =Similarities.only_costumes(costumes,True)
     check.start()
-    similarities = simi.create_matrix_limited(0,8)
+    similarities = simi.create_matrix_limited(0,6)
     check.stop()
     Logger.normal("similarities")
     Logger.normal(str(similarities))
     costumes_simi: List[Costume] = simi.get_list_costumes()
     for i in simi.get_last_sequenz():
-        print("index="+str(i)+ " : " +str(costumes_simi[i]))
+        Logger.normal("index="+str(i)+ " : " +str(costumes_simi[i]))
     
     
 
@@ -157,67 +161,65 @@ def old_main() -> None:
 
     
 
+
     # clustering with optics
-    clust = OPTICS(min_samples=5, xi=.05, min_cluster_size=.05)
-    clust.fit(pos)
+    new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
+    labels_self = new_cluster.create_cluster(pos)
+    print(type(labels_self))
+    
+    """
+        Logger.error("--------Tests-------sollten noch getestet werden ---------------")
+        new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
+    
+        new_cluster.set_min_samples()
+        new_cluster.set_max_eps()
+        new_cluster.set_metric()
+        new_cluster.set_p()
+        new_cluster.set_metric_params()
+        new_cluster.set_cluster_method()
+        new_cluster.set_eps()
+        new_cluster.set_xi()
+        new_cluster.set_predecessor_correction()
+        new_cluster.set_min_cluster_size()
+        new_cluster.set_algorithm()
+        new_cluster.set_leaf_size()
+        new_cluster.set_n_jobs()
+
+        Logger.error("Comparing with getter methodes")
+        print(new_cluster.get_min_samples() == new_cluster.get_cluster_instance().min_samples)
+        print(new_cluster.get_max_eps()== new_cluster.get_cluster_instance().max_eps)
+        print(new_cluster.get_metric()== new_cluster.get_cluster_instance().metric)
+        print(new_cluster.get_p()== new_cluster.get_cluster_instance().p)
+        print(new_cluster.get_metric_params()== new_cluster.get_cluster_instance().metric_params)
+        print(new_cluster.get_cluster_method()== new_cluster.get_cluster_instance().cluster_method)
+        print(new_cluster.get_eps()== new_cluster.get_cluster_instance().eps)
+        print(new_cluster.get_xi()== new_cluster.get_cluster_instance().xi)
+        print(new_cluster.get_predecessor_correction()== new_cluster.get_cluster_instance().predecessor_correction)
+        print(new_cluster.get_min_cluster_size()== new_cluster.get_cluster_instance().min_cluster_size)
+        print(new_cluster.get_algorithm()== new_cluster.get_cluster_instance().algorithm)
+        print(new_cluster.get_leaf_size()== new_cluster.get_cluster_instance().leaf_size)
+        print(new_cluster.get_n_jobs()== new_cluster.get_cluster_instance().n_jobs)
+
+        print(new_cluster.get_cluster_instance().min_samples)
+        quit()
+    """
+    # dfp_instance
+    dfp_instance = dfp.DataForPlots(similarities, simi.get_last_sequenz(),simi.get_list_costumes(),pos, labels_self )
 
     # plot things 
+
+    plt.figure(figsize=(10, 10))
+    G = gridspec.GridSpec(3, 3)
+    ax1 = plt.subplot(G[0, 0])
+    ax2 = plt.subplot(G[0, 1])
+    ax3 = plt.subplot(G[0, 2])
     
-    labels_050 = cluster_optics_dbscan(reachability=clust.reachability_,
-                                   core_distances=clust.core_distances_,
-                                   ordering=clust.ordering_, eps=0.5)
-    labels_200 = cluster_optics_dbscan(reachability=clust.reachability_,
-                                   core_distances=clust.core_distances_,
-                                   ordering=clust.ordering_, eps=2)
-
-    space = np.arange(len(pos))
-    reachability = clust.reachability_[clust.ordering_]
-    labels = clust.labels_[clust.ordering_]
-
-    plt.figure(figsize=(10, 7))
-    G = gridspec.GridSpec(2, 3)
-    ax1 = plt.subplot(G[0, :])
-    ax2 = plt.subplot(G[1, 0])
-    ax3 = plt.subplot(G[1, 1])
-    ax4 = plt.subplot(G[1, 2])
-
-    # Reachability plot
-    colors = ['g.', 'r.', 'b.', 'y.', 'c.']
-    for klass, color in zip(range(0, 5), colors):
-        Xk = space[labels == klass]
-        Rk = reachability[labels == klass]
-        ax1.plot(Xk, Rk, color, alpha=0.3)
-    ax1.plot(space[labels == -1], reachability[labels == -1], 'k.', alpha=0.3)
-    ax1.plot(space, np.full_like(space, 2., dtype=float), 'k-', alpha=0.5)
-    ax1.plot(space, np.full_like(space, 0.5, dtype=float), 'k-.', alpha=0.5)
-    ax1.set_ylabel('Reachability (epsilon distance)')
-    ax1.set_title('Reachability Plot')
-
-    # OPTICS
-    colors = ['g.', 'r.', 'b.', 'y.', 'c.']
-    for klass, color in zip(range(0, 5), colors):
-        Xk = pos[clust.labels_ == klass]
-        ax2.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.3)
-    ax2.plot(pos[clust.labels_ == -1, 0], pos[clust.labels_ == -1, 1], 'k+', alpha=0.1)
-    ax2.set_title('Automatic Clustering\nOPTICS')
-
-    # DBSCAN at 0.5
-    colors = ['g', 'greenyellow', 'olive', 'r', 'b', 'c']
-    for klass, color in zip(range(0, 6), colors):
-        Xk = pos[labels_050 == klass]
-        ax3.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.3, marker='.')
-    ax3.plot(pos[labels_050 == -1, 0], pos[labels_050 == -1, 1], 'k+', alpha=0.1)
-    ax3.set_title('Clustering at 0.5 epsilon cut\nDBSCAN')
-
-    # DBSCAN at 2.
-    colors = ['g.', 'm.', 'y.', 'c.']
-    for klass, color in zip(range(0, 4), colors):
-        Xk = pos[labels_200 == klass]
-        ax4.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.3)
-    ax4.plot(pos[labels_200 == -1, 0], pos[labels_200 == -1, 1], 'k+', alpha=0.1)
-    ax4.set_title('Clustering at 2.0 epsilon cut\nDBSCAN')
+    pfc.PlotsForCluster.similarity_2d_plot(dfp_instance, ax1)
+    pfc.PlotsForCluster.scaling_2d_plot(dfp_instance, ax2)
+    pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax3)
 
     plt.tight_layout()
+    
     plt.show()
     return
 

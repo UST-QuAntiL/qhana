@@ -96,7 +96,7 @@ class MultidimensionalScaling(Scaling):
         random_state: np.random.RandomState =  np.random.RandomState(seed=3),
         dissimilarity: str = "euclidean",
         n_jobs: int = 1
-    ):
+    ) -> None :
         self.__stress: float = 0
         self.__bool_create_mds: bool = False
         self.__similarity_matrix: np.matrix
