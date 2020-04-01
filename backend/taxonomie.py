@@ -34,6 +34,7 @@ class Taxonomie(Singleton):
 
         # these are the taxonomies for the extended model
         self.job: Graph = None
+        self.times_of_day: Graph = None
 
         self.all_taxonomie_name = "Taxonomie"
         self.all: Graph = None
@@ -67,7 +68,8 @@ class Taxonomie(Singleton):
             Attribute.gender: self.graph_directory + "/" + Attribute.gender.name + ".json",
             Attribute.age_impression: self.graph_directory + "/" + Attribute.age_impression.name + ".json",
             Attribute.genre: self.graph_directory + "/" + Attribute.genre.name + ".json",
-            Attribute.job: self.graph_directory + "/" + Attribute.job.name + ".json"
+            Attribute.job: self.graph_directory + "/" + Attribute.job.name + ".json",
+            Attribute.times_of_day: self.graph_directory + "/" + Attribute.times_of_day.name + ".json"
         }
 
         for attribute in filenames:
@@ -95,6 +97,7 @@ class Taxonomie(Singleton):
         self.age_impression = self.database.get_age_impression()
         self.genre = self.database.get_genre()
         self.job = self.database.get_job()
+        self.times_of_day = self.database.get_times_of_day()
         self.database.close()
 
         #self.all = self.merge(
@@ -151,6 +154,7 @@ class Taxonomie(Singleton):
         self.safe_to_file(Attribute.age_impression)
         self.safe_to_file(Attribute.genre)
         self.safe_to_file(Attribute.job)
+        self.safe_to_file(Attribute.times_of_day)
 
         Logger.normal("All taxonomies have been saved as json to " + self.graph_directory)
 
@@ -166,6 +170,7 @@ class Taxonomie(Singleton):
         self.load_from_file(Attribute.age_impression)
         self.load_from_file(Attribute.genre)
         self.load_from_file(Attribute.job)
+        self.load_from_file(Attribute.times_of_day)
         return
 
     # Gets the graph corresponding to the attribute
@@ -186,6 +191,8 @@ class Taxonomie(Singleton):
             return self.genre
         elif attribute == Attribute.job:
             return self.job
+        elif attribute == Attribute.times_of_day:
+            return self.times_of_day
         else:
             raise Exception("Unkown attribute \"" + str(attribute) + "\"")
 
@@ -207,6 +214,8 @@ class Taxonomie(Singleton):
             self.genre = graph
         elif attribute == Attribute.job:
             self.job = graph
+        elif attribute == Attribute.times_of_day:
+            self.times_of_day = graph
         else:
             raise Exception("Unkown attribute \"" + attribute + "\"")
         return
@@ -256,6 +265,7 @@ class Taxonomie(Singleton):
         self.plot(Attribute.age_impression, display)
         self.plot(Attribute.genre, display)
         self.plot(Attribute.job, display)
+        self.plot(Attribute.times_of_day, display)
 
         Logger.normal("All taxonomies have been saved as dot and svg to " + self.plot_directory)
         return

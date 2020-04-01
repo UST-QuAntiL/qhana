@@ -12,3 +12,4 @@ class Attribute(enum.Enum):
 
     # these are the attributes for the extended model
     job = 8
+    times_of_day = 9

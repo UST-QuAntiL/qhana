@@ -145,6 +145,9 @@ class Database(Singleton):
     def get_job(self) -> Graph:
         return self.get_graph("rollenberufdomaene")
 
+    def get_times_of_day(self) -> Graph:
+        return self.get_graph("tageszeitdomaene")
+
     # Returns a list of all costumes in the database
     # NOTE: Currently there are clones of costumes but I dont know why
     # NOTE: Mybe b.c. there are several costume entries in table Kostuem
