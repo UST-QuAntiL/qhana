@@ -106,10 +106,11 @@ class Database(Singleton):
             graph.add_edge(parent, child)
         
         if root_node is None:
-            raise Exception("No root node found in color taxonomie")
+            Logger.error("No root node found in taxonomie")
+            raise Exception("No root node found in taxonomie")
 
         if nx.algorithms.tree.recognition.is_tree(graph) == False:
-            raise Exception(name + " is not a tree")
+            Logger.warning(name + " is not a tree")
         
         return graph
 
@@ -141,6 +142,40 @@ class Database(Singleton):
 
     def get_genre(self) -> Graph:
         return self.get_graph("genredomaene")
+
+    def get_job(self) -> Graph:
+        return self.get_graph("rollenberufdomaene")
+
+    def get_times_of_day(self) -> Graph:
+        return self.get_graph("tageszeitdomaene")
+
+    def get_times_of_play(self) -> Graph:
+        return self.get_graph("spielzeitdomaene")
+
+    def get_role(self) -> Graph:
+        return self.get_graph("funktionsdomaene")
+
+    def get_location_occurrence(self) -> Graph:
+        # Creates a graph of gender as there
+        # is no taxonomie in the database
+        graph = nx.DiGraph()
+        graph.add_node("Ortsbegebenheit")
+        graph.add_node("drinnen")
+        graph.add_node("draußen")
+        graph.add_node("drinnen und draußen")
+        return graph
+
+    def get_material(self) -> Graph:
+        return self.get_graph("materialdomaene")
+
+    def get_type_of_basic_element(self) -> Graph:
+        return self.get_graph("basiselementdomaene")
+
+    def get_design(self) -> Graph:
+        return self.get_graph("designdomaene")
+
+    def get_color_concept(self) -> Graph:
+        return self.get_graph("farbkonzeptdomaene") 
 
     # Returns a list of all costumes in the database
     # NOTE: Currently there are clones of costumes but I dont know why

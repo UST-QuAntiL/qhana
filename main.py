@@ -75,6 +75,17 @@ def parse():
         type=str
     )
 
+    # Add parser for create_taxonomies
+    validate_database_parser = commands.add_parser('create_taxonomies',
+        description='creates the taxonomies from the database (svg, json and dot)')
+    validate_database_parser.add_argument('-o', '--output_directory',
+        dest='output_directory',
+        help='specifies the directory for the output [default: /taxonomies]',
+        default=None,
+        required=False,
+        type=str
+    )
+
     # Add parser for others (just the other main routine)
     # This should not be needed in the future when
     # all commands are real commands with their own
@@ -95,6 +106,8 @@ def parse():
         validate_database(args.validate_database)
     elif args.old_main is not None:
         old_main()
+    elif args.create_taxonomies is not None:
+        create_taxonomies(args.create_taxonomies)
     else:
         Logger.normal("Wrong command. Please run -h for see available commands.")
 
@@ -104,6 +117,13 @@ def validate_database(command_args):
     db = Database()
     db.open()
     db.validate_all_costumes(command_args.output_file)
+    return
+
+def create_taxonomies(command_args):
+    tax = Taxonomie()
+    tax.load_all_from_database()
+    tax.safe_all_to_file()
+    tax.plot_all(display=False)
     return
 
 def print_costumes(costumes: [Costume]) -> None:
