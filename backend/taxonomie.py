@@ -11,6 +11,7 @@ from networkx.readwrite import json_graph
 import simplejson as json
 from .attribute import Attribute
 from .singleton import Singleton
+from .logger import Logger
 
 """
 Represents all taxonomies from kostuem repository
@@ -19,8 +20,10 @@ class Taxonomie(Singleton):
     def __init__(self) -> None:
         self.database: Database = Database()
         self.plot_datatype: str = "svg"
-        self.plot_directory: str = "plots"
-        self.graph_directory: str = "graphs"
+        self.plot_directory: str = "taxonomies"     # directory for svg and dot files
+        self.graph_directory: str = "taxonomies"    # directory for json files
+
+        # these are the taxonomies for the simple model
         self.color: Graph = None
         self.traits: Graph = None
         self.condition: Graph = None
@@ -28,6 +31,10 @@ class Taxonomie(Singleton):
         self.gender: Graph = None
         self.age_impression: Graph = None
         self.genre: Graph = None
+
+        # these are the taxonomies for the extended model
+        self.job: Graph = None
+
         self.all_taxonomie_name = "Taxonomie"
         self.all: Graph = None
         return
@@ -59,7 +66,8 @@ class Taxonomie(Singleton):
             Attribute.stereotype: self.graph_directory + "/" + Attribute.stereotype.name + ".json",
             Attribute.gender: self.graph_directory + "/" + Attribute.gender.name + ".json",
             Attribute.age_impression: self.graph_directory + "/" + Attribute.age_impression.name + ".json",
-            Attribute.genre: self.graph_directory + "/" + Attribute.genre.name + ".json"
+            Attribute.genre: self.graph_directory + "/" + Attribute.genre.name + ".json",
+            Attribute.job: self.graph_directory + "/" + Attribute.job.name + ".json"
         }
 
         for attribute in filenames:
@@ -69,9 +77,11 @@ class Taxonomie(Singleton):
         
         if db_connection_needed == True:
             self.load_all_from_database()
+            Logger.debug("Load taxonomies from database")
         else:
             for attribute in filenames:
                 self.load_from_file(attribute)
+                Logger.debug("Load taxonomies from file")
         return
 
     # Loads the taxonomies from database
@@ -84,6 +94,7 @@ class Taxonomie(Singleton):
         self.gender = self.database.get_gender()
         self.age_impression = self.database.get_age_impression()
         self.genre = self.database.get_genre()
+        self.job = self.database.get_job()
         self.database.close()
 
         #self.all = self.merge(
@@ -139,6 +150,10 @@ class Taxonomie(Singleton):
         self.safe_to_file(Attribute.gender)
         self.safe_to_file(Attribute.age_impression)
         self.safe_to_file(Attribute.genre)
+        self.safe_to_file(Attribute.job)
+
+        Logger.normal("All taxonomies have been saved as json to " + self.graph_directory)
+
         return
 
     # Loads all graphs to data files
@@ -150,6 +165,7 @@ class Taxonomie(Singleton):
         self.load_from_file(Attribute.gender)
         self.load_from_file(Attribute.age_impression)
         self.load_from_file(Attribute.genre)
+        self.load_from_file(Attribute.job)
         return
 
     # Gets the graph corresponding to the attribute
@@ -168,6 +184,8 @@ class Taxonomie(Singleton):
             return self.age_impression
         elif attribute == Attribute.genre:
             return self.genre
+        elif attribute == Attribute.job:
+            return self.job
         else:
             raise Exception("Unkown attribute \"" + str(attribute) + "\"")
 
@@ -187,6 +205,8 @@ class Taxonomie(Singleton):
             self.age_impression = graph
         elif attribute == Attribute.genre:
             self.genre = graph
+        elif attribute == Attribute.job:
+            self.job = graph
         else:
             raise Exception("Unkown attribute \"" + attribute + "\"")
         return
@@ -235,4 +255,7 @@ class Taxonomie(Singleton):
         self.plot(Attribute.gender, display)
         self.plot(Attribute.age_impression, display)
         self.plot(Attribute.genre, display)
+        self.plot(Attribute.job, display)
+
+        Logger.normal("All taxonomies have been saved as dot and svg to " + self.plot_directory)
         return
