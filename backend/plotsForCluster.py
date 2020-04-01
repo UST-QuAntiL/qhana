@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import re
 from matplotlib.collections import LineCollection
 from backend.logger import Logger, LogLevel
+import pandas as pd
 
 class PlotsForCluster():
 
@@ -54,10 +55,12 @@ class PlotsForCluster():
         style = dict(size=7, color='black')
         count: int = 0
         for i in last_sequenz:
-            txt = str(i)+". " +str(costumes[i])
+            #txt = str(i)+". " +str(costumes[i])
+            txt = str(i)+". "
             txt = re.sub("(.{20})", "\\1-\n", str(txt), 0, re.DOTALL)
             subplot.annotate(txt, (position_matrix[count, 0], position_matrix[count, 1]), **style)
             count += 1
+        subplot.set_title('Multidimension Scaling \n')
         #subplot.ylim((-0.6,0.6))
         #subplot.xlim((-0.5,0.5))
         #subplot.draw()
@@ -67,7 +70,7 @@ class PlotsForCluster():
     def cluster_2d_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
         #similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
         position_matrix: np.matrix = dataforplots.get_position_matrix()
-        #last_sequenz: List[int] = dataforplots.get_sequenz()
+        sequenz: List[int] = dataforplots.get_sequenz()
         #costumes: List[Costume] = dataforplots.get_list_costumes()
         labels: np.matrix = dataforplots.get_labels()
 
@@ -75,12 +78,20 @@ class PlotsForCluster():
             Logger.error("Dimension of Position Matrix is not 2!")
             raise Exception("Dimension of Position Matrix is not 2!")
 
-        colors = ['g.', 'r.', 'b.', 'y.', 'c.']
+        colors = ['go', 'ro', 'bo', 'yo', 'co']
         for klass, color in zip(range(0, 5), colors):
             Xk = position_matrix[labels == klass]
-            subplot.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.3)
+            subplot.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.5)
         subplot.plot(position_matrix[labels == -1, 0], position_matrix[labels == -1, 1], 'k+', alpha=0.1)
         subplot.set_title('Automatic Clustering\nOPTICS')
+        count: int = 0
+        style = dict(size=7,color='black')
+        for i in sequenz:
+            #txt = str(i)+". " +str(costumes[i])
+            txt = str(i)+". "
+            txt = re.sub("(.{20})", "\\1-\n", str(txt), 0, re.DOTALL)
+            subplot.annotate(txt, (position_matrix[count, 0], position_matrix[count, 1]), **style)
+            count += 1
 
     @staticmethod
     def similarity_2d_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
@@ -89,11 +100,56 @@ class PlotsForCluster():
         sequenz: List[int] = dataforplots.get_sequenz()
         #costumes: List[Costume] = dataforplots.get_list_costumes()
         #labels: np.matrix = dataforplots.get_labels()
-
         
         cax = subplot.matshow(similarity_matrix, interpolation='nearest')
         #subplot.grid(True)
-        subplot.set_title("Similarity Matrix")
-        plt.xticks(range(len(similarity_matrix)), sequenz, rotation=90)
-        plt.yticks(range(len(similarity_matrix)), sequenz)
-        plt.colorbar(cax , ticks=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+        subplot.set_title("Similarity Matrix \n")
+        subplot.set_xticks(range(len(similarity_matrix)))
+        subplot.set_xticklabels(sequenz, rotation=90)
+        subplot.set_yticks(range(len(similarity_matrix)))
+        subplot.set_yticklabels(sequenz)
+
+        #plt.colorbar(cax , ticks=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+
+
+    @staticmethod
+    def costume_table_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
+        #similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
+        #position_matrix: np.matrix = dataforplots.get_position_matrix()
+        sequenz: List[int] = dataforplots.get_sequenz()
+        costumes: List[Costume] = dataforplots.get_list_costumes()
+        #labels: np.matrix = dataforplots.get_labels()
+        data: [] = []
+        dominant_color: str = ""
+        dominant_traits: [str] = []
+        dominant_condition: str = ""
+        stereotypes: [str] = []
+        gender: str = ""
+        dominant_age_impression: str = ""
+        genres: [str] = []
+        costume: int = 0
+        for i in sequenz:
+            costume = i
+            dominant_color = costumes[i].dominant_color
+            dominant_traits = costumes[i].dominant_traits
+            dominant_condition= costumes[i].dominant_condition
+            stereotypes = costumes[i].stereotypes
+            gender = costumes[i].gender
+            dominant_age_impression = costumes[i].dominant_age_impression
+            genres = costumes[i].genres
+            data.append([costume,dominant_color,dominant_traits, dominant_condition, stereotypes, gender, dominant_age_impression, genres])
+        df = pd.DataFrame(data, columns=['Nr.','Farben','Charaktereigenschaft', 'Zustand', 'Stereotyp', 'Geschlecht', 'Alterseindruck', 'Genre' ])
+        
+        
+        cell_text = []
+        for row in range(len(df)):
+            #print(row)
+            #print(df.iloc[row])
+            cell_text.append(df.iloc[row])
+        
+
+        table = subplot.table(cellText=cell_text, colLabels=df.columns,colWidths=[0.025,0.112, 0.16, 0.08,0.40,0.07,0.1,0.30],cellLoc="center", loc='center')
+        table.auto_set_font_size(False)
+        table.set_fontsize(8)
+        #plt.subplots_adjust(right=0.8)
+        subplot.axis('off')

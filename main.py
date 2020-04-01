@@ -134,13 +134,13 @@ def old_main() -> None:
     # built a similarity matrix
     simi =Similarities.only_costumes(costumes,True)
     check.start()
-    similarities = simi.create_matrix_limited(0,6)
+    similarities = simi.create_matrix_limited(0,40)
     check.stop()
     Logger.normal("similarities")
     Logger.normal(str(similarities))
-    costumes_simi: List[Costume] = simi.get_list_costumes()
-    for i in simi.get_last_sequenz():
-        Logger.normal("index="+str(i)+ " : " +str(costumes_simi[i]))
+    #costumes_simi: List[Costume] = simi.get_list_costumes()
+    #for i in simi.get_last_sequenz():
+    #    Logger.normal("index="+str(i)+ " : " +str(costumes_simi[i]))
     
     
 
@@ -150,22 +150,21 @@ def old_main() -> None:
     mds.set_max_iter(3000)
     mds.set_eps(1e-9)
     mds.set_dissimilarity("precomputed")
-    mds.set_dimensions(2)
+    mds.set_dimensions(10)
     pos = mds.scaling(similarities)
     Logger.normal("Position eukl.")
     Logger.normal(str(pos))
     stress = mds.stress_level()
     Logger.normal("Stress Level should be between 0 and 0.15")
     Logger.normal("Stress: " + str(stress))
-    mds.d2_plot(simi.get_last_sequenz(),simi.get_list_costumes())
+    #mds.d2_plot(simi.get_last_sequenz(),simi.get_list_costumes())
 
     
 
 
     # clustering with optics
     new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
-    labels_self = new_cluster.create_cluster(pos)
-    print(type(labels_self))
+    labels = new_cluster.create_cluster(pos)
     
     """
         Logger.error("--------Tests-------sollten noch getestet werden ---------------")
@@ -204,21 +203,23 @@ def old_main() -> None:
         quit()
     """
     # dfp_instance
-    dfp_instance = dfp.DataForPlots(similarities, simi.get_last_sequenz(),simi.get_list_costumes(),pos, labels_self )
+    dfp_instance = dfp.DataForPlots(similarities, simi.get_last_sequenz(),simi.get_list_costumes(),pos, labels )
 
     # plot things 
 
     plt.figure(figsize=(10, 10))
-    G = gridspec.GridSpec(3, 3)
+    G = gridspec.GridSpec(2, 3)
     ax1 = plt.subplot(G[0, 0])
     ax2 = plt.subplot(G[0, 1])
     ax3 = plt.subplot(G[0, 2])
+    ax4 = plt.subplot(G[1, :])
+
     
-    pfc.PlotsForCluster.similarity_2d_plot(dfp_instance, ax1)
     pfc.PlotsForCluster.scaling_2d_plot(dfp_instance, ax2)
     pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax3)
-
-    plt.tight_layout()
+    pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax4)
+    pfc.PlotsForCluster.similarity_2d_plot(dfp_instance, ax1)
+    #plt.tight_layout()
     
     plt.show()
     return
