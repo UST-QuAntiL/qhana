@@ -170,7 +170,7 @@ def old_main() -> None:
     mds.set_max_iter(3000)
     mds.set_eps(1e-9)
     mds.set_dissimilarity("precomputed")
-    mds.set_dimensions(10)
+    mds.set_dimensions(2)
     pos = mds.scaling(similarities)
     Logger.normal("Position eukl.")
     Logger.normal(str(pos))
