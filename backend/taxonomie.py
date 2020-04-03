@@ -14,333 +14,147 @@ from .singleton import Singleton
 from .logger import Logger
 
 """
-Represents all taxonomies from kostuem repository
+Represents a taxonomie
 """
-class Taxonomie(Singleton):
-    def __init__(self) -> None:
-        self.database: Database = Database()
-        self.plot_datatype: str = "svg"
-        self.plot_directory: str = "taxonomies"     # directory for svg and dot files
-        self.graph_directory: str = "taxonomies"    # directory for json files
-
-        # these are the taxonomies for the simple model
-        self.color: Graph = None
-        self.traits: Graph = None
-        self.condition: Graph = None
-        self.stereotype: Graph = None
-        self.gender: Graph = None
-        self.age_impression: Graph = None
-        self.genre: Graph = None
-
-        # these are the taxonomies for the extended model
-        self.job: Graph = None
-        self.times_of_day: Graph = None
-        self.times_of_play: Graph = None
-        self.role: Graph = None
-        self.location_occurrence: Graph = None
-        self.material: Graph = None
-
-        # additional attributes
-        self.type_of_basic_element: Graph = None
-        self.design: Graph = None
-        self.color_concept: Graph = None
-
-        self.all_taxonomie_name = "Taxonomie"
-        self.all: Graph = None
+class Taxonomie:
+    """
+    Initializes the taxonomie given the attribute and the graph
+    """
+    def __init__(self, attribute: Attribute, graph: Graph) -> None:
+        self.attribute = Attribute
+        self.graph = graph
+        self.name = Attribute.get_name(attribute)
         return
 
-    def __del__(self) -> None:
-        del self.database
-        return
-    
-    def merge(self, root_name: str, *graphs: [Graph]) -> Graph:
-        graph = nx.DiGraph()
-        graph.add_node(root_name)
+    """
+    Creates a taxonomie object from the database given the attribute
+    """
+    @staticmethod
+    def create_from_db(attribute: Attribute, database: Database):
+        graph = None
 
-        for subgraph in graphs:
-            graph.add_edges_from(subgraph.edges(data = True))
-            graph.add_nodes_from(subgraph.nodes(data = True))
-            subgraph_root_name = [n for n,d in subgraph.in_degree() if d == 0][0]
-            graph.add_edge(root_name, subgraph_root_name)
-
-        return graph
-
-    # Loads all taxonomies from file. If one file does not exist
-    # load all taxonomies from database
-    def load_all(self) -> None:
-        db_connection_needed: bool = False
-        filenames: Dict[Attribute, str] = {
-            Attribute.color: self.graph_directory + "/" + Attribute.color.name + ".json",
-            Attribute.traits: self.graph_directory + "/" + Attribute.traits.name + ".json",
-            Attribute.condition: self.graph_directory + "/" + Attribute.condition.name + ".json",
-            Attribute.stereotype: self.graph_directory + "/" + Attribute.stereotype.name + ".json",
-            Attribute.gender: self.graph_directory + "/" + Attribute.gender.name + ".json",
-            Attribute.age_impression: self.graph_directory + "/" + Attribute.age_impression.name + ".json",
-            Attribute.genre: self.graph_directory + "/" + Attribute.genre.name + ".json",
-            Attribute.job: self.graph_directory + "/" + Attribute.job.name + ".json",
-            Attribute.times_of_day: self.graph_directory + "/" + Attribute.times_of_day.name + ".json",
-            Attribute.times_of_play: self.graph_directory + "/" + Attribute.times_of_play.name + ".json",
-            Attribute.role: self.graph_directory + "/" + Attribute.role.name + ".json",
-            Attribute.location_occurrence: self.graph_directory + "/" + Attribute.location_occurrence.name + ".json",
-            Attribute.material: self.graph_directory + "/" + Attribute.material.name + ".json",
-            Attribute.type_of_basic_element:self.graph_directory + "/" + Attribute.type_of_basic_element.name + ".json",
-            Attribute.design: self.graph_directory + "/" + Attribute.design.name + ".json",
-            Attribute.color_concept: self.graph_directory + "/" + Attribute.color_concept.name + ".json"
-        }
-
-        for attribute in filenames:
-            os.path.isfile(filenames[attribute])
-            if os.path.isfile(filenames[attribute]) == False:
-                db_connection_needed = True
-        
-        if db_connection_needed == True:
-            self.load_all_from_database()
-            Logger.debug("Load taxonomies from database")
+        # take the values from database if available
+        if Attribute.get_database_table_name(attribute) is not None:
+            graph = database.get_graph(Attribute.get_database_table_name(attribute))
+        # if not, create the graph here
         else:
-            for attribute in filenames:
-                self.load_from_file(attribute)
-                Logger.debug("Load taxonomies from file")
-        return
+            graph = nx.DiGraph()
+            if attribute == Attribute.geschlecht:
+                graph.add_node("Geschlecht")
+                graph.add_node("weiblich")
+                graph.add_node("weiblich")
+                graph.add_edge("Geschlecht", "weiblich")
+                graph.add_edge("Geschlecht", "männlich")
+            elif attribute == Attribute.ortsbegebenheit:
+                graph.add_node("Ortsbegebenheit")
+                graph.add_node("drinnen")
+                graph.add_node("draußen")
+                graph.add_node("drinnen und draußen")
+            elif attribute == Attribute.farbeindruck:
+                graph.add_node("Farbeindruck")
+                graph.add_node("glänzend")
+                graph.add_node("kräftig")
+                graph.add_node("neon")
+                graph.add_node("normal")
+                graph.add_node("pastellig")
+                graph.add_node("stumpf")
+                graph.add_node("transparent")
+            elif attribute == Attribute.koerperteil:
+                graph.add_node("Körperteil")
+                graph.add_node("Bein")
+                graph.add_node("Fuß")
+                graph.add_node("Ganzkörper")
+                graph.add_node("Hals")
+                graph.add_node("Hand")
+                graph.add_node("Kopf")
+                graph.add_node("Oberkörper")
+                graph.add_node("Taille")
+            elif attribute == Attribute.materialeindruck:
+                graph.add_node("Materialeindruck")
+                graph.add_node("anschmiegsam")
+                graph.add_node("fest")
+                graph.add_node("flauschig")
+                graph.add_node("fließend")
+                graph.add_node("künstlich")
+                graph.add_node("leicht")
+                graph.add_node("Oberkörper")
+                graph.add_node("natürlich")
+                graph.add_node("normal")
+                graph.add_node("schwer")
+                graph.add_node("steif")
+                graph.add_node("weich")
+            else:
+                Logger.error("\"" + str(attribute) + "\" is a unknown attribute")
+        
+        taxonomie = Taxonomie(attribute, graph)
+        return taxonomie
 
-    # Loads the taxonomies from database
-    def load_all_from_database(self) -> None:
-        self.database.open()
+    """
+    Creates a taxonomie object from the database given the attribute.
+    If file or directory is None, the default will be used 
+    """
+    @staticmethod
+    def create_from_json(attribute: Attribute, directory: str = "taxonomies", file: str = None):
+        name_with_extension = (Attribute.get_name(attribute) + ".json") if file is None else file
+        file_name = directory + "/" + name_with_extension
 
-        self.color = self.database.get_color()
-        self.traits = self.database.get_traits()
-        self.condition = self.database.get_condition()
-        self.stereotype = self.database.get_stereotype()
-        self.gender = self.database.get_gender()
-        self.age_impression = self.database.get_age_impression()
-        self.genre = self.database.get_genre()
-        self.job = self.database.get_job()
-        self.times_of_day = self.database.get_times_of_day()
-        self.times_of_play = self.database.get_times_of_play()
-        self.role = self.database.get_role()
-        self.location_occurrence = self.database.get_location_occurrence()
-        self.material = self.database.get_material()
-        self.type_of_basic_element = self.database.get_type_of_basic_element()
-        self.design = self.database.get_design()
-        self.color_concept = self.database.get_color_concept()
-
-        self.database.close()
-
-        #self.all = self.merge(
-        #    self.all_taxonomie_name,
-        #    self.color,
-        #    self.traits,
-        #    self.condition,
-        #    self.stereotype,
-        #    self.gender,
-        #    self.age_impression,
-        #    self.genre)
-
-        return
-
-    # Writes the graph to a data file
-    def safe_to_file(self,  attribute: Attribute) -> None:
-        if os.path.isdir(self.graph_directory) == False:
-            os.mkdir(self.graph_directory)
-
-        name = attribute.name
-
-        filename: str = self.graph_directory + "/" + name + ".json"
-
-        graph = self.get_graph(attribute)
-
-        graph_json = json_graph.node_link_data(graph)
-
-        json.dump(graph_json, open(filename,'w'), indent = 2)
-
-        return
-
-    # Reads the graph from a data file
-    def load_from_file(self, attribute: Attribute) -> None:
-        name = attribute.name
-
-        filename: str = self.graph_directory + "/" + name + ".json"
-
-        with open(filename) as f:
-            graph_json = json.load(f)
+        with open(filename) as file_object:
+            graph_json = json.load(file_object)
 
         graph = json_graph.node_link_graph(graph_json)
 
-        self.set_graph(attribute, graph)
+        return Taxonomie(attribute, graph)
+
+
+    """ 
+    Safe the json representing the taxonomie
+    if no name is specified, the name of the
+    taxonomie will be used
+    """
+    def save_json(self, directory: str = "taxonomies", file: str = None) -> None:
+        if os.path.isdir(directory) == False:
+            os.mkdir(directory)
+
+        file_name = (self.name + ".json") if file is None else file
+        file_path = directory + "/" + file_name
+        graph_json = json_graph.node_link_data(self.graph)
+        json.dump(graph_json, open(file_name,'w'), indent = 2)
 
         return
 
-    # Safes all graphs to data files
-    def safe_all_to_file(self) -> None:
-        self.safe_to_file(Attribute.color)
-        self.safe_to_file(Attribute.traits)
-        self.safe_to_file(Attribute.condition)
-        self.safe_to_file(Attribute.stereotype)
-        self.safe_to_file(Attribute.gender)
-        self.safe_to_file(Attribute.age_impression)
-        self.safe_to_file(Attribute.genre)
-        self.safe_to_file(Attribute.job)
-        self.safe_to_file(Attribute.times_of_day)
-        self.safe_to_file(Attribute.times_of_play)
-        self.safe_to_file(Attribute.role)
-        self.safe_to_file(Attribute.location_occurrence)
-        self.safe_to_file(Attribute.material)
-        self.safe_to_file(Attribute.type_of_basic_element)
-        self.safe_to_file(Attribute.design)
-        self.safe_to_file(Attribute.color_concept)
+    """
+    Safe the svg and dot representing the taxonomie
+    if no name is specified, the name of the
+    taxonomie will be used
+    """
+    def save_plot(self, directory: str = "taxonomies", name: str = None, display: bool = False) -> None:
+        if os.path.isdir(directory) == False:
+            os.mkdir(directory)
 
-        Logger.normal("All taxonomies have been saved as json to " + self.graph_directory)
+        file_name = self.name if name is None else name
+        file_path_without_extension = directory + "/" + file_name
+        file_path_svg = file_path_without_extension + ".svg"
+        file_path_dot = file_path_without_extension + ".dot"
 
-        return
+        nx.nx_agraph.write_dot(self.graph, file_path_dot)
 
-    # Loads all graphs to data files
-    def load_all_from_file(self) -> None:
-        self.load_from_file(Attribute.color)
-        self.load_from_file(Attribute.traits)
-        self.load_from_file(Attribute.condition)
-        self.load_from_file(Attribute.stereotype)
-        self.load_from_file(Attribute.gender)
-        self.load_from_file(Attribute.age_impression)
-        self.load_from_file(Attribute.genre)
-        self.load_from_file(Attribute.job)
-        self.load_from_file(Attribute.times_of_day)
-        self.load_from_file(Attribute.times_of_play)
-        self.load_from_file(Attribute.role)
-        self.load_from_file(Attribute.location_occurrence)
-        self.load_from_file(Attribute.material)
-        self.load_from_file(Attribute.type_of_basic_element)
-        self.load_from_file(Attribute.design)
-        self.load_from_file(Attribute.color_concept)
+        subprocess.call(["dot", "-Tsvg", file_path_dot, "-o", file_path_svg])
 
-        return
-
-    # Gets the graph corresponding to the attribute
-    def get_graph(self, attribute: Attribute) -> Graph:
-        if attribute == Attribute.color:
-            return self.color
-        elif attribute == Attribute.traits:
-            return self.traits
-        elif attribute == Attribute.condition:
-            return self.condition
-        elif attribute == Attribute.stereotype:
-            return self.stereotype
-        elif attribute == Attribute.gender:
-            return self.gender
-        elif attribute == Attribute.age_impression:
-            return self.age_impression
-        elif attribute == Attribute.genre:
-            return self.genre
-        elif attribute == Attribute.job:
-            return self.job
-        elif attribute == Attribute.times_of_day:
-            return self.times_of_day
-        elif attribute == Attribute.times_of_play:
-            return self.times_of_play
-        elif attribute == Attribute.role:
-            return self.role
-        elif attribute == Attribute.location_occurrence:
-            return self.location_occurrence
-        elif attribute == Attribute.material:
-            return self.material
-        elif attribute == Attribute.type_of_basic_element:
-            return self.type_of_basic_element
-        elif attribute == Attribute.design:
-            return self.design
-        elif attribute == Attribute.color_concept:
-            return self.color_concept
-        else:
-            raise Exception("Unkown attribute \"" + str(attribute) + "\"")
-
-    # Sets the graph corresponding to the attribute
-    def set_graph(self, attribute: Attribute, graph: Graph) -> None:
-        if attribute == Attribute.color:
-            self.color = graph
-        elif attribute == Attribute.traits:
-            self.traits = graph
-        elif attribute == Attribute.condition:
-            self.condition = graph
-        elif attribute == Attribute.stereotype:
-            self.stereotype = graph
-        elif attribute == Attribute.gender:
-            self.gender = graph
-        elif attribute == Attribute.age_impression:
-            self.age_impression = graph
-        elif attribute == Attribute.genre:
-            self.genre = graph
-        elif attribute == Attribute.job:
-            self.job = graph
-        elif attribute == Attribute.times_of_day:
-            self.times_of_day = graph
-        elif attribute == Attribute.times_of_play:
-            self.times_of_play = graph
-        elif attribute == Attribute.role:
-            self.role = graph
-        elif attribute == Attribute.location_occurrence:
-            self.location_occurrence = graph
-        elif attribute == Attribute.material:
-            self.material = graph
-        elif attribute == Attribute.type_of_basic_element:
-            self.type_of_basic_element = graph
-        elif attribute == Attribute.design:
-            self.design = graph
-        elif attribute == Attribute.color_concept:
-            self.color_concept = graph
-        else:
-            raise Exception("Unkown attribute \"" + attribute + "\"")
-        return
-
-    # Gets the root of the given graph (tree)
-    def get_root(self, attribute: Attribute) -> str:
-        graph = self.get_graph(attribute)
-        return [n for n,d in graph.in_degree() if d == 0][0]
-
-    # Gets the count of edges between first and second
-    def get_count_of_edges(self, attribute: Attribute, first: Any, sedonc: Any) -> int:
-        return 0
-
-    # Check if the taxonomie contains the given element
-    def contains(self, attribute: Attribute, element: Any) -> bool:
-        return
-
-    # Safe the graph to the given attribute as dot 
-    # and image file and displays the created image
-    def plot(self, attribute: Attribute, display: bool = True) -> None:
-        if os.path.isdir(self.plot_directory) == False:
-            os.mkdir(self.plot_directory)
-
-        name = attribute.name
-
-        filepath: str = self.plot_directory + "/" + name
-
-        graph = self.get_graph(attribute)
-
-        nx.nx_agraph.write_dot(graph, filepath + ".dot")
-        subprocess.call(["dot", "-T" + self.plot_datatype, filepath + ".dot", "-o", filepath + "." + self.plot_datatype])
-
-        filename = os.getcwd() + "/" + filepath + "." + self.plot_datatype
+        absolute_file_path_svg = os.getcwd() + "/" + file_path_svg
 
         if display == True:
-            os.startfile(filename, 'open')
+            os.startfile(absolute_file_path_svg, 'open')
 
         return
 
-    # Safe all graph to dot and image files
-    def plot_all(self, display: bool = False) -> None:
-        self.plot(Attribute.color, display)
-        self.plot(Attribute.traits, display)
-        self.plot(Attribute.condition, display)
-        self.plot(Attribute.stereotype, display)
-        self.plot(Attribute.gender, display)
-        self.plot(Attribute.age_impression, display)
-        self.plot(Attribute.genre, display)
-        self.plot(Attribute.job, display)
-        self.plot(Attribute.times_of_day, display)
-        self.plot(Attribute.times_of_play, display)
-        self.plot(Attribute.role, display)
-        self.plot(Attribute.location_occurrence, display)
-        self.plot(Attribute.material, display)
-        self.plot(Attribute.type_of_basic_element, display)
-        self.plot(Attribute.design, display)
-        self.plot(Attribute.color_concept, display)
+    """
+    Check if element is in the taxonomie graph
+    """
+    def contains(self, element: Any) -> bool:
+        return self.graph.has_node(element)
 
-        Logger.normal("All taxonomies have been saved as dot and svg to " + self.plot_directory)
-        return
+    """
+    Gets the root of the given graph (tree)
+    """
+    def get_root(self, attribute: Attribute) -> str:
+        return [n for n,d in self.graph.in_degree() if d == 0][0]

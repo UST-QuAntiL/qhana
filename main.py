@@ -120,10 +120,14 @@ def validate_database(command_args):
     return
 
 def create_taxonomies(command_args):
-    tax = Taxonomie()
-    tax.load_all_from_database()
-    tax.safe_all_to_file()
-    tax.plot_all(display=False)
+    db = Database()
+    db.open()
+
+    for attribute in Attribute:
+        tax = Taxonomie.create_from_db(attribute, db)
+        tax.save_json()
+        tax.save_plot()
+
     return
 
 def print_costumes(costumes: [Costume]) -> None:
