@@ -3,6 +3,7 @@ from typing import List
 import numpy as np
 from backend.costume import Costume
 from matplotlib import pyplot as plt
+from matplotlib import cm as cm
 import re
 from matplotlib.collections import LineCollection
 from backend.logger import Logger, LogLevel
@@ -100,16 +101,15 @@ class PlotsForCluster():
         sequenz: List[int] = dataforplots.get_sequenz()
         #costumes: List[Costume] = dataforplots.get_list_costumes()
         #labels: np.matrix = dataforplots.get_labels()
-        
-        cax = subplot.matshow(similarity_matrix, interpolation='nearest')
-        #subplot.grid(True)
-        subplot.set_title("Similarity Matrix \n")
+        cmap = cm.get_cmap('jet')
+        cax = subplot.matshow(similarity_matrix, interpolation='nearest' , cmap=cmap)
+        subplot.grid(True)
+        subplot.set_title("Similarity Matrix")
         subplot.set_xticks(range(len(similarity_matrix)))
         subplot.set_xticklabels(sequenz, rotation=90)
         subplot.set_yticks(range(len(similarity_matrix)))
         subplot.set_yticklabels(sequenz)
-
-        #plt.colorbar(cax , ticks=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+        plt.colorbar(cax , ax=subplot, ticks=[0,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
 
 
     @staticmethod
@@ -118,7 +118,7 @@ class PlotsForCluster():
         #position_matrix: np.matrix = dataforplots.get_position_matrix()
         sequenz: List[int] = dataforplots.get_sequenz()
         costumes: List[Costume] = dataforplots.get_list_costumes()
-        #labels: np.matrix = dataforplots.get_labels()
+        labels: np.matrix = dataforplots.get_labels()
         data: [] = []
         dominant_color: str = ""
         dominant_traits: [str] = []
@@ -140,16 +140,40 @@ class PlotsForCluster():
             data.append([costume,dominant_color,dominant_traits, dominant_condition, stereotypes, gender, dominant_age_impression, genres])
         df = pd.DataFrame(data, columns=['Nr.','Farben','Charaktereigenschaft', 'Zustand', 'Stereotyp', 'Geschlecht', 'Alterseindruck', 'Genre' ])
         
-        
-        cell_text = []
+        colColour: List = []
+        inlist: List = []
+        colors = ['#98FB98', '#FF7256', '#1E90FF', '#FFFF00', '#00F5FF']
+        for i in range(len(labels)):
+            if labels[i] == -1:
+                inlist = []
+                for j in range(len(df.columns)):
+                    inlist.append('#F8F8FF')
+                colColour.append(inlist)
+            else:
+                inlist = []
+                for j in range(len(df.columns)):
+                    inlist.append(colors[labels[i]])
+                colColour.append(inlist)
+
+        cell_text: [] = []
         for row in range(len(df)):
             #print(row)
             #print(df.iloc[row])
             cell_text.append(df.iloc[row])
         
-
-        table = subplot.table(cellText=cell_text, colLabels=df.columns,colWidths=[0.025,0.112, 0.16, 0.08,0.40,0.07,0.1,0.30],cellLoc="center", loc='center')
-        table.auto_set_font_size(False)
-        table.set_fontsize(8)
+        #,colWidths=[0.025,0.112, 0.16, 0.08,0.40,0.07,0.1,0.30]
+        table = subplot.table(  cellText    =   cell_text,
+                                cellColours =   colColour,
+                                colColours  =   ['#76D7C4'] * len(df.columns), 
+                                colLabels   =   df.columns,
+                                cellLoc     =   "center", 
+                                loc         =   'center',
+                                bbox        =   [0, 0, 1, 1]
+                                )
+        table.auto_set_font_size(True)
+        #table.set_fontsize(7)
+        table.auto_set_column_width(col=list(range(len(df.columns))))
+        #print(list(range(len(df.columns))))
+        #table.auto_set_column_width([1,1,1,1,1,1,1,1]) 
         #plt.subplots_adjust(right=0.8)
         subplot.axis('off')

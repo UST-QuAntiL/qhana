@@ -156,8 +156,8 @@ def old_main() -> None:
     check.start()
     similarities = simi.create_matrix_limited(0,40)
     check.stop()
-    Logger.normal("similarities")
-    Logger.normal(str(similarities))
+    #Logger.normal("similarities")
+    #Logger.normal(str(similarities))
     #costumes_simi: List[Costume] = simi.get_list_costumes()
     #for i in simi.get_last_sequenz():
     #    Logger.normal("index="+str(i)+ " : " +str(costumes_simi[i]))
@@ -172,8 +172,8 @@ def old_main() -> None:
     mds.set_dissimilarity("precomputed")
     mds.set_dimensions(2)
     pos = mds.scaling(similarities)
-    Logger.normal("Position eukl.")
-    Logger.normal(str(pos))
+    #Logger.normal("Position eukl.")
+    #Logger.normal(str(pos))
     stress = mds.stress_level()
     Logger.normal("Stress Level should be between 0 and 0.15")
     Logger.normal("Stress: " + str(stress))
@@ -239,7 +239,7 @@ def old_main() -> None:
     pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax3)
     pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax4)
     pfc.PlotsForCluster.similarity_2d_plot(dfp_instance, ax1)
-    #plt.tight_layout()
+    plt.tight_layout()
     
     plt.show()
     return
