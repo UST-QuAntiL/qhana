@@ -4,6 +4,7 @@ import numpy as np
 from backend.costume import Costume
 from matplotlib import pyplot as plt
 from matplotlib import cm as cm
+from matplotlib import colors as cl
 import re
 from matplotlib.collections import LineCollection
 from backend.logger import Logger, LogLevel
@@ -13,45 +14,41 @@ class PlotsForCluster():
 
     @staticmethod
     def scaling_2d_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
+        """
+        Plot for Cluster only 2d Plot 
+        """
+        # getter from dfp
         similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
         position_matrix: np.matrix = dataforplots.get_position_matrix()
         last_sequenz: List[int] = dataforplots.get_sequenz()
         costumes: List[Costume] = dataforplots.get_list_costumes()
         
+        # check if position matrix have only 2 dimensions
         if len(position_matrix[0]) != 2:
             Logger.error("Dimension of Position Matrix is not 2!")
             raise Exception("Dimension of Position Matrix is not 2!")
 
-        
-        #ax = subplot.axes([0., 0., 1., 1.])
+        # set point width
         s = 100
+
+        # set 2d for scaling
+        # plot the nodes
         subplot.scatter(position_matrix[:, 0], position_matrix[:, 1], color='turquoise', s=s, lw=0, label='MDS')
         subplot.legend(scatterpoints=1, loc='best', shadow=False)
-        EPSILON = np.finfo(np.float32).eps
-        #print("similarities.max")
-        #print(similarities.max())
-        similarity_matrix = similarity_matrix.max() / (similarity_matrix + EPSILON) * 100
-        #print("similarities after max/(sim+eps)*100")
-        #print(similarities)
-        np.fill_diagonal(similarity_matrix, 0)
         # Plot the edges
-        #start_idx, end_idx = np.where(pos)
-        # a sequence of (*line0*, *line1*, *line2*), where::
-        #            linen = (x0, y0), (x1, y1), ... (xm, ym)
+        EPSILON = np.finfo(np.float32).eps
+        similarity_matrix = similarity_matrix.max() / (similarity_matrix + EPSILON) * 100
+        np.fill_diagonal(similarity_matrix, 0)
         segments = [[position_matrix[i, :], position_matrix[j, :]]
                     for i in range(len(position_matrix)) for j in range(len(position_matrix))]
-        #print("segments")
-        #print(segments)
         values = np.abs(similarity_matrix)
-        #print("Values")
-        #print(values)
         lc = LineCollection(segments,
                         zorder=0, cmap=plt.cm.Blues,
                         norm=plt.Normalize(0, values.max()))
         lc.set_array(similarity_matrix.flatten())
         lc.set_linewidths(np.full(len(segments), 0.5))
-        #ax.add_collection(lc)
         subplot.add_collection(lc)
+        
         # describe points
         style = dict(size=7, color='black')
         count: int = 0
@@ -64,27 +61,47 @@ class PlotsForCluster():
         subplot.set_title('Multidimension Scaling \n')
         #subplot.ylim((-0.6,0.6))
         #subplot.xlim((-0.5,0.5))
-        #subplot.draw()
-
 
     @staticmethod
     def cluster_2d_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
-        #similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
+        """
+        Plot for Cluster only 2d Plot 
+        """
+        # getter from dfp
+            #similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
+            #costumes: List[Costume] = dataforplots.get_list_costumes()
         position_matrix: np.matrix = dataforplots.get_position_matrix()
         sequenz: List[int] = dataforplots.get_sequenz()
-        #costumes: List[Costume] = dataforplots.get_list_costumes()
         labels: np.matrix = dataforplots.get_labels()
+        
+        # set colormap and max and min color 
+        cmap: cl.LinearSegmentedColormap = cm.get_cmap('jet')
+        min_color: int = 0.3
+        max_color: int = 0.85
 
+        # check if position matrix have only 2 dimensions
         if len(position_matrix[0]) != 2:
             Logger.error("Dimension of Position Matrix is not 2!")
             raise Exception("Dimension of Position Matrix is not 2!")
 
-        colors = ['go', 'ro', 'bo', 'yo', 'co']
-        for klass, color in zip(range(0, 5), colors):
+        # set norm for range in colormap
+        norm: cl.Normalize = cl.Normalize(vmin=-min_color/(max_color-min_color), vmax=(1-min_color)/(max_color-min_color))
+        
+        # set List for colors in cluster
+        max_value: int = max(labels)
+        colors: List = []
+        for i in range(max_value+1):
+            if i == 0 and max_value == 0:
+                colors.append(cmap(norm(0)))
+            else:    
+                colors.append(cmap(norm(i/max_value)))
+        
+        # set plot for 2d clustering
+        for klass, color in zip(range(0, max_value+1), colors):
             Xk = position_matrix[labels == klass]
-            subplot.plot(Xk[:, 0], Xk[:, 1], color, alpha=0.5)
+            subplot.plot(Xk[:, 0], Xk[:, 1], color=color, marker='o', linestyle='None')
         subplot.plot(position_matrix[labels == -1, 0], position_matrix[labels == -1, 1], 'k+', alpha=0.1)
-        subplot.set_title('Automatic Clustering\nOPTICS')
+        subplot.set_title('Clustering')
         count: int = 0
         style = dict(size=7,color='black')
         for i in sequenz:
@@ -95,13 +112,21 @@ class PlotsForCluster():
             count += 1
 
     @staticmethod
-    def similarity_2d_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
+    def similarity_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
+        """
+        plot the similarity plot 
+        """
+        # getter from dfp
+            #position_matrix: np.matrix = dataforplots.get_position_matrix()
+            #costumes: List[Costume] = dataforplots.get_list_costumes()
+            #labels: np.matrix = dataforplots.get_labels()
         similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
-        #position_matrix: np.matrix = dataforplots.get_position_matrix()
         sequenz: List[int] = dataforplots.get_sequenz()
-        #costumes: List[Costume] = dataforplots.get_list_costumes()
-        #labels: np.matrix = dataforplots.get_labels()
+
+        # set colormap
         cmap = cm.get_cmap('jet')
+
+        # set plot for similarity plot
         cax = subplot.matshow(similarity_matrix, interpolation='nearest' , cmap=cmap)
         subplot.grid(True)
         subplot.set_title("Similarity Matrix")
@@ -109,16 +134,26 @@ class PlotsForCluster():
         subplot.set_xticklabels(sequenz, rotation=90)
         subplot.set_yticks(range(len(similarity_matrix)))
         subplot.set_yticklabels(sequenz)
-        plt.colorbar(cax , ax=subplot, ticks=[0,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
-
+        plt.colorbar(cax , ax=subplot, ticks=[0.0 ,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 
     @staticmethod
     def costume_table_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
-        #similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
-        #position_matrix: np.matrix = dataforplots.get_position_matrix()
+        """
+        table for plots with costume number
+        """
+        #getter from dfp
+            #similarity_matrix: np.matrix = dataforplots.get_similarity_matrix() 
+            #position_matrix: np.matrix = dataforplots.get_position_matrix()
         sequenz: List[int] = dataforplots.get_sequenz()
         costumes: List[Costume] = dataforplots.get_list_costumes()
         labels: np.matrix = dataforplots.get_labels()
+        
+        # set colormap and max and min color 
+        cmap: cl.LinearSegmentedColormap = cm.get_cmap('jet')
+        min_color: int = 0.3
+        max_color: int = 0.85        
+        
+        # set dataframe for plot
         data: [] = []
         dominant_color: str = ""
         dominant_traits: [str] = []
@@ -140,28 +175,40 @@ class PlotsForCluster():
             data.append([costume,dominant_color,dominant_traits, dominant_condition, stereotypes, gender, dominant_age_impression, genres])
         df = pd.DataFrame(data, columns=['Nr.','Farben','Charaktereigenschaft', 'Zustand', 'Stereotyp', 'Geschlecht', 'Alterseindruck', 'Genre' ])
         
+        # set norm for range in colormap
+        norm: cl.Normalize = cl.Normalize(vmin=-min_color/(max_color-min_color), vmax=(1-min_color)/(max_color-min_color))
+        
+        # set List for colors in cluster
+        max_value: int = max(labels)
+        colors: List = []
+        for i in range(max_value+1):
+            if i == 0 and max_value == 0:
+                colors.append(cmap(norm(0)))
+            else:    
+                colors.append(cmap(norm(i/max_value)))
+
+        # set color matrix for single cells in table
         colColour: List = []
         inlist: List = []
-        colors = ['#98FB98', '#FF7256', '#1E90FF', '#FFFF00', '#00F5FF']
         for i in range(len(labels)):
             if labels[i] == -1:
                 inlist = []
-                for j in range(len(df.columns)):
-                    inlist.append('#F8F8FF')
+                for _ in range(len(df.columns)):
+                    inlist.append('w')
                 colColour.append(inlist)
             else:
                 inlist = []
-                for j in range(len(df.columns)):
+                for _ in range(len(df.columns)):
                     inlist.append(colors[labels[i]])
                 colColour.append(inlist)
 
+        # set cell text for table
         cell_text: [] = []
         for row in range(len(df)):
-            #print(row)
-            #print(df.iloc[row])
             cell_text.append(df.iloc[row])
         
-        #,colWidths=[0.025,0.112, 0.16, 0.08,0.40,0.07,0.1,0.30]
+        # plot table 
+        subplot.axis('off')
         table = subplot.table(  cellText    =   cell_text,
                                 cellColours =   colColour,
                                 colColours  =   ['#76D7C4'] * len(df.columns), 
@@ -170,10 +217,7 @@ class PlotsForCluster():
                                 loc         =   'center',
                                 bbox        =   [0, 0, 1, 1]
                                 )
-        table.auto_set_font_size(True)
-        #table.set_fontsize(7)
+        table.auto_set_font_size(False)
+        table.set_fontsize(7)
         table.auto_set_column_width(col=list(range(len(df.columns))))
-        #print(list(range(len(df.columns))))
-        #table.auto_set_column_width([1,1,1,1,1,1,1,1]) 
-        #plt.subplots_adjust(right=0.8)
-        subplot.axis('off')
+        

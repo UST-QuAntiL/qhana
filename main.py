@@ -226,6 +226,26 @@ def old_main() -> None:
     dfp_instance = dfp.DataForPlots(similarities, simi.get_last_sequenz(),simi.get_list_costumes(),pos, labels )
 
     # plot things 
+    plt.figure(1)
+    G = gridspec.GridSpec(1, 1)
+    ax1 = plt.subplot(G[0, 0])
+    pfc.PlotsForCluster.similarity_plot(dfp_instance, ax1)
+    
+    plt.figure(2)
+    G = gridspec.GridSpec(1, 1)
+    ax1 = plt.subplot(G[0, 0])
+    pfc.PlotsForCluster.scaling_2d_plot(dfp_instance, ax1)
+
+    plt.figure(3)
+    G = gridspec.GridSpec(1, 1)
+    ax1 = plt.subplot(G[0, 0])
+    pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax1)
+
+    plt.figure(4)
+    G = gridspec.GridSpec(1, 1)
+    ax1 = plt.subplot(G[0, 0])
+    pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax1)
+
 
     plt.figure(figsize=(10, 10))
     G = gridspec.GridSpec(2, 3)
@@ -238,7 +258,7 @@ def old_main() -> None:
     pfc.PlotsForCluster.scaling_2d_plot(dfp_instance, ax2)
     pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax3)
     pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax4)
-    pfc.PlotsForCluster.similarity_2d_plot(dfp_instance, ax1)
+    pfc.PlotsForCluster.similarity_plot(dfp_instance, ax1)
     plt.tight_layout()
     
     plt.show()

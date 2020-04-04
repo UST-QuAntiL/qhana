@@ -120,7 +120,7 @@ class Similarities():
         similarity_matrix: np.matrix = np.zeros((total_number,total_number))
         counter: int = 0
         total_counter: int =  (len(costumes_index)-1)*len(costumes_index)/2
-        counter_percent: int = 10
+        counter_percent: int = 20
         for i in range(len(costumes_index)):
             for j in range(len(costumes_index)):
                 if j < i:
