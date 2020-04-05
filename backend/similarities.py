@@ -118,9 +118,15 @@ class Similarities():
         # create for valid costumes the similarity_matrix
         total_number: int = len(costumes_index)
         similarity_matrix: np.matrix = np.zeros((total_number,total_number))
+        counter: int = 0
+        total_counter: int =  (len(costumes_index)-1)*len(costumes_index)/2
+        counter_percent: int = 20
         for i in range(len(costumes_index)):
             for j in range(len(costumes_index)):
                 if j < i:
+                    counter += 1
+                    if counter % (total_counter/counter_percent) < 0.5 or counter % (total_counter/counter_percent) > total_counter/counter_percent-0.5:
+                        Logger.normal(str(round(counter/total_counter*100))+ '%')
                     if not self.__bool_memory:
                         comparedResult = self.__costumeComparer.compare_distance(costumes[costumes_index[i]], costumes[costumes_index[j]])
                         Logger.debug("compared result from costume {0} with costume {1} is {2} (No Memory initialized).".format(str(costumes_index[i]),str(costumes_index[j]),str(round(comparedResult, 2))))
