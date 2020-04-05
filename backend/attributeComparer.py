@@ -9,6 +9,7 @@ Defines an enum to list up all available attribute comparer
 """
 class AttributeComparerType(enum.Enum):
     symMaxMean = 1
+    singleElement = 2
 
 """ 
 Defines an enum to specify what should be done
@@ -39,6 +40,8 @@ class AttributeComparerFactory:
     def create(type: AttributeComparer, elementComparer: ElementComparer) -> AttributeComparer:
         if type == AttributeComparerType.symMaxMean:
             return SymMaxMean(elementComparer)
+        elif type == AttributeComparerType.singleElement:
+            return SingleElement(elementComparer)
         else:
             raise Exception("Unknown type of attribute comparer")
 
@@ -90,3 +93,19 @@ class SymMaxMean(AttributeComparer):
 
         # Combine both sums
         return 0.5 * (sum1 + sum2)
+
+"""
+Represents the attriute comparer with attributes that are just one element. 
+Therefore, just the element_comparer will be used.
+"""
+class SingleElement(AttributeComparer):
+    def __init__(self, elementComparer: ElementComparer) -> None:
+        self.elementComparer: ElementComparer = elementComparer
+        return
+
+    """
+    Compares two attributes, i.e. sets of elements, where each set has just one element:
+    setsim(A,B) = sim(a,b)
+    """
+    def compare(self, base: Any, first: [Any], second: [Any]) -> float:
+        return self.elementComparer.compare(base, first[0], second[0])
