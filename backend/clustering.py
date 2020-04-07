@@ -5,7 +5,7 @@ import enum
 import numpy as np
 from backend.logger import Logger, LogLevel
 from sklearn.cluster import OPTICS
-from backend.costume import Costume
+from backend.entity import Costume
 from typing import List
 
 

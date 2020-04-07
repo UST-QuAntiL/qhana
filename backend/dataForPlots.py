@@ -1,5 +1,5 @@
 import numpy as np
-from backend.costume import Costume
+from backend.entity import Costume
 from typing import List
 
 class DataForPlots():

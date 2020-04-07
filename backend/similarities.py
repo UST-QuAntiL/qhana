@@ -1,6 +1,6 @@
-from backend.costume import Costume
+from backend.entity import Costume
 from backend.database import Database
-from backend.costumeComparer import CostumeComparer
+from backend.entityComparer import CostumeComparer
 from backend.logger import Logger, LogLevel
 import numpy as np
 from typing import List

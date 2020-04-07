@@ -1,9 +1,7 @@
-from backend.costume import Costume
 import backend.elementComparer as elemcomp
 import backend.attributeComparer as attrcomp
 import backend.aggregator as aggre
 import argparse
-from backend.costumeComparer import CostumeComparer
 from backend.database import Database
 from backend.taxonomie import Taxonomie
 from backend.attribute import Attribute
@@ -25,6 +23,8 @@ import backend.scaling as scal
 import backend.clustering as clu
 import backend.dataForPlots as dfp
 import backend.plotsForCluster as pfc
+from backend.entity import Costume, CostumeFactory
+from backend.entityComparer import CostumeComparer
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -86,6 +86,10 @@ def parse():
         type=str
     )
 
+    # Add parser for test
+    validate_database_parser = commands.add_parser('test',
+        description='just executes the things within test function')
+
     # Add parser for others (just the other main routine)
     # This should not be needed in the future when
     # all commands are real commands with their own
@@ -108,25 +112,44 @@ def parse():
         old_main()
     elif args.create_taxonomies is not None:
         create_taxonomies(args.create_taxonomies)
+    elif args.test is not None:
+        test(args.test)
     else:
         Logger.normal("Wrong command. Please run -h for see available commands.")
 
     return
 
 def validate_database(command_args):
-    db = Database()
-    db.open()
-    db.validate_all_costumes(command_args.output_file)
+    #db = Database()
+    #db.open()
+    #db.validate_all_costumes(command_args.output_file)
     return
 
 def create_taxonomies(command_args):
     db = Database()
     db.open()
 
-    for attribute in Attribute:
-        tax = Taxonomie.create_from_db(attribute, db)
+    for taxonomieType in TaxonomieType:
+        tax = Taxonomie.create_from_db(taxonomieType, db)
         tax.save_json()
         tax.save_plot()
+
+    return
+
+def test(command_args):
+    db = Database()
+    db.open()
+
+    costumes = CostumeFactory.create(db, 2)
+    
+    #"""
+    for i in range(0,2):
+        print(costumes[i])
+        print()
+    #"""
+    costumeComparer = CostumeComparer()
+    sim = costumeComparer.compare_similarity(costumes[0], costumes[1])
+    print("Similarity = " + str(sim))
 
     return
 
@@ -140,7 +163,7 @@ def old_main() -> None:
     db = Database()
     db.open()
 
-    costumes = db.get_costumes()
+    costumes = CostumeFactory.create(db, 20)
     #costumeComparer = CostumeComparer()
 
     #print("Hier 1")
@@ -156,7 +179,7 @@ def old_main() -> None:
     check: Timer = Timer()    
 
     # built a similarity matrix
-    simi =Similarities.only_costumes(costumes,True)
+    simi = Similarities.only_costumes(costumes,True)
     check.start()
     similarities = simi.create_matrix_limited(0,40)
     check.stop()

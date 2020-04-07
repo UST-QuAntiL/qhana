@@ -16,7 +16,6 @@ class AggregatorType(enum.Enum):
 Represents the abstract aggregator base class
 """
 class Aggregator(metaclass=ABCMeta):
-
     """ 
     Returns the aggregated value of the given list of values
     """
@@ -28,7 +27,9 @@ class Aggregator(metaclass=ABCMeta):
 Represents the factory to create an aggregator
 """
 class AggregatorFactory:
-
+    """
+    Static method for creating the aggregator
+    """
     @staticmethod
     def create(type: AggregatorType) -> AggregatorType:
         if type == AggregatorType.mean:
@@ -46,7 +47,6 @@ class AggregatorFactory:
 Represents the mean aggregator
 """
 class MeanAggregator(Aggregator):
-
     """ 
     Returns the mean value of the given list of values
     """
@@ -62,7 +62,6 @@ class MeanAggregator(Aggregator):
 Represents the median aggregator
 """
 class MedianAggregator(Aggregator):
-
     """ 
     Returns the median of the given list of values
     """
@@ -84,7 +83,6 @@ class MedianAggregator(Aggregator):
 Represents the max aggregator
 """
 class MaxAggregator(Aggregator):
-
     """ 
     Returns the maximum of the given list of values
     """
@@ -95,7 +93,6 @@ class MaxAggregator(Aggregator):
 Represents the min aggregator
 """
 class MinAggregator(Aggregator):
-
     """ 
     Returns the minimum of the given list of values
     """

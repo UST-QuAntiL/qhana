@@ -1,157 +1,83 @@
 import enum
+from typing import Any
+from backend.taxonomie import Taxonomie, TaxonomieType
+from backend.logger import Logger
+from backend.database import Database
 
+"""
+This class is an enum for all attributes.
+An attribute is a special property that is used
+to describe one characteristic of an entity.
+For example, a costume has the attribute
+"Dominante Farbe". The attribute should not be
+confused with TaxonomieType, which is the enum
+for all possible taxonomies in the database.
+"""
 class Attribute(enum.Enum):
-    alterseindruck = 1
-    basiselement = 2
-    charaktereigenschaft = 3
-    design = 4
-    farbeindruck = 5
-    farbe = 6
-    farbkonzept = 7
-    form = 8
-    funktion = 9
-    genre = 10
-    koerpermodifikation = 11
-    koerperteil = 12
-    material = 13
-    materialeindruck = 14
-    operator = 15
-    produktionsort = 16
-    rollenberuf = 17
-    spielortdetail = 18
-    spielort = 19
-    spielzeit = 20
-    stereotyp = 21
-    tageszeit = 22
-    teilelement = 23
-    trageweise = 24
-    typus = 25
-    zustand = 26
-    geschlecht = 27
-    ortsbegebenheit = 28
+    dominanteFarbe = 1
+    dominanteCharaktereigenschaft = 2
+    dominanterZustand = 3
+    stereotyp = 4
+    geschlecht = 5
+    dominanterAlterseindruck = 6
+    genre = 7
 
+    """
+    Returns the human representable name for the
+    given Attribute.
+    """
     @staticmethod
     def get_name(attribute) -> str:
-        if attribute == Attribute.alterseindruck:
-            return "Alterseindruck"
-        elif attribute == Attribute.basiselement:
-            return "Basiselement"
-        elif attribute == Attribute.charaktereigenschaft:
-            return "Charaktereigenschaft"
-        elif attribute == Attribute.design:
-            return "Design"
-        elif attribute == Attribute.farbeindruck:
-            return "Farbeindruck"
-        elif attribute == Attribute.farbe:
-            return "Farbe"
-        elif attribute == Attribute.farbkonzept:
-            return "Farbkonzept"
-        elif attribute == Attribute.form:
-            return "Form"
-        elif attribute == Attribute.funktion:
-            return "Funktion"
-        elif attribute == Attribute.genre:
-            return "Genre"
-        elif attribute == Attribute.koerpermodifikation:
-            return "Körpermodifikation"
-        elif attribute == Attribute.koerperteil:
-            return "Köerperteil"
-        elif attribute == Attribute.material:
-            return "Material"
-        elif attribute == Attribute.materialeindruck:
-            return "Materialeindruck"
-        elif attribute == Attribute.operator:
-            return "Operator"
-        elif attribute == Attribute.produktionsort:
-            return "Produktionsort"
-        elif attribute == Attribute.rollenberuf:
-            return "Rollenberuf"
-        elif attribute == Attribute.spielortdetail:
-            return "Spielortdetail"
-        elif attribute == Attribute.spielort:
-            return "Spielort"
-        elif attribute == Attribute.spielzeit:
-            return "Spielzeit"
+        if attribute == Attribute.dominanteFarbe:
+            return "Dominante Farbe"
+        elif attribute == Attribute.dominanteCharaktereigenschaft:
+            return "Dominante Charaktereigenschaft"
+        elif attribute == Attribute.dominanterZustand:
+            return "Dominanter Zustand"
         elif attribute == Attribute.stereotyp:
             return "Stereotyp"
-        elif attribute == Attribute.tageszeit:
-            return "Tageszeit"
-        elif attribute == Attribute.teilelement:
-            return "Teilelement"
-        elif attribute == Attribute.trageweise:
-            return "Trageweise"
-        elif attribute == Attribute.typus:
-            return "Typus"
-        elif attribute == Attribute.zustand:
-            return "Zustand"
         elif attribute == Attribute.geschlecht:
             return "Geschlecht"
-        elif attribute == Attribute.ortsbegebenheit:
-            return "Ortsbegebenheit"
+        elif attribute == Attribute.dominanterAlterseindruck:
+            return "Dominanter Alterseindruck"
+        elif attribute == Attribute.genre:
+            return "Genre"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
         return
 
+    """
+    Returns the corresponding taxonomie type
+    this attribute is used for.
+    Note, that an attribute has only one taxonomie type,
+    while a taxonomie type can be used by multiple attributes.
+    """
     @staticmethod
-    def get_database_table_name(attribute) -> str:
-        if attribute == Attribute.alterseindruck:
-            return "alterseindruckdomaene"
-        elif attribute == Attribute.basiselement:
-            return "basiselementdomaene"
-        elif attribute == Attribute.charaktereigenschaft:
-            return "charaktereigenschaftsdomaene"
-        elif attribute == Attribute.design:
-            return "designdomaene"
-        elif attribute == Attribute.farbeindruck:
-            return None
-        elif attribute == Attribute.farbe:
-            return "farbendomaene"
-        elif attribute == Attribute.farbkonzept:
-            return "farbkonzeptdomaene"
-        elif attribute == Attribute.form:
-            return "formendomaene"
-        elif attribute == Attribute.funktion:
-            return "funktionsdomaene"
-        elif attribute == Attribute.genre:
-            return "genredomaene"
-        elif attribute == Attribute.koerpermodifikation:
-            return "koerpermodifikationsdomaene"
-        elif attribute == Attribute.koerperteil:
-            return None
-        elif attribute == Attribute.material:
-            return "materialdomaene"
-        elif attribute == Attribute.materialeindruck:
-            return None
-        elif attribute == Attribute.operator:
-            return "operatordomaene"
-        elif attribute == Attribute.produktionsort:
-            return "produktionsortdomaene"
-        elif attribute == Attribute.rollenberuf:
-            return "rollenberufdomaene"
-        elif attribute == Attribute.spielortdetail:
-            return "spielortdetaildomaene"
-        elif attribute == Attribute.spielort:
-            return "spielortdomaene"
-        elif attribute == Attribute.spielzeit:
-            return "spielzeitdomaene"
+    def get_taxonomie_type(attribute) -> str:
+        if attribute == Attribute.dominanteFarbe:
+            return TaxonomieType.farbe
+        elif attribute == Attribute.dominanteCharaktereigenschaft:
+            return TaxonomieType.typus
+        elif attribute == Attribute.dominanterZustand:
+            return TaxonomieType.zustand
         elif attribute == Attribute.stereotyp:
-            return "stereotypdomaene"
-        elif attribute == Attribute.tageszeit:
-            return "tageszeitdomaene"
-        elif attribute == Attribute.teilelement:
-            return "teilelementdomaene"
-        elif attribute == Attribute.trageweise:
-            return "trageweisendomaene"
-        elif attribute == Attribute.typus:
-            return "typusdomaene"
-        elif attribute == Attribute.zustand:
-            return "zustandsdomaene"
+            return TaxonomieType.stereotyp
         elif attribute == Attribute.geschlecht:
-            return None
-        elif attribute == Attribute.ortsbegebenheit:
-            return None
+            return TaxonomieType.geschlecht
+        elif attribute == Attribute.dominanterAlterseindruck:
+            return TaxonomieType.alterseindruck
+        elif attribute == Attribute.genre:
+            return TaxonomieType.genre
         else:
-            Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
-            raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
+            Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
+            raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
         return
+
+    """
+    Gets the base on which this attribute can be compared
+    with others.
+    """
+    @staticmethod
+    def get_base(attribute, database: Database) -> Any:
+        return Taxonomie.create_from_db(Attribute.get_taxonomie_type(attribute), database)

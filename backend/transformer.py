@@ -17,7 +17,6 @@ class TransformerType(enum.Enum):
 Represents the abstract transformer base class
 """
 class Transformer(metaclass=ABCMeta):
-
     """ 
     Returns the distance value to the given similarity value
     """
@@ -29,7 +28,9 @@ class Transformer(metaclass=ABCMeta):
 Represents the factory to create a transformer
 """
 class TransformerFactory:
-
+    """
+    Creates a transformer.
+    """
     @staticmethod
     def create(type: TransformerType) -> TransformerType:
         if type == TransformerType.linearInverse:
@@ -47,7 +48,6 @@ class TransformerFactory:
 Represents the linear inverse transformer
 """
 class LinearInverseTransformer(Transformer):
-
     """ 
     Returns the 1 - s as distance with s beeing the similarity
     """
@@ -58,7 +58,6 @@ class LinearInverseTransformer(Transformer):
 Represents the exponential inverse transformer
 """
 class ExponentialInverseTransformer(Transformer):
-
     """ 
     Returns the exp(-s) as distance with s beeing the similarity
     """
@@ -69,7 +68,6 @@ class ExponentialInverseTransformer(Transformer):
 Represents the gaussian inverse transformer
 """
 class GaussianInverseTransformer(Transformer):
-
     """ 
     Returns the exp(-s^2) as distance with s beeing the similarity
     """
@@ -80,7 +78,6 @@ class GaussianInverseTransformer(Transformer):
 Represents the polynomial inverse transformer
 """
 class PolynomialInverseTransformer(Transformer):
-
     """
     Defines the parameters of the polynomial inverse transformer
     """

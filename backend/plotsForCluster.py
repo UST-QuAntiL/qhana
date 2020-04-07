@@ -1,7 +1,7 @@
 import backend.dataForPlots as dfp
 from typing import List
 import numpy as np
-from backend.costume import Costume
+from backend.entity import Costume
 from matplotlib import pyplot as plt
 from matplotlib import cm as cm
 from matplotlib import colors as cl
@@ -9,6 +9,7 @@ import re
 from matplotlib.collections import LineCollection
 from backend.logger import Logger, LogLevel
 import pandas as pd
+from backend.attribute import Attribute
 
 class PlotsForCluster():
 
@@ -165,15 +166,15 @@ class PlotsForCluster():
         costume: int = 0
         for i in sequenz:
             costume = i
-            dominant_color = costumes[i].dominant_color
-            dominant_traits = costumes[i].dominant_traits
-            dominant_condition= costumes[i].dominant_condition
-            stereotypes = costumes[i].stereotypes
-            gender = costumes[i].gender
-            dominant_age_impression = costumes[i].dominant_age_impression
-            genres = costumes[i].genres
+            dominant_color = costumes[i].values[Attribute.dominanteFarbe]
+            dominant_traits = costumes[i].values[Attribute.dominanteCharaktereigenschaft]
+            dominant_condition= costumes[i].values[Attribute.dominanterZustand]
+            stereotypes = costumes[i].values[Attribute.stereotyp]
+            gender = costumes[i].values[Attribute.geschlecht]
+            dominant_age_impression = costumes[i].values[Attribute.dominanterAlterseindruck]
+            genres = costumes[i].values[Attribute.genre]
             data.append([costume,dominant_color,dominant_traits, dominant_condition, stereotypes, gender, dominant_age_impression, genres])
-        df = pd.DataFrame(data, columns=['Nr.','Farben','Charaktereigenschaft', 'Zustand', 'Stereotyp', 'Geschlecht', 'Alterseindruck', 'Genre' ])
+        df = pd.DataFrame(data, columns=['Nr.','dominanteFarbe','dominanteCharaktereigenschaft', 'dominanterZustand', 'stereotyp', 'geschlecht', 'dominanterAlterseindruck', 'genre' ])
         
         # set norm for range in colormap
         norm: cl.Normalize = cl.Normalize(vmin=-min_color/(max_color-min_color), vmax=(1-min_color)/(max_color-min_color))

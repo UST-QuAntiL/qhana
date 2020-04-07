@@ -5,52 +5,51 @@ from typing import Any
 import enum
 
 """ 
-Defines an enum to list up all available attribute comparer
+Defines an enum to list up all available attribute comparer.
 """
 class AttributeComparerType(enum.Enum):
     symMaxMean = 1
     singleElement = 2
 
 """ 
-Defines an enum to specify what should be done
-if an element is missing
-"""
-class MissingElementAction(enum.Enum):
-    ignore = 1
-    evaluate_as_zero = 2
-
-""" 
-Represents the abstract attribute comprarer base class
+Represents the abstract attribute comprarer base class.
 """
 class AttributeComparer(metaclass=ABCMeta):
-
     """ 
-    Returns the comparison value of first and second attribute
+    Returns the comparison value of first and second attribute.
     """
     @abstractmethod
-    def compare(self, first: [Any], second: [Any], base: Any, *missingElementAction : MissingElementAction) -> float:
+    def compare(self, first: [Any], second: [Any], base: Any) -> float:
         return
 
 """ 
-Represents the factory to create an attribute comparer
+Represents the factory to create an attribute comparer.
 """
 class AttributeComparerFactory:
-
+    """
+    Abstract method for creating the attribute comparer.
+    """
     @staticmethod
-    def create(type: AttributeComparer, elementComparer: ElementComparer) -> AttributeComparer:
-        if type == AttributeComparerType.symMaxMean:
+    def create(attributeComparerType: AttributeComparerType,
+        elementComparer: ElementComparer
+        ) -> AttributeComparer:
+        if attributeComparerType == AttributeComparerType.symMaxMean:
             return SymMaxMean(elementComparer)
-        elif type == AttributeComparerType.singleElement:
+        elif attributeComparerType == AttributeComparerType.singleElement:
             return SingleElement(elementComparer)
         else:
             raise Exception("Unknown type of attribute comparer")
 
 """
 Represents the attriute comparer with symmetrical observation, 
-maximum element selection and averaging
+maximum element selection and averaging.
 """
 class SymMaxMean(AttributeComparer):
+    """
+    Initializes the SymMaxMean attribute comparer.
+    """
     def __init__(self, elementComparer: ElementComparer) -> None:
+        super().__init__()
         self.elementComparer: ElementComparer = elementComparer
         return
 
@@ -59,7 +58,7 @@ class SymMaxMean(AttributeComparer):
     setsim(A,B) = 1/2 * (1/|A| sum_{a in A} max_{b in B} sim(a,b) 
                 + 1/|B| sum_{b in B} max_{a in A} sim(b,a))
     """
-    def compare(self, base: Any, first: [Any], second: [Any]) -> float:
+    def compare(self, first: [Any], second: [Any], base: Any) -> float:
         sum1 = 0.0
         sum2 = 0.0
 
@@ -68,7 +67,7 @@ class SymMaxMean(AttributeComparer):
             # Get maximum element_compare(a, b) with b in second
             max = 0.0
             for b in second:
-                temp = self.elementComparer.compare(base, a, b)
+                temp = self.elementComparer.compare(a, b, base)
                 if temp > max:
                     max = temp
             
@@ -82,7 +81,7 @@ class SymMaxMean(AttributeComparer):
             # Get maximum element_compare(b, a) with a in first
             max = 0.0
             for a in first:
-                temp = self.elementComparer.compare(base, b, a)
+                temp = self.elementComparer.compare(b, a, base)
                 if temp > max:
                     max = temp
             
@@ -99,13 +98,17 @@ Represents the attriute comparer with attributes that are just one element.
 Therefore, just the element_comparer will be used.
 """
 class SingleElement(AttributeComparer):
+    """
+    Initializes the SingleElement attribute comparer.
+    """
     def __init__(self, elementComparer: ElementComparer) -> None:
+        super().__init__()
         self.elementComparer: ElementComparer = elementComparer
         return
 
     """
     Compares two attributes, i.e. sets of elements, where each set has just one element:
-    setsim(A,B) = sim(a,b)
+    setsim(A,B) = sim(a,b).
     """
-    def compare(self, base: Any, first: [Any], second: [Any]) -> float:
-        return self.elementComparer.compare(base, first[0], second[0])
+    def compare(self, first: [Any], second: [Any], base: Any) -> float:
+        return self.elementComparer.compare(first[0], second[0], base)

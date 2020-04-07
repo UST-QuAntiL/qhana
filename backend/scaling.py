@@ -5,7 +5,7 @@ import enum
 import numpy as np
 from sklearn import manifold
 from backend.logger import Logger, LogLevel
-from backend.costume import Costume
+from backend.entity import Costume
 from typing import List
 from matplotlib import pyplot as plt
 import re
