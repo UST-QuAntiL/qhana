@@ -28,6 +28,7 @@ from backend.entityComparer import CostumeComparer
 from backend.attributeComparer import AttributeComparerType
 from backend.aggregator import AggregatorType
 from backend.elementComparer import ElementComparerType
+from backend.transformer import TransformerType
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -116,6 +117,10 @@ def parse():
     list_implemented_aggregator_parser = commands.add_parser('list_implemented_element_comparer',
         description='lists all the implemented element comparer that can be used for machine learning')
 
+    # Add parser for list_implemented_transformer
+    list_implemented_transformer_parser = commands.add_parser('list_implemented_transformer',
+        description='lists all the implemented transformer that can be used for machine learning')
+
     # Add parser for test
     validate_database_parser = commands.add_parser('test',
         description='just executes the things within test function')
@@ -155,6 +160,8 @@ def parse():
         list_implemented_aggregator(args.list_implemented_aggregator)
     elif args.list_implemented_element_comparer is not None:
         list_implemented_element_comparer(args.list_implemented_element_comparer)
+    elif args.list_implemented_transformer is not None:
+        list_implemented_transformer(args.list_implemented_transformer)    
     else:
         Logger.normal("Wrong command. Please run -h for see available commands.")
     return
@@ -204,6 +211,12 @@ def list_implemented_element_comparer(command_args):
     Logger.normal("The following element comparer are currently available for machine learning")
     for elementComparer in ElementComparerType:
         Logger.normal(str(elementComparer) + ": " + ElementComparerType.get_description(elementComparer))
+    return
+
+def list_implemented_transformer(command_args):
+    Logger.normal("The following transformer are currently available for machine learning")
+    for transformer in TransformerType:
+        Logger.normal(str(transformer) + ": " + TransformerType.get_description(transformer))
     return
 
 def test(command_args):

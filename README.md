@@ -92,3 +92,7 @@ At the moment, the following commands are availabel:
 #### List implemented Element Comparer
 
 `list_implemented_element_comparer` - lists all the implemented element comparer that can be used for machine learning
+
+#### List implemented Transformer
+
+`list_implemented_transformer` - lists all the implemented transformer that can be used for machine learning
