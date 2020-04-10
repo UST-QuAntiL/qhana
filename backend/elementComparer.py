@@ -51,6 +51,8 @@ class ElementComparerFactory:
     def create(type: ElementComparerType) -> ElementComparer:
         if type == ElementComparerType.wuPalmer:
             return WuPalmer()
+        elif type == ElementComparerType.timeTanh:
+            return TimeTanh()
         else:
             raise Exception("Unknown type of element comparer")
         return
