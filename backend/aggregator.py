@@ -12,6 +12,26 @@ class AggregatorType(enum.Enum):
     max = 3
     min = 4
 
+    @staticmethod
+    def get_description(aggregatorType) -> str:
+        description = ""
+        if aggregatorType == AttributeComparerType.mean:
+            description += "Aggregates a array of floating point values " \
+                + " with using the mean."
+        elif aggregatorType == AttributeComparerType.median:
+            description += "Aggregates a array of floating point values " \
+                + " with using the median."
+        elif aggregatorType == AttributeComparerType.max:
+            description += "Aggregates a array of floating point values " \
+                + " with using the max value."
+        elif aggregatorType == AttributeComparerType.min:
+            description += "Aggregates a array of floating point values " \
+                + " with using the min value."
+        else:
+            Logger.error("No description for aggregator \"" + str(aggregatorType) + "\" specified")
+            raise ValueError("No description for aggregator \"" + str(aggregatorType) + "\" specified")
+        return description
+
 """ 
 Represents the abstract aggregator base class
 """

@@ -12,6 +12,17 @@ Defines an enum to list up all available element comparer
 class ElementComparerType(enum.Enum):
     wuPalmer = 1
 
+    @staticmethod
+    def get_description(elementComparerType) -> str:
+        description = ""
+        if elementComparerType == ElementComparerType.wuPalmer:
+            description += "Compares two elements based on a taxonomie " \
+                + "using the wu palmer similarity measure."
+        else:
+            Logger.error("No description for element comparer \"" + str(elementComparerType) + "\" specified")
+            raise ValueError("No description for element comparer \"" + str(elementComparerType) + "\" specified")
+        return description
+
 """ 
 Represents the abstract element comprarer base class
 """

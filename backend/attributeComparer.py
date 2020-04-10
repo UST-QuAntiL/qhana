@@ -11,6 +11,23 @@ class AttributeComparerType(enum.Enum):
     symMaxMean = 1
     singleElement = 2
 
+    @staticmethod
+    def get_description(attributeComparerType) -> str:
+        description = ""
+        if attributeComparerType == AttributeComparerType.symMaxMean:
+            description += "Compares two attributes, i.e. sets of elements accordingly to " \
+                + "setsim(A,B) = 1/2 * (1/|A| sum_{a in A} max_{b in B} sim(a,b) " \
+                + "+ 1/|B| sum_{b in B} max_{a in A} sim(b,a)) with sim() being " \
+                + " the element comparer."
+        elif attributeComparerType == AttributeComparerType.singleElement:
+            description += "Compares two attributes which only consists of a single element. " \
+                + "Therefore we apply setsim(A,B) = sim(A[0],B[0]) with sim() being " \
+                + " the element comparer."
+        else:
+            Logger.error("No description for attribute comparer \"" + str(attributeComparerType) + "\" specified")
+            raise ValueError("No description for attribute comparer \"" + str(attributeComparerType) + "\" specified")
+        return description
+
 """ 
 Represents the abstract attribute comprarer base class.
 """
