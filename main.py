@@ -58,6 +58,13 @@ def parse():
         required=False,
         type=int
     )
+    parser.add_argument('-db', '--database_config_file',
+        dest='database_config_file',
+        help='filepath for the *.ini file for the database connection',
+        default='config.ini',
+        required=False,
+        type=str
+    )
 
     # Add additional global arguments here, like above
 
@@ -81,7 +88,7 @@ def parse():
     validate_database_parser.add_argument('-o', '--output_directory',
         dest='output_directory',
         help='specifies the directory for the output [default: /taxonomies]',
-        default=None,
+        default='taxonomies',
         required=False,
         type=str
     )
@@ -104,6 +111,7 @@ def parse():
     
     # Set global arguments first
     Logger.initialize(args.log_level)
+    Database.config_file_default = args.database_config_file
 
     # Check which command is being used and run it
     if args.validate_database is not None:
@@ -131,8 +139,8 @@ def create_taxonomies(command_args):
 
     for taxonomieType in TaxonomieType:
         tax = Taxonomie.create_from_db(taxonomieType, db)
-        tax.save_json()
-        tax.save_plot()
+        tax.save_json(directory=command_args.output_directory)
+        tax.save_plot(directory=command_args.output_directory)
 
     return
 

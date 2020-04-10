@@ -9,6 +9,11 @@ Respresents the database class for db connection.
 """
 class Database(Singleton):
     """
+    Specifies the default for the config file
+    """
+    config_file_default = "config.ini"
+
+    """
     Initializes the database singleton.
     """
     def __init__(self) -> None:
@@ -27,7 +32,9 @@ class Database(Singleton):
     """
     Opens the database using the config.ini file.
     """
-    def open(self, filename = "config.ini") -> None:
+    def open(self, filename = None) -> None:
+        if filename == None:
+            filename = Database.config_file_default
         try:
             section = "mysql"
             parser = ConfigParser()
