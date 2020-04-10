@@ -5,12 +5,14 @@ import enum
 import networkx as nx
 from networkx import Graph
 from backend.taxonomie import Taxonomie
+import numpy as np
 
 """ 
 Defines an enum to list up all available element comparer
 """
 class ElementComparerType(enum.Enum):
     wuPalmer = 1
+    timeTanh = 2
 
     @staticmethod
     def get_description(elementComparerType) -> str:
@@ -18,6 +20,9 @@ class ElementComparerType(enum.Enum):
         if elementComparerType == ElementComparerType.wuPalmer:
             description += "Compares two elements based on a taxonomie " \
                 + "using the wu palmer similarity measure."
+        elif elementComparerType == ElementComparerType.timeTanh:
+            description += "Compares two timecodes using the tanh function: " \
+                + "tanh(abs(a-b) / 7200). We normalize this function to 7200 seconds."
         else:
             Logger.error("No description for element comparer \"" + str(elementComparerType) + "\" specified")
             raise ValueError("No description for element comparer \"" + str(elementComparerType) + "\" specified")
@@ -27,7 +32,6 @@ class ElementComparerType(enum.Enum):
 Represents the abstract element comprarer base class
 """
 class ElementComparer(metaclass=ABCMeta):
-
     """ 
     Returns the comparison value of first and second
     element based on the giben base
@@ -77,4 +81,14 @@ class WuPalmer(ElementComparer):
         d3 = nx.algorithms.shortest_paths.generic.shortest_path_length(ud_graph, lowest_common_ancestor, root)
 
         return 2 * d3 / (d1 + d2 + 2* d3)
+
+"""
+Represents a timecode comparer using the tanh function.
+"""
+class TimeTanh(ElementComparer):
+    """
+    Applies the tanh function for comparing timecodes.
+    """
+    def compare(self, first: int, second: int, base: Any) -> float:
+        return np.tanh(np.abs( (first - second)) / 7200.0)
         
