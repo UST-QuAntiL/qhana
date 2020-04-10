@@ -27,6 +27,10 @@ class Attribute(enum.Enum):
     rollenberuf = 11
     dominantesAlter = 12
     rollenrelevanz = 13
+    spielzeit = 14
+    tageszeit = 15
+    koerpermodifikation = 16
+    kostuemZeit = 17                        # in seconds
 
     """
     Returns the human representable name for the
@@ -60,6 +64,14 @@ class Attribute(enum.Enum):
             return "Dominantes Alter"
         elif attribute == Attribute.rollenrelevanz:
             return "Rollenrelevanz"
+        elif attribute == Attribute.spielzeit:
+            return "Spielzeit"
+        elif attribute == Attribute.tageszeit:
+            return "Tageszeit"
+        elif attribute == Attribute.koerpermodifikation:
+            return "Körpermodifikation"
+        elif attribute == Attribute.kostuemZeit:
+            return "Kostümzeit"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -96,7 +108,17 @@ class Attribute(enum.Enum):
         elif attribute == Attribute.rollenberuf:
             return TaxonomieType.rollenberuf
         elif attribute == Attribute.dominantesAlter:
+            return None
+        elif attribute == Attribute.rollenrelevanz:
             return TaxonomieType.rollenrelevanz
+        elif attribute == Attribute.spielzeit:
+            return TaxonomieType.spielzeit
+        elif attribute == Attribute.tageszeit:
+            return TaxonomieType.tageszeit
+        elif attribute == Attribute.koerpermodifikation:
+            return TaxonomieType.koerpermodifikation
+        elif attribute == Attribute.kostuemZeit:
+            return None
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
@@ -109,5 +131,7 @@ class Attribute(enum.Enum):
     @staticmethod
     def get_base(attribute, database: Database) -> Any:
         if attribute == Attribute.dominantesAlter:
+            return None
+        elif attribute == Attribute.kostuemZeit:
             return None
         return Taxonomie.create_from_db(Attribute.get_taxonomie_type(attribute), database)
