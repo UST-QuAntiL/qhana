@@ -119,7 +119,7 @@ class EntityFactory:
 
         # make a copy of the attribute list to check
         # later if we have all attributes
-        attributes_check = attributes.copy()
+        attributes_check = list(attributes).copy()
 
         # Get KostuemTable
         query_costume = "SELECT " \

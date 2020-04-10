@@ -24,11 +24,12 @@ import backend.clustering as clu
 import backend.dataForPlots as dfp
 import backend.plotsForCluster as pfc
 from backend.entity import Costume, CostumeFactory, Entity, EntityFactory
-from backend.entityComparer import CostumeComparer
+from backend.entityComparer import CostumeComparer, EmptyAttributeAction
 from backend.attributeComparer import AttributeComparerType
 from backend.aggregator import AggregatorType
 from backend.elementComparer import ElementComparerType
 from backend.transformer import TransformerType
+from backend.entityService import EntityService
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -223,26 +224,60 @@ def test(command_args):
     db = Database()
     db.open()
 
-    attributes = [
-        #Attribute.ortsbegebenheit,
-        #Attribute.dominanteFarbe,
-        #Attribute.stereotypRelevant,
-        #Attribute.dominanteFunktion,
-        #Attribute.dominanterZustand,
-        #Attribute.dominanteCharaktereigenschaft,
-        #Attribute.stereotyp,
-        #Attribute.geschlecht,
-        #Attribute.rollenberuf,
-        #Attribute.dominantesAlter,
-        #Attribute.dominanterAlterseindruck,
-        #Attribute.rollenrelevanz,
-        Attribute.genre,
-        #Attribute.spielzeit,
-        #Attribute.tageszeit,
-        #Attribute.koerpermodifikation,
-        Attribute.kostuemZeit
+    COSTUME_PLAN = [
+        AggregatorType.mean,
+        TransformerType.linearInverse,
+        (
+            Attribute.dominanteFarbe,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanteCharaktereigenschaft,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanterZustand,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.stereotyp,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.geschlecht,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanterAlterseindruck,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.genre, None, None, None
+        ),
+        (
+            Attribute.kostuemZeit,
+            ElementComparerType.timeTanh,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        )
     ]
-    entities = EntityFactory.create(attributes, db, 2)
+
+    service = EntityService()
+    service.add_plan(COSTUME_PLAN)
+    
+    entities = service.get_entities(db, 20)
     
     if len(entities) == 0:
         print("No entities found!")
