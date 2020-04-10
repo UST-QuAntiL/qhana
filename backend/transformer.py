@@ -13,6 +13,26 @@ class TransformerType(enum.Enum):
     gaussianInverese = 3
     polynomialInverse = 4
 
+    @staticmethod
+    def get_description(transformerType) -> str:
+        description = ""
+        if transformerType == TransformerType.linearInverse:
+            description += "Transforms similarities into distances using " \
+                + "the linear inverse function dist(sim) = 1 - sim"
+        elif transformerType == TransformerType.exponentialInverse:
+            description += "Transforms similarities into distances using " \
+                + "the exponential inverse function dist(sim) = exp(- sim)"
+        elif transformerType == TransformerType.gaussianInverese:
+            description += "Transforms similarities into distances using " \
+                + "the gaussian inverse function dist(sim) = exp(- sim^2)"
+        elif transformerType == TransformerType.polynomialInverse:
+            description += "Transforms similarities into distances using " \
+                + "the polynomial inverse function dist(sim) = 1 / (1 + (sim/alpha)^beta)"
+        else:
+            Logger.error("No description for element comparer \"" + str(elementComparerType) + "\" specified")
+            raise ValueError("No description for element comparer \"" + str(elementComparerType) + "\" specified")
+        return description
+
 """ 
 Represents the abstract transformer base class
 """
