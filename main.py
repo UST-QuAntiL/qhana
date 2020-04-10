@@ -93,6 +93,14 @@ def parse():
         type=str
     )
 
+    # Add parser for list_implemented_taxonomies
+    list_implemented_taxonomies_parser = commands.add_parser('list_implemented_taxonomies',
+        description='lists all the implemented taxonomies that can be used for machine learning')
+
+    # Add parser for list_implemented_attributes
+    list_implemented_attributes_parser = commands.add_parser('list_implemented_attributes',
+        description='lists all the implemented attributes that can be used for machine learning')
+
     # Add parser for test
     validate_database_parser = commands.add_parser('test',
         description='just executes the things within test function')
@@ -122,6 +130,10 @@ def parse():
         create_taxonomies(args.create_taxonomies)
     elif args.test is not None:
         test(args.test)
+    elif args.list_implemented_taxonomies is not None:
+        list_implemented_taxonomies(args.list_implemented_taxonomies)
+    elif args.list_implemented_attributes is not None:
+        list_implemented_attributes(args.list_implemented_attributes)
     else:
         Logger.normal("Wrong command. Please run -h for see available commands.")
 
@@ -142,6 +154,18 @@ def create_taxonomies(command_args):
         tax.save_json(directory=command_args.output_directory)
         tax.save_plot(directory=command_args.output_directory)
 
+    return
+
+def list_implemented_taxonomies(command_args):
+    Logger.normal("The following taxonomies are currently available for machine learning")
+    for taxonomie in TaxonomieType:
+        Logger.normal(TaxonomieType.get_name(taxonomie))
+    return
+
+def list_implemented_attributes(command_args):
+    Logger.normal("The following attributes are currently available for machine learning")
+    for attribute in Attribute:
+        Logger.normal(Attribute.get_name(attribute))
     return
 
 def test(command_args):
