@@ -52,6 +52,7 @@ class TaxonomieType(Enum):
     geschlecht = 27
     ortsbegebenheit = 28
     stereotypRelevant = 29
+    rollenrelevanz = 30
 
     @staticmethod
     def get_name(taxonomieType) -> str:
@@ -113,6 +114,8 @@ class TaxonomieType(Enum):
             return "Ortsbegebenheit"
         elif taxonomieType == taxonomieType.stereotypRelevant:
             return "StereotypRelevant"
+        elif taxonomieType == taxonomieType.rollenrelevanz:
+            return "Rollenrelevanz"
         else:
             Logger.error("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
             raise ValueError("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
@@ -177,6 +180,8 @@ class TaxonomieType(Enum):
         elif taxonomieType == taxonomieType.ortsbegebenheit:
             return None
         elif taxonomieType == taxonomieType.stereotypRelevant:
+            return None
+        elif taxonomieType == taxonomieType.rollenrelevanz:
             return None 
         else:
             Logger.error("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
@@ -267,6 +272,11 @@ class Taxonomie:
                 graph.add_node("StereotypRelevant")
                 graph.add_node("ja")
                 graph.add_node("nein")
+            elif taxonomieType == taxonomieType.rollenrelevanz:
+                graph.add_node("Rollenrelevanz")
+                graph.add_node("Hauptrolle")
+                graph.add_node("Nebenrolle")
+                graph.add_node("Statist")
             else:
                 Logger.error("\"" + str(taxonomieType) + "\" is a unknown taxonomieType")
         
