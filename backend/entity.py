@@ -4,6 +4,7 @@ from backend.attribute import Attribute
 from backend.logger import Logger
 from backend.database import Database
 from backend.taxonomie import Taxonomie
+from datetime import datetime, timedelta
 
 """
 This class represents a entity such as a costume or a basic element.
@@ -21,6 +22,8 @@ class Entity:
         self.values = {}
         # format: (attribute, base)
         self.bases = {}
+        # format: (name, value)
+        self.infos = {}
         return
 
     """
@@ -41,13 +44,21 @@ class Entity:
         return
 
     """
-    Adds abase to the bases list. If the associated
+    Adds a base to the bases list. If the associated
     attribute is not added yet, it will be added.
     """
     def add_base(self, attribute: Attribute, base: Any) -> None:
         if attribute not in self.attributes:
             self.add_attribute(attribute)
         self.bases[attribute] = base
+        return
+
+    """
+    Adds an info to the infos list. Infos are IDs or
+    url or descriptions...
+    """
+    def add_info(self, name: str, value: str) -> None:
+        self.infos[name] = value
         return
 
     """
@@ -72,13 +83,394 @@ class Entity:
         return
 
     """
+    Removes an info from the infos list
+    """
+    def remove_info(self, name: str) -> None:
+        del self.infos[name]
+
+    """
     Returns the entity in a single string.
     """
     def __str__(self) -> str:
-        output = "name: " + self.name + ", id:" + self.id + ", "
+        output = "name: " + self.name + ", id: " + str(self.id) + ", "
         for attribute_key in self.values:
             output += Attribute.get_name(attribute_key) + ": " + str(self.values[attribute_key]) + ", "
         return output[:-2]
+
+"""
+This class creats entities based on the given attributes.
+"""
+class EntityFactory:
+    """
+    Creates a entitie based on the given list of attributes.
+    If amount is zero, all entities that are found will be returned.
+    If shuffle is true, items will be randomly selected, therefore the
+    given seed will be used.
+    """
+    @staticmethod
+    def create(
+        attributes: List[Attribute],
+        database: Database,
+        amount: int = 0
+        ) -> List[Entity]:
+        entities = []
+        invalid_entries = 0
+        cursor = database.get_cursor()
+
+        # make a copy of the attribute list to check
+        # later if we have all attributes
+        attributes_check = attributes.copy()
+
+        # Get KostuemTable
+        query_costume = "SELECT " \
+            + "KostuemID, RollenID, FilmID, " \
+            + "Ortsbegebenheit, DominanteFarbe, " \
+            + "StereotypRelevant, DominanteFunktion, " \
+            + "DominanterZustand FROM Kostuem"
+        cursor.execute(query_costume)
+        rows_costume = cursor.fetchall()
+
+        Logger.debug("Found " + str(len(rows_costume)) + " costuems")
+
+        count = 0
+
+        # if amount = 0, set it to int.inf
+        if amount <= 0:
+            amount = 2147483646
+
+        for row_costume in rows_costume:
+            if count >= amount:
+                break
+
+            if row_costume[0] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with KostuemID = None. This entry will be skipped.")
+                continue
+            if row_costume[1] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with RollenID = None. This entry will be skipped.")
+                continue
+            if row_costume[2] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with FilmID = None. This entry will be skipped.")
+                continue
+            if row_costume[3] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with Ortsbegebenheit = None. This entry will be skipped.")
+                continue
+            if row_costume[4] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with DominanteFarbe = None. This entry will be skipped.")
+                continue
+            if row_costume[5] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with StereotypRelevant = None. This entry will be skipped.")
+                continue
+            if row_costume[6] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with DominanteFunktion = None. This entry will be skipped.")
+                continue
+            if row_costume[7] == None:
+                invalid_entries += 1
+                Logger.warning("Found entry with DominanterZustand = None. This entry will be skipped.")
+                continue
+
+            kostuemId = row_costume[0]
+            rollenId = row_costume[1]
+            filmId = row_costume[2]
+            ortsbegebenheit = row_costume[3]
+            dominanteFarbe = row_costume[4]
+            stereotypRelevant = row_costume[5]
+            dominanteFunktion = row_costume[6]
+            dominanterZustand = row_costume[7]
+
+            entity = Entity("Entity", count)
+            entity.add_info("KostuemID", kostuemId)
+            entity.add_info("RollenID", rollenId)
+            entity.add_info("FilmID", filmId)
+
+            if Attribute.ortsbegebenheit in attributes:
+                entity.add_attribute(Attribute.ortsbegebenheit)
+                entity.add_value(Attribute.ortsbegebenheit, list(ortsbegebenheit))
+            if Attribute.dominanteFarbe in attributes:
+                entity.add_attribute(Attribute.dominanteFarbe)
+                entity.add_value(Attribute.dominanteFarbe, [dominanteFarbe])
+            if Attribute.stereotypRelevant in attributes:
+                entity.add_attribute(Attribute.stereotypRelevant)
+                entity.add_value(Attribute.stereotypRelevant, list(stereotypRelevant))
+            if Attribute.dominanteFunktion in attributes:
+                entity.add_attribute(Attribute.dominanteFunktion)
+                entity.add_value(Attribute.dominanteFunktion, [dominanteFunktion])
+            if Attribute.dominanterZustand in attributes:
+                entity.add_attribute(Attribute.dominanterZustand)
+                entity.add_value(Attribute.dominanterZustand, [dominanterZustand])
+
+            # load dominanteCharaktereigenschaft if needed
+            if Attribute.dominanteCharaktereigenschaft in attributes:
+                query_trait = "SELECT DominanteCharaktereigenschaft FROM RolleDominanteCharaktereigenschaft "
+                query_trait += "WHERE RollenID = %s AND FilmID = %s"
+                cursor.execute(query_trait, (row_costume[1], row_costume[2]))
+                rows_trait = cursor.fetchall()
+
+                if len(rows_trait) == 0:
+                    invalid_entries += 1
+                    Logger.warning(
+                        "Found entry with no DominanteCharaktereigenschaft. Associated entries are: " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue
+            
+                dominanteCharaktereigenschaft = []
+
+                for row_trait in rows_trait:
+                    dominanteCharaktereigenschaft.append(row_trait[0])
+
+                entity.add_attribute(Attribute.dominanteCharaktereigenschaft)
+                entity.add_value(Attribute.dominanteCharaktereigenschaft, dominanteCharaktereigenschaft)
+
+            # load stereotypes if needed
+            if Attribute.stereotyp in attributes:
+                query_stereotype = "SELECT Stereotyp FROM RolleStereotyp WHERE RollenID = %s AND FilmID = %s"
+                cursor.execute(query_stereotype, (row_costume[1], row_costume[2]))
+                rows_stereotype = cursor.fetchall()
+
+                if len(rows_stereotype) == 0:
+                    invalid_entries += 1
+                    Logger.warning(
+                        "Found entry with no Stereotyp. Associated entries are: " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue
+            
+                stereotyp = []
+
+                for row_stereotype in rows_stereotype:
+                    stereotyp.append(row_stereotype[0])
+
+                entity.add_attribute(Attribute.stereotyp)
+                entity.add_value(Attribute.stereotyp, stereotyp)
+
+            # load rollenberuf, geschlecht, dominanterAlterseindruck 
+            # or dominantesAlter if needed
+            if  Attribute.rollenberuf in attributes or \
+                Attribute.geschlecht in attributes or \
+                Attribute.dominanterAlterseindruck in attributes or \
+                Attribute.dominantesAlter in attributes:
+
+                    query_gender_age = "SELECT " \
+                        + "Rollenberuf, Geschlecht, " \
+                        + "DominanterAlterseindruck, DominantesAlter," \
+                        + "Rollenrelevanz FROM Rolle WHERE " \
+                        + "RollenID = %s AND FilmID = %s"
+                    cursor.execute(query_gender_age, (row_costume[1], row_costume[2]))
+                    rows_gender_age = cursor.fetchall()
+
+                    if len(rows_gender_age) == 0:
+                        invalid_entries += 1
+                        Logger.warning(
+                            "Found entry with no Geschlecht, DominanterAlterseindruck " \
+                            + "DominantesAlter and Rollenrelevanz. " \
+                            + "Associated entries are: " \
+                            + "RollenID = " + str(row_costume[1]) + ", " \
+                            + "FilmID = " + str(row_costume[2]) + ". " \
+                            + "This entry will be skipped." \
+                        )
+                        continue
+
+                    for row_gender_age in rows_gender_age:
+                        if Attribute.rollenberuf in attributes:
+                            if row_gender_age[0] == None:
+                                invalid_entries += 1
+                                Logger.warning(
+                                    "Found entry with no Geschlecht. Associated entries are: " \
+                                    + "RollenID = " + str(row_costume[1]) + ", " \
+                                    + "FilmID = " + str(row_costume[2]) + ". " \
+                                    + "This entry will be skipped." \
+                                )
+                                continue
+                        if Attribute.geschlecht in attributes:
+                            if row_gender_age[1] == None:
+                                invalid_entries += 1
+                                Logger.warning(
+                                    "Found entry with no DominanterAlterseindruck. Associated entries are: " \
+                                    + "RollenID = " + str(row_costume[1]) + ", " \
+                                    + "FilmID = " + str(row_costume[2]) + ". " \
+                                    + "This entry will be skipped." \
+                                )
+                                continue
+                        if Attribute.dominanterAlterseindruck in attributes:
+                            if row_gender_age[2] == None:
+                                invalid_entries += 1
+                                Logger.warning(
+                                    "Found entry with no DominantesAlter. Associated entries are: " \
+                                    + "RollenID = " + str(row_costume[1]) + ", " \
+                                    + "FilmID = " + str(row_costume[2]) + ". " \
+                                    + "This entry will be skipped." \
+                                )
+                                continue
+                        if Attribute.dominantesAlter in attributes:
+                            if row_gender_age[3] == None:
+                                invalid_entries += 1
+                                Logger.warning(
+                                    "Found entry with no Rollenrelevanz. Associated entries are: " \
+                                    + "RollenID = " + str(row_costume[1]) + ", " \
+                                    + "FilmID = " + str(row_costume[2]) + ". " \
+                                    + "This entry will be skipped." \
+                                )
+                                continue
+                        
+                    rollenberuf = row_gender_age[0]
+                    geschlecht = row_gender_age[1]
+                    dominanterAlterseindruck = row_gender_age[2]
+                    dominantesAlter = row_gender_age[3]
+                    rollenrelevanz = row_gender_age[4]
+
+                    if Attribute.rollenberuf in attributes:
+                        entity.add_attribute(Attribute.rollenberuf)
+                        entity.add_value(Attribute.rollenberuf, [rollenberuf])
+                    if Attribute.geschlecht in attributes:
+                        entity.add_attribute(Attribute.geschlecht)
+                        entity.add_value(Attribute.geschlecht, list(geschlecht))
+                    if Attribute.dominanterAlterseindruck in attributes:
+                        entity.add_attribute(Attribute.dominanterAlterseindruck)
+                        entity.add_value(Attribute.dominanterAlterseindruck, [dominanterAlterseindruck])
+                    if Attribute.dominantesAlter in attributes:
+                        entity.add_attribute(Attribute.dominantesAlter)
+                        entity.add_value(Attribute.dominantesAlter, [dominantesAlter])
+                    if Attribute.rollenrelevanz in attributes:
+                        entity.add_attribute(Attribute.rollenrelevanz)
+                        entity.add_value(Attribute.rollenrelevanz, list(rollenrelevanz))
+
+            # load genre if needed
+            if Attribute.genre in attributes:
+                query_genre = "SELECT Genre FROM FilmGenre WHERE FilmID = %s"
+                cursor.execute(query_genre, (row_costume[2], ))
+                rows_genre = cursor.fetchall()
+
+                if len(rows_genre) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no Genre. Associated entry is: " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue
+
+                genre = []
+            
+                for row_genre in rows_genre:
+                    genre.append(row_genre[0])
+
+                entity.add_attribute(Attribute.genre)
+                entity.add_value(Attribute.genre, genre)
+            
+            # load spielzeit if needed
+            if Attribute.spielzeit in attributes:
+                query_spielzeit = "SELECT Spielzeit FROM KostuemSpielzeit " \
+                    + "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query_spielzeit, (row_costume[0], row_costume[1], row_costume[2]))
+                rows_spielzeit = cursor.fetchall()
+
+                if len(rows_spielzeit) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no KostuemSpielzeit. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue
+
+                spielzeit = rows_spielzeit[0][0]
+
+                entity.add_attribute(Attribute.spielzeit)
+                entity.add_value(Attribute.spielzeit, [spielzeit])
+
+            # load tageszeit if needed
+            if Attribute.tageszeit in attributes:
+                query_tageszeit = "SELECT Tageszeit FROM KostuemTageszeit " \
+                    + "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query_tageszeit, (row_costume[0], row_costume[1], row_costume[2]))
+                rows_tageszeit = cursor.fetchall()
+
+                if len(rows_tageszeit) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no KostuemTageszeit. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue
+
+                tageszeit = rows_tageszeit[0][0]
+
+                entity.add_attribute(Attribute.tageszeit)
+                entity.add_value(Attribute.tageszeit, [tageszeit])
+
+            # load koerpermodifikation if needed
+            if Attribute.koerpermodifikation in attributes:
+                query = "SELECT Koerpermodifikationname FROM Kostuemkoerpermodifikation " \
+                    + "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
+                rows = cursor.fetchall()
+
+                if len(rows) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no Koerpermodifikationname. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue
+
+                koerpermodifikation = rows[0][0]
+
+                entity.add_attribute(Attribute.koerpermodifikation)
+                entity.add_value(Attribute.koerpermodifikation, [koerpermodifikation])
+
+            # load kostuemZeit if needed
+            if Attribute.kostuemZeit in attributes:
+                query = "SELECT Timecodeanfang, Timecodeende FROM Kostuemtimecode " \
+                    + "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
+                rows = cursor.fetchall()
+
+                if len(rows) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no Timecodeanfang and Timecodeende. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                        + "This entry will be skipped." \
+                    )
+                    continue         
+            
+                # in seconds
+                kostuemZeit = 0
+
+                for row in rows:
+                    timecodeende = row[1]
+                    timecodeanfang = row[0]
+
+                    kostuemZeit += int((timecodeende - timecodeanfang).total_seconds())
+
+                entity.add_attribute(Attribute.kostuemZeit)
+                entity.add_value(Attribute.kostuemZeit, [kostuemZeit])
+
+            entities.append(entity)
+            count += 1
+
+        return entities
 
 """
 This class represents a costume in the simplified model

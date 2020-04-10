@@ -3,7 +3,7 @@ import backend.attributeComparer as attrcomp
 import backend.aggregator as aggre
 import argparse
 from backend.database import Database
-from backend.taxonomie import Taxonomie
+from backend.taxonomie import Taxonomie, TaxonomieType
 from backend.attribute import Attribute
 from backend.logger import Logger, LogLevel
 import numpy as np
@@ -23,7 +23,7 @@ import backend.scaling as scal
 import backend.clustering as clu
 import backend.dataForPlots as dfp
 import backend.plotsForCluster as pfc
-from backend.entity import Costume, CostumeFactory
+from backend.entity import Costume, CostumeFactory, Entity, EntityFactory
 from backend.entityComparer import CostumeComparer
 
 # Used for creating the namespaces from parsing
@@ -140,16 +140,38 @@ def test(command_args):
     db = Database()
     db.open()
 
-    costumes = CostumeFactory.create(db, 2)
+    attributes = [
+        #Attribute.ortsbegebenheit,
+        #Attribute.dominanteFarbe,
+        #Attribute.stereotypRelevant,
+        #Attribute.dominanteFunktion,
+        #Attribute.dominanterZustand,
+        #Attribute.dominanteCharaktereigenschaft,
+        #Attribute.stereotyp,
+        #Attribute.geschlecht,
+        #Attribute.rollenberuf,
+        #Attribute.dominantesAlter,
+        #Attribute.dominanterAlterseindruck,
+        #Attribute.rollenrelevanz,
+        Attribute.genre,
+        #Attribute.spielzeit,
+        #Attribute.tageszeit,
+        #Attribute.koerpermodifikation,
+        Attribute.kostuemZeit
+    ]
+    entities = EntityFactory.create(attributes, db, 2)
     
+    if len(entities) == 0:
+        print("No entities found!")
+
     #"""
-    for i in range(0,2):
-        print(costumes[i])
+    for i in range(0,len(entities)):
+        print(entities[i])
         print()
     #"""
-    costumeComparer = CostumeComparer()
-    sim = costumeComparer.compare_similarity(costumes[0], costumes[1])
-    print("Similarity = " + str(sim))
+    #costumeComparer = CostumeComparer()
+    #sim = costumeComparer.compare_similarity(costumes[0], costumes[1])
+    #print("Similarity = " + str(sim))
 
     return
 
