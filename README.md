@@ -80,3 +80,15 @@ At the moment, the following commands are availabel:
 #### List implemented Attributes
 
 `list_implemented_attributes` - lists all the implemented attributes that can be used for machine learning
+
+#### List implemented Attribute Comparer
+
+`list_implemented_attribute_comparer` - lists all the implemented attribute comparer that can be used for machine learning
+
+#### List implemented Aggregator
+
+`list_implemented_aggregator` - lists all the implemented aggregator that can be used for machine learning
+
+#### List implemented Element Comparer
+
+`list_implemented_element_comparer` - lists all the implemented element comparer that can be used for machine learning
