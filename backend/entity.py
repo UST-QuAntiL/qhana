@@ -156,24 +156,19 @@ class EntityFactory:
                 continue
             if row_costume[3] == None:
                 invalid_entries += 1
-                Logger.warning("Found entry with Ortsbegebenheit = None. This entry will be skipped.")
-                continue
+                Logger.warning("Found entry with Ortsbegebenheit = None.")
             if row_costume[4] == None:
                 invalid_entries += 1
-                Logger.warning("Found entry with DominanteFarbe = None. This entry will be skipped.")
-                continue
+                Logger.warning("Found entry with DominanteFarbe = None.")
             if row_costume[5] == None:
                 invalid_entries += 1
-                Logger.warning("Found entry with StereotypRelevant = None. This entry will be skipped.")
-                continue
+                Logger.warning("Found entry with StereotypRelevant = None.")
             if row_costume[6] == None:
                 invalid_entries += 1
-                Logger.warning("Found entry with DominanteFunktion = None. This entry will be skipped.")
-                continue
+                Logger.warning("Found entry with DominanteFunktion = None.")
             if row_costume[7] == None:
                 invalid_entries += 1
-                Logger.warning("Found entry with DominanterZustand = None. This entry will be skipped.")
-                continue
+                Logger.warning("Found entry with DominanterZustand = None.")
 
             kostuemId = row_costume[0]
             rollenId = row_costume[1]
@@ -191,19 +186,34 @@ class EntityFactory:
 
             if Attribute.ortsbegebenheit in attributes:
                 entity.add_attribute(Attribute.ortsbegebenheit)
-                entity.add_value(Attribute.ortsbegebenheit, list(ortsbegebenheit))
+                if ortsbegebenheit is None:
+                    entity.add_value(Attribute.ortsbegebenheit, [])
+                else:
+                    entity.add_value(Attribute.ortsbegebenheit, list(ortsbegebenheit))
             if Attribute.dominanteFarbe in attributes:
                 entity.add_attribute(Attribute.dominanteFarbe)
-                entity.add_value(Attribute.dominanteFarbe, [dominanteFarbe])
+                if dominanteFarbe is None:
+                    entity.add_value(Attribute.dominanteFarbe, [])
+                else:
+                    entity.add_value(Attribute.dominanteFarbe, [dominanteFarbe])
             if Attribute.stereotypRelevant in attributes:
                 entity.add_attribute(Attribute.stereotypRelevant)
-                entity.add_value(Attribute.stereotypRelevant, list(stereotypRelevant))
+                if stereotypRelevant is None:
+                    entity.add_value(Attribute.stereotypRelevant, [])
+                else:
+                    entity.add_value(Attribute.stereotypRelevant, list(stereotypRelevant))
             if Attribute.dominanteFunktion in attributes:
                 entity.add_attribute(Attribute.dominanteFunktion)
-                entity.add_value(Attribute.dominanteFunktion, [dominanteFunktion])
+                if dominanteFunktion is None:
+                    entity.add_value(Attribute.dominanteFunktion, [])
+                else:
+                    entity.add_value(Attribute.dominanteFunktion, [dominanteFunktion])
             if Attribute.dominanterZustand in attributes:
                 entity.add_attribute(Attribute.dominanterZustand)
-                entity.add_value(Attribute.dominanterZustand, [dominanterZustand])
+                if dominanterZustand is None:
+                    entity.add_value(Attribute.dominanterZustand, [])
+                else:
+                    entity.add_value(Attribute.dominanterZustand, [dominanterZustand])
 
             # load dominanteCharaktereigenschaft if needed
             if Attribute.dominanteCharaktereigenschaft in attributes:
@@ -218,9 +228,7 @@ class EntityFactory:
                         "Found entry with no DominanteCharaktereigenschaft. Associated entries are: " \
                         + "RollenID = " + str(row_costume[1]) + ", " \
                         + "FilmID = " + str(row_costume[2]) + ". " \
-                        + "This entry will be skipped." \
                     )
-                    continue
             
                 dominanteCharaktereigenschaft = []
 
@@ -242,9 +250,7 @@ class EntityFactory:
                         "Found entry with no Stereotyp. Associated entries are: " \
                         + "RollenID = " + str(row_costume[1]) + ", " \
                         + "FilmID = " + str(row_costume[2]) + ". " \
-                        + "This entry will be skipped." \
                     )
-                    continue
             
                 stereotyp = []
 
@@ -277,9 +283,7 @@ class EntityFactory:
                             + "Associated entries are: " \
                             + "RollenID = " + str(row_costume[1]) + ", " \
                             + "FilmID = " + str(row_costume[2]) + ". " \
-                            + "This entry will be skipped." \
                         )
-                        continue
 
                     for row_gender_age in rows_gender_age:
                         if Attribute.rollenberuf in attributes:
@@ -289,9 +293,7 @@ class EntityFactory:
                                     "Found entry with no Geschlecht. Associated entries are: " \
                                     + "RollenID = " + str(row_costume[1]) + ", " \
                                     + "FilmID = " + str(row_costume[2]) + ". " \
-                                    + "This entry will be skipped." \
                                 )
-                                continue
                         if Attribute.geschlecht in attributes:
                             if row_gender_age[1] == None:
                                 invalid_entries += 1
@@ -299,9 +301,7 @@ class EntityFactory:
                                     "Found entry with no DominanterAlterseindruck. Associated entries are: " \
                                     + "RollenID = " + str(row_costume[1]) + ", " \
                                     + "FilmID = " + str(row_costume[2]) + ". " \
-                                    + "This entry will be skipped." \
                                 )
-                                continue
                         if Attribute.dominanterAlterseindruck in attributes:
                             if row_gender_age[2] == None:
                                 invalid_entries += 1
@@ -309,9 +309,7 @@ class EntityFactory:
                                     "Found entry with no DominantesAlter. Associated entries are: " \
                                     + "RollenID = " + str(row_costume[1]) + ", " \
                                     + "FilmID = " + str(row_costume[2]) + ". " \
-                                    + "This entry will be skipped." \
                                 )
-                                continue
                         if Attribute.dominantesAlter in attributes:
                             if row_gender_age[3] == None:
                                 invalid_entries += 1
@@ -319,9 +317,7 @@ class EntityFactory:
                                     "Found entry with no Rollenrelevanz. Associated entries are: " \
                                     + "RollenID = " + str(row_costume[1]) + ", " \
                                     + "FilmID = " + str(row_costume[2]) + ". " \
-                                    + "This entry will be skipped." \
                                 )
-                                continue
                         
                     rollenberuf = row_gender_age[0]
                     geschlecht = row_gender_age[1]
@@ -331,19 +327,34 @@ class EntityFactory:
 
                     if Attribute.rollenberuf in attributes:
                         entity.add_attribute(Attribute.rollenberuf)
-                        entity.add_value(Attribute.rollenberuf, [rollenberuf])
+                        if rollenberuf is None:
+                            entity.add_value(Attribute.rollenberuf, [])
+                        else:
+                            entity.add_value(Attribute.rollenberuf, [rollenberuf])
                     if Attribute.geschlecht in attributes:
                         entity.add_attribute(Attribute.geschlecht)
-                        entity.add_value(Attribute.geschlecht, list(geschlecht))
+                        if geschlecht is None:
+                            entity.add_value(Attribute.geschlecht, [])
+                        else:
+                            entity.add_value(Attribute.geschlecht, list(geschlecht))
                     if Attribute.dominanterAlterseindruck in attributes:
                         entity.add_attribute(Attribute.dominanterAlterseindruck)
-                        entity.add_value(Attribute.dominanterAlterseindruck, [dominanterAlterseindruck])
+                        if dominanterAlterseindruck is None:
+                            entity.add_value(Attribute.dominanterAlterseindruck, [])
+                        else:
+                            entity.add_value(Attribute.dominanterAlterseindruck, [dominanterAlterseindruck])
                     if Attribute.dominantesAlter in attributes:
                         entity.add_attribute(Attribute.dominantesAlter)
-                        entity.add_value(Attribute.dominantesAlter, [dominantesAlter])
+                        if dominantesAlter is None:
+                            entity.add_value(Attribute.dominantesAlter, [])
+                        else:
+                            entity.add_value(Attribute.dominantesAlter, [dominantesAlter])
                     if Attribute.rollenrelevanz in attributes:
                         entity.add_attribute(Attribute.rollenrelevanz)
-                        entity.add_value(Attribute.rollenrelevanz, list(rollenrelevanz))
+                        if rollenrelevanz is None:
+                            entity.add_value(Attribute.rollenrelevanz, [])
+                        else:
+                            entity.add_value(Attribute.rollenrelevanz, list(rollenrelevanz))
 
             # load genre if needed
             if Attribute.genre in attributes:
@@ -356,9 +367,7 @@ class EntityFactory:
                     Logger.warning( \
                         "Found entry with no Genre. Associated entry is: " \
                         + "FilmID = " + str(row_costume[2]) + ". " \
-                        + "This entry will be skipped." \
                     )
-                    continue
 
                 genre = []
             
@@ -375,6 +384,8 @@ class EntityFactory:
                 cursor.execute(query_spielzeit, (row_costume[0], row_costume[1], row_costume[2]))
                 rows_spielzeit = cursor.fetchall()
 
+                entity.add_attribute(Attribute.spielzeit)
+
                 if len(rows_spielzeit) == 0:
                     invalid_entries += 1
                     Logger.warning( \
@@ -382,14 +393,11 @@ class EntityFactory:
                         + "KostuemID = " + str(row_costume[0]) + ", " \
                         + "RollenID = " + str(row_costume[1]) + ", " \
                         + "FilmID = " + str(row_costume[2]) + ". " \
-                        + "This entry will be skipped." \
                     )
-                    continue
-
-                spielzeit = rows_spielzeit[0][0]
-
-                entity.add_attribute(Attribute.spielzeit)
-                entity.add_value(Attribute.spielzeit, [spielzeit])
+                    entity.add_value(Attribute.spielzeit, [])
+                else:
+                    spielzeit = rows_spielzeit[0][0]
+                    entity.add_value(Attribute.spielzeit, [spielzeit])
 
             # load tageszeit if needed
             if Attribute.tageszeit in attributes:
@@ -398,6 +406,8 @@ class EntityFactory:
                 cursor.execute(query_tageszeit, (row_costume[0], row_costume[1], row_costume[2]))
                 rows_tageszeit = cursor.fetchall()
 
+                entity.add_attribute(Attribute.tageszeit)
+
                 if len(rows_tageszeit) == 0:
                     invalid_entries += 1
                     Logger.warning( \
@@ -405,14 +415,11 @@ class EntityFactory:
                         + "KostuemID = " + str(row_costume[0]) + ", " \
                         + "RollenID = " + str(row_costume[1]) + ", " \
                         + "FilmID = " + str(row_costume[2]) + ". " \
-                        + "This entry will be skipped." \
                     )
-                    continue
-
-                tageszeit = rows_tageszeit[0][0]
-
-                entity.add_attribute(Attribute.tageszeit)
-                entity.add_value(Attribute.tageszeit, [tageszeit])
+                    entity.add_value(Attribute.tageszeit, [])
+                else:
+                    tageszeit = rows_tageszeit[0][0]
+                    entity.add_value(Attribute.tageszeit, [tageszeit])
 
             # load koerpermodifikation if needed
             if Attribute.koerpermodifikation in attributes:
@@ -421,6 +428,8 @@ class EntityFactory:
                 cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
                 rows = cursor.fetchall()
 
+                entity.add_attribute(Attribute.koerpermodifikation)
+
                 if len(rows) == 0:
                     invalid_entries += 1
                     Logger.warning( \
@@ -428,14 +437,11 @@ class EntityFactory:
                         + "KostuemID = " + str(row_costume[0]) + ", " \
                         + "RollenID = " + str(row_costume[1]) + ", " \
                         + "FilmID = " + str(row_costume[2]) + ". " \
-                        + "This entry will be skipped." \
                     )
-                    continue
-
-                koerpermodifikation = rows[0][0]
-
-                entity.add_attribute(Attribute.koerpermodifikation)
-                entity.add_value(Attribute.koerpermodifikation, [koerpermodifikation])
+                    entity.add_value(Attribute.koerpermodifikation, [])
+                else:
+                    koerpermodifikation = rows[0][0]
+                    entity.add_value(Attribute.koerpermodifikation, [koerpermodifikation])
 
             # load kostuemZeit if needed
             if Attribute.kostuemZeit in attributes:
@@ -444,6 +450,8 @@ class EntityFactory:
                 cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
                 rows = cursor.fetchall()
 
+                entity.add_attribute(Attribute.kostuemZeit)
+
                 if len(rows) == 0:
                     invalid_entries += 1
                     Logger.warning( \
@@ -451,21 +459,19 @@ class EntityFactory:
                         + "KostuemID = " + str(row_costume[0]) + ", " \
                         + "RollenID = " + str(row_costume[1]) + ", " \
                         + "FilmID = " + str(row_costume[2]) + ". " \
-                        + "This entry will be skipped." \
                     )
-                    continue         
-            
-                # in seconds
-                kostuemZeit = 0
+                    entity.add_value(Attribute.kostuemZeit, [])
+                else:
+                    # in seconds
+                    kostuemZeit = 0
 
-                for row in rows:
-                    timecodeende = row[1]
-                    timecodeanfang = row[0]
+                    for row in rows:
+                        timecodeende = row[1]
+                        timecodeanfang = row[0]
 
-                    kostuemZeit += int((timecodeende - timecodeanfang).total_seconds())
+                        kostuemZeit += int((timecodeende - timecodeanfang).total_seconds())
 
-                entity.add_attribute(Attribute.kostuemZeit)
-                entity.add_value(Attribute.kostuemZeit, [kostuemZeit])
+                    entity.add_value(Attribute.kostuemZeit, [kostuemZeit])
 
             entities.append(entity)
             count += 1
