@@ -103,23 +103,18 @@ This class creats entities based on the given attributes.
 class EntityFactory:
     """
     Creates a entitie based on the given list of attributes.
-    If amount is zero, all entities that are found will be returned.
-    If shuffle is true, items will be randomly selected, therefore the
-    given seed will be used.
+    The default dor amount is max int, all entities that are found will be returned.
     """
     @staticmethod
     def create(
         attributes: List[Attribute],
         database: Database,
-        amount: int = 0
+        amount: int = 2147483646
         ) -> List[Entity]:
+
         entities = []
         invalid_entries = 0
         cursor = database.get_cursor()
-
-        # make a copy of the attribute list to check
-        # later if we have all attributes
-        attributes_check = list(attributes).copy()
 
         # Get KostuemTable
         query_costume = "SELECT " \
@@ -130,17 +125,21 @@ class EntityFactory:
         cursor.execute(query_costume)
         rows_costume = cursor.fetchall()
 
-        Logger.debug("Found " + str(len(rows_costume)) + " costuems")
+        totalAmount = len(rows_costume) if amount > len(rows_costume) else amount
+
+        Logger.debug("Found " + str(len(rows_costume)) + " entities in total")
+
+        # i.e. print 10 steps of loading
+        printCount = (int) (totalAmount / 10)
 
         count = 0
 
-        # if amount = 0, set it to int.inf
-        if amount <= 0:
-            amount = 2147483646
-
         for row_costume in rows_costume:
-            if count >= amount:
+            if count >= totalAmount:
                 break
+
+            if count % printCount == 0:
+                Logger.normal(str(count) + " / " + str(totalAmount) + " entities loaded")
 
             if row_costume[0] == None:
                 invalid_entries += 1
@@ -475,6 +474,8 @@ class EntityFactory:
 
             entities.append(entity)
             count += 1
+
+        Logger.normal(str(count) + " / " + str(totalAmount) + " entities loaded")
 
         return entities
 

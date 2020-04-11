@@ -85,7 +85,8 @@ class EntityService:
 
     """
     Gets the entities based on the choosen attributes, database and amount.
+    The default for amount is int max which returns all founded entities.
     """
-    def get_entities(self, database: Database, amount: int = 0) -> List[Entity]:
+    def get_entities(self, database: Database, amount: int = 2147483646) -> List[Entity]:
         entities = EntityFactory.create(self.attributes.keys(), database, amount)
         return entities

@@ -30,6 +30,7 @@ from backend.aggregator import AggregatorType
 from backend.elementComparer import ElementComparerType
 from backend.transformer import TransformerType
 from backend.entityService import EntityService
+import random
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -271,25 +272,38 @@ def test(command_args):
             ElementComparerType.timeTanh,
             AttributeComparerType.singleElement,
             EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.rollenrelevanz,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
         )
     ]
 
     service = EntityService()
     service.add_plan(COSTUME_PLAN)
     
-    entities = service.get_entities(db, 20)
+    entities = service.get_entities(db, 5000)
+    printAmount = 4
     
     if len(entities) == 0:
         print("No entities found!")
 
-    #"""
-    for i in range(0,len(entities)):
-        print(entities[i])
-        print()
-    #"""
-    #costumeComparer = CostumeComparer()
-    #sim = costumeComparer.compare_similarity(costumes[0], costumes[1])
-    #print("Similarity = " + str(sim))
+    #for i in range(0, printAmount):
+    #    print(entities[random.randrange(0, len(entities), 1)])
+    #    print()
+
+    maxTime = 0
+    maxElem = None
+
+    for i in range(0, len(entities)):
+        if len(entities[i].values[Attribute.kostuemZeit]) > 0:
+            if entities[i].values[Attribute.kostuemZeit][0] > maxTime:
+                maxTime = entities[i].values[Attribute.kostuemZeit][0]
+                maxElem = entities[i]
+    
+    print(maxElem)
 
     return
 
