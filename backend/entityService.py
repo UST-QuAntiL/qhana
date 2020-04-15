@@ -21,14 +21,18 @@ class EntityService:
         # format (attribute, None)
         self.attributes = {}
         # format (attribute, attributeComparerType)
-        self.attributeComparer = {}
+        self.attributeComparerType = {}
         # format (attribute, elementComparerType)
-        self.elementComparer = {}
+        self.elementComparerType = {}
         # format (attribute, emptyAttributeAction)
         self.emptyAttributeAction = {}
 
-        self.aggregator = None
-        self.transformer = None
+        self.aggregatorType = None
+        self.transformerType = None
+
+        self.entities = []
+
+        return
     
     """
     Adds an attribute with the corresponding
@@ -44,11 +48,9 @@ class EntityService:
         ) -> None:
             self.attributes[attribute] = None
             if elementComparerType is not None:
-                elementComparer = ElementComparerFactory.create(elementComparerType)
-                self.elementComparer[attribute] = elementComparer
+                self.elementComparerType[attribute] = elementComparerType
             if attributeComparerType is not None:
-                attributeComparer = AttributeComparerFactory.create(attributeComparerType, elementComparer)
-                self.attributeComparer[attribute] = attributeComparer
+                self.attributeComparerType[attribute] = attributeComparerType
             self.emptyAttributeAction[attribute] = emptyAttributeAction
             return
 
@@ -71,16 +73,16 @@ class EntityService:
     Sets the aggregator that will be used to aggregate
     the attribute values.
     """
-    def set_aggregator(self, aggregator: AggregatorType) -> None:
-        self.aggregator = AggregatorFactory.create(aggregator)
+    def set_aggregator(self, aggregatorType: AggregatorType) -> None:
+        self.aggregatorType = aggregatorType
         return
 
     """
     Sets the transformer to transform between similarities
     and distances.
     """
-    def set_transformer(self, transformer: TransformerType) -> None:
-        self.transformer = TransformerFactory.create(transformer)
+    def set_transformer(self, transformerType: TransformerType) -> None:
+        self.transformerType = transformerType
         return
 
     """
@@ -88,5 +90,29 @@ class EntityService:
     The default for amount is int max which returns all founded entities.
     """
     def get_entities(self, database: Database, amount: int = 2147483646) -> List[Entity]:
-        entities = EntityFactory.create(self.attributes.keys(), database, amount)
-        return entities
+        self.entities = EntityFactory.create(self.attributes.keys(), database, amount)
+        return self.entities
+
+    """
+    Compares the similaritie of all 
+    """
+    def compare_similarity(self) -> None:
+        self.entitiyComparer = EntityComparer(
+            self.aggregatorType,
+            self.transformerType
+        )
+
+        for attribute in self.elementComparerType.keys():
+            self.entitiyComparer.add_element_comparer(
+                attribute,
+                self.elementComparerType[attribute]
+            )
+
+        for attribute in self.attributeComparerType.keys():
+            self.entitiyComparer.add_attribute_comparer(
+                attribute,
+                self.attributeComparerType[attribute],
+                self.emptyAttributeAction[attribute]
+            )
+        
+        return self.entitiyComparer.compare_similarity(self.entities[0], self.entities[0])

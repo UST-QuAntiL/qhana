@@ -189,30 +189,35 @@ class EntityFactory:
                     entity.add_value(Attribute.ortsbegebenheit, [])
                 else:
                     entity.add_value(Attribute.ortsbegebenheit, list(ortsbegebenheit))
+                    entity.add_base(Attribute.ortsbegebenheit, Attribute.get_base(Attribute.ortsbegebenheit, database))
             if Attribute.dominanteFarbe in attributes:
                 entity.add_attribute(Attribute.dominanteFarbe)
                 if dominanteFarbe is None:
                     entity.add_value(Attribute.dominanteFarbe, [])
                 else:
                     entity.add_value(Attribute.dominanteFarbe, [dominanteFarbe])
+                    entity.add_base(Attribute.dominanteFarbe, Attribute.get_base(Attribute.dominanteFarbe, database))
             if Attribute.stereotypRelevant in attributes:
                 entity.add_attribute(Attribute.stereotypRelevant)
                 if stereotypRelevant is None:
                     entity.add_value(Attribute.stereotypRelevant, [])
                 else:
                     entity.add_value(Attribute.stereotypRelevant, list(stereotypRelevant))
+                    entity.add_base(Attribute.stereotypRelevant, Attribute.get_base(Attribute.stereotypRelevant, database))
             if Attribute.dominanteFunktion in attributes:
                 entity.add_attribute(Attribute.dominanteFunktion)
                 if dominanteFunktion is None:
                     entity.add_value(Attribute.dominanteFunktion, [])
                 else:
                     entity.add_value(Attribute.dominanteFunktion, [dominanteFunktion])
+                    entity.add_base(Attribute.dominanteFunktion, Attribute.get_base(Attribute.dominanteFunktion, database))
             if Attribute.dominanterZustand in attributes:
                 entity.add_attribute(Attribute.dominanterZustand)
                 if dominanterZustand is None:
                     entity.add_value(Attribute.dominanterZustand, [])
                 else:
                     entity.add_value(Attribute.dominanterZustand, [dominanterZustand])
+                    entity.add_base(Attribute.dominanterZustand, Attribute.get_base(Attribute.dominanterZustand, database))
 
             # load dominanteCharaktereigenschaft if needed
             if Attribute.dominanteCharaktereigenschaft in attributes:
@@ -236,6 +241,7 @@ class EntityFactory:
 
                 entity.add_attribute(Attribute.dominanteCharaktereigenschaft)
                 entity.add_value(Attribute.dominanteCharaktereigenschaft, dominanteCharaktereigenschaft)
+                entity.add_base(Attribute.dominanteCharaktereigenschaft, Attribute.get_base(Attribute.dominanteCharaktereigenschaft, database))
 
             # load stereotypes if needed
             if Attribute.stereotyp in attributes:
@@ -258,6 +264,7 @@ class EntityFactory:
 
                 entity.add_attribute(Attribute.stereotyp)
                 entity.add_value(Attribute.stereotyp, stereotyp)
+                entity.add_base(Attribute.stereotyp, Attribute.get_base(Attribute.stereotyp, database))
 
             # load rollenberuf, geschlecht, dominanterAlterseindruck 
             # or dominantesAlter if needed
@@ -330,30 +337,35 @@ class EntityFactory:
                             entity.add_value(Attribute.rollenberuf, [])
                         else:
                             entity.add_value(Attribute.rollenberuf, [rollenberuf])
+                            entity.add_base(Attribute.rollenberuf, Attribute.get_base(Attribute.rollenberuf, database))
                     if Attribute.geschlecht in attributes:
                         entity.add_attribute(Attribute.geschlecht)
                         if geschlecht is None:
                             entity.add_value(Attribute.geschlecht, [])
                         else:
                             entity.add_value(Attribute.geschlecht, list(geschlecht))
+                            entity.add_base(Attribute.geschlecht, Attribute.get_base(Attribute.geschlecht, database))
                     if Attribute.dominanterAlterseindruck in attributes:
                         entity.add_attribute(Attribute.dominanterAlterseindruck)
                         if dominanterAlterseindruck is None:
                             entity.add_value(Attribute.dominanterAlterseindruck, [])
                         else:
                             entity.add_value(Attribute.dominanterAlterseindruck, [dominanterAlterseindruck])
+                            entity.add_base(Attribute.dominanterAlterseindruck, Attribute.get_base(Attribute.dominanterAlterseindruck, database))
                     if Attribute.dominantesAlter in attributes:
                         entity.add_attribute(Attribute.dominantesAlter)
                         if dominantesAlter is None:
                             entity.add_value(Attribute.dominantesAlter, [])
                         else:
                             entity.add_value(Attribute.dominantesAlter, [dominantesAlter])
+                            entity.add_base(Attribute.dominantesAlter, Attribute.get_base(Attribute.dominantesAlter, database))
                     if Attribute.rollenrelevanz in attributes:
                         entity.add_attribute(Attribute.rollenrelevanz)
                         if rollenrelevanz is None:
                             entity.add_value(Attribute.rollenrelevanz, [])
                         else:
                             entity.add_value(Attribute.rollenrelevanz, list(rollenrelevanz))
+                            entity.add_base(Attribute.rollenrelevanz, Attribute.get_base(Attribute.rollenrelevanz, database))
 
             # load genre if needed
             if Attribute.genre in attributes:
@@ -375,6 +387,7 @@ class EntityFactory:
 
                 entity.add_attribute(Attribute.genre)
                 entity.add_value(Attribute.genre, genre)
+                entity.add_base(Attribute.genre, Attribute.get_base(Attribute.genre, database))
             
             # load spielzeit if needed
             if Attribute.spielzeit in attributes:
@@ -397,6 +410,7 @@ class EntityFactory:
                 else:
                     spielzeit = rows_spielzeit[0][0]
                     entity.add_value(Attribute.spielzeit, [spielzeit])
+                    entity.add_base(Attribute.spielzeit, Attribute.get_base(Attribute.spielzeit, database))
 
             # load tageszeit if needed
             if Attribute.tageszeit in attributes:
@@ -419,6 +433,7 @@ class EntityFactory:
                 else:
                     tageszeit = rows_tageszeit[0][0]
                     entity.add_value(Attribute.tageszeit, [tageszeit])
+                    entity.add_base(Attribute.tageszeit, Attribute.get_base(Attribute.tageszeit, database))
 
             # load koerpermodifikation if needed
             if Attribute.koerpermodifikation in attributes:
@@ -441,6 +456,7 @@ class EntityFactory:
                 else:
                     koerpermodifikation = rows[0][0]
                     entity.add_value(Attribute.koerpermodifikation, [koerpermodifikation])
+                    entity.add_base(Attribute.koerpermodifikation, Attribute.get_base(Attribute.koerpermodifikation, database))
 
             # load kostuemZeit if needed
             if Attribute.kostuemZeit in attributes:
@@ -471,6 +487,7 @@ class EntityFactory:
                         kostuemZeit += int((timecodeende - timecodeanfang).total_seconds())
 
                     entity.add_value(Attribute.kostuemZeit, [kostuemZeit])
+                    entity.add_base(Attribute.kostuemZeit, Attribute.get_base(Attribute.kostuemZeit, database))
 
             entities.append(entity)
             count += 1
