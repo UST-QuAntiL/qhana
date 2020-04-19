@@ -4,3 +4,4 @@
 taxonomies/*
 log/*
 plots/*
+*.pyc
