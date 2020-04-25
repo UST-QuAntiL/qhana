@@ -23,36 +23,36 @@ any special property of an entity with which
 is comparable.
 """
 class TaxonomieType(Enum):
-    alterseindruck = 1
-    basiselement = 2
-    charaktereigenschaft = 3
-    design = 4
-    farbeindruck = 5
-    farbe = 6
-    farbkonzept = 7
-    form = 8
-    funktion = 9
-    genre = 10
-    koerpermodifikation = 11
-    koerperteil = 12
-    material = 13
-    materialeindruck = 14
-    operator = 15
-    produktionsort = 16
-    rollenberuf = 17
-    spielortdetail = 18
-    spielort = 19
-    spielzeit = 20
-    stereotyp = 21
-    tageszeit = 22
-    teilelement = 23
-    trageweise = 24
-    typus = 25
-    zustand = 26
-    geschlecht = 27
-    ortsbegebenheit = 28
-    stereotypRelevant = 29
-    rollenrelevanz = 30
+    alterseindruck = "alterseindruck"
+    basiselement = "basiselement"
+    charaktereigenschaft = "charaktereigenschaft"
+    design = "design"
+    farbeindruck = "farbeindruck"
+    farbe = "farbe"
+    farbkonzept = "farbkonzept"
+    form = "form"
+    funktion = "funktion"
+    genre = "genre"
+    koerpermodifikation = "koerpermodifikation"
+    koerperteil = "koerperteil"
+    material = "material"
+    materialeindruck = "materialeindruck"
+    operator = "operator"
+    produktionsort = "produktionsort"
+    rollenberuf = "rollenberuf"
+    spielortdetail = "spielortdetail"
+    spielort = "spielort"
+    spielzeit = "spielzeit"
+    stereotyp = "stereotyp"
+    tageszeit = "tageszeit"
+    teilelement = "teilelement"
+    trageweise = "trageweise"
+    typus = "typus"
+    zustand = "zustand"
+    geschlecht = "geschlecht"
+    ortsbegebenheit = "ortsbegebenheit"
+    stereotypRelevant = "stereotypRelevant"
+    rollenrelevanz = "rollenrelevanz"
 
     @staticmethod
     def get_name(taxonomieType) -> str:

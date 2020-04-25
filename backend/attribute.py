@@ -14,23 +14,23 @@ confused with TaxonomieType, which is the enum
 for all possible taxonomies in the database.
 """
 class Attribute(enum.Enum):
-    ortsbegebenheit = 1
-    dominanteFarbe = 2
-    stereotypRelevant = 3
-    dominanteFunktion = 4
-    dominanterZustand = 5
-    dominanteCharaktereigenschaft = 6
-    stereotyp = 7
-    geschlecht = 8
-    dominanterAlterseindruck = 9
-    genre = 10
-    rollenberuf = 11
-    dominantesAlter = 12
-    rollenrelevanz = 13
-    spielzeit = 14
-    tageszeit = 15
-    koerpermodifikation = 16
-    kostuemZeit = 17                        # in seconds
+    ortsbegebenheit = "ortsbegebenheit"
+    dominanteFarbe = "dominanteFarbe"
+    stereotypRelevant = "stereotypRelevant"
+    dominanteFunktion = "dominanteFunktion"
+    dominanterZustand = "dominanterZustand"
+    dominanteCharaktereigenschaft = "dominanteCharaktereigenschaft"
+    stereotyp = "stereotyp"
+    geschlecht = "geschlecht"
+    dominanterAlterseindruck = "dominanterAlterseindruck"
+    genre = "genre"
+    rollenberuf = "rollenberuf"
+    dominantesAlter = "dominantesAlter"
+    rollenrelevanz = "rollenrelevanz"
+    spielzeit = "spielzeit"
+    tageszeit = "tageszeit"
+    koerpermodifikation = "koerpermodifikation"
+    kostuemZeit = "kostuemZeit"
 
     """
     Returns the human representable name for the
