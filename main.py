@@ -8,6 +8,7 @@ from backend.attribute import Attribute
 from backend.logger import Logger, LogLevel
 import numpy as np
 import re
+import csv
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 from sklearn import manifold
@@ -123,6 +124,24 @@ def parse():
     list_implemented_transformer_parser = commands.add_parser('list_implemented_transformer',
         description='lists all the implemented transformer that can be used for machine learning')
 
+    # Add parser for export_csv
+    export_csv_parser = commands.add_parser('export_csv',
+        description='exports the loaded entities into csv file')
+    export_csv_parser.add_argument('-o', '--output_file',
+        dest='output_file',
+        help='specifies the filename for the output [default: entities.csv]',
+        default='entities.csv',
+        required=False,
+        type=str
+    )
+    export_csv_parser.add_argument('-n', '--amount',
+        dest='amount',
+        help='specifies the amount of entities [default: all]',
+        default=2147483646,
+        required=False,
+        type=int
+    )
+
     # Add parser for test
     validate_database_parser = commands.add_parser('test',
         description='just executes the things within test function')
@@ -163,7 +182,9 @@ def parse():
     elif args.list_implemented_element_comparer is not None:
         list_implemented_element_comparer(args.list_implemented_element_comparer)
     elif args.list_implemented_transformer is not None:
-        list_implemented_transformer(args.list_implemented_transformer)    
+        list_implemented_transformer(args.list_implemented_transformer)
+    elif args.export_csv is not None:
+        export_csv(args.export_csv)    
     else:
         Logger.normal("Wrong command. Please run -h for see available commands.")
     return
@@ -219,6 +240,47 @@ def list_implemented_transformer(command_args):
     Logger.normal("The following transformer are currently available for machine learning")
     for transformer in TransformerType:
         Logger.normal(str(transformer) + ": " + TransformerType.get_description(transformer))
+    return
+
+def export_csv(command_args):
+    db = Database()
+    db.open()
+
+    entities = EntityFactory.create(list(Attribute), db, command_args.amount)
+
+    with open(command_args.output_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+
+        all_attributes = list(Attribute)
+
+        header = []
+        for attribute in all_attributes:
+            string = str(Attribute.get_name(attribute)).lower()
+            string = string.replace("ä", "ae")
+            string = string.replace("ü", "ue")
+            string = string.replace("ö", "oe")
+            string = string.replace("ß", "ss")
+            string = string.replace(" ", "_")
+            header.append(string)
+
+        writer.writerow(header)
+
+        for entity in entities:
+            body = []
+            for attribute in all_attributes:
+                if len(entity.values[attribute]) == 0:
+                    body.append("")
+                else:
+                    string = str(entity.values[attribute][0]).lower()
+                    if string == "-":
+                        string = ""
+                    string = string.replace("ä", "ae")
+                    string = string.replace("ü", "ue")
+                    string = string.replace("ö", "oe")
+                    string = string.replace("ß", "ss")
+                    string = string.replace(" ", "_")
+                    body.append(string)
+            writer.writerow(body)
     return
 
 def test(command_args):
