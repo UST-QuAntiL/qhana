@@ -2,30 +2,48 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
 import enum
+from backend.logger import Logger
 
 """ 
 Defines an enum to list up all available aggregator
 """
 class AggregatorType(enum.Enum):
-    mean = 1
-    median = 2
-    max = 3
-    min = 4
+    mean = "mean"
+    median = "median"
+    max = "max"
+    min = "min"
+
+    @staticmethod
+    def get_name(aggregatorType) -> str:
+        name = ""
+        if aggregatorType == AggregatorType.mean:
+            name = "Mean"
+        elif aggregatorType == AggregatorType.median:
+            name = "Median"
+        elif aggregatorType == AggregatorType.max:
+            name = "Max"
+        elif aggregatorType == AggregatorType.min:
+            name = "Min"
+        else:
+            Logger.error("No name for aggregator \"" + str(aggregatorType) + "\" specified")
+            raise ValueError("No name for aggregator \"" + str(aggregatorType) + "\" specified")
+        return name
+
 
     @staticmethod
     def get_description(aggregatorType) -> str:
         description = ""
         if aggregatorType == AggregatorType.mean:
-            description += "Aggregates a array of floating point values " \
+            description += "Aggregates an array of floating point values " \
                 + "with using the mean."
         elif aggregatorType == AggregatorType.median:
-            description += "Aggregates a array of floating point values " \
+            description += "Aggregates an array of floating point values " \
                 + "with using the median."
         elif aggregatorType == AggregatorType.max:
-            description += "Aggregates a array of floating point values " \
+            description += "Aggregates an array of floating point values " \
                 + "with using the max value."
         elif aggregatorType == AggregatorType.min:
-            description += "Aggregates a array of floating point values " \
+            description += "Aggregates an array of floating point values " \
                 + "with using the min value."
         else:
             Logger.error("No description for aggregator \"" + str(aggregatorType) + "\" specified")

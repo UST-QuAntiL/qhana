@@ -6,13 +6,26 @@ import networkx as nx
 from networkx import Graph
 from backend.taxonomie import Taxonomie
 import numpy as np
+from backend.logger import Logger
 
 """ 
 Defines an enum to list up all available element comparer
 """
 class ElementComparerType(enum.Enum):
-    wuPalmer = 1
-    timeTanh = 2
+    wuPalmer = "wuPalmer"
+    timeTanh = "timeTanh"
+
+    @staticmethod
+    def get_name(elementComparerType) -> str:
+        name = ""
+        if elementComparerType == ElementComparerType.wuPalmer:
+            name += "WuPalmer"
+        elif elementComparerType == ElementComparerType.timeTanh:
+            name += "TimeTanh"
+        else:
+            Logger.error("No name for element comparer \"" + str(elementComparerType) + "\" specified")
+            raise ValueError("No name for element comparer \"" + str(elementComparerType) + "\" specified")
+        return name
 
     @staticmethod
     def get_description(elementComparerType) -> str:

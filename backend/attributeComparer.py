@@ -3,13 +3,26 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
 import enum
+from backend.logger import Logger
 
 """ 
 Defines an enum to list up all available attribute comparer.
 """
 class AttributeComparerType(enum.Enum):
-    symMaxMean = 1
-    singleElement = 2
+    symMaxMean = "symMaxMean"
+    singleElement = "singleElement"
+
+    @staticmethod
+    def get_name(attributeComparerType) -> str:
+        name = ""
+        if attributeComparerType == AttributeComparerType.symMaxMean:
+            name += "SymMaxMean"
+        elif attributeComparerType == AttributeComparerType.singleElement:
+            name += "singleElement"
+        else:
+            Logger.error("No name for attribute comparer \"" + str(attributeComparerType) + "\" specified")
+            raise ValueError("No name for attribute comparer \"" + str(attributeComparerType) + "\" specified")
+        return name
 
     @staticmethod
     def get_description(attributeComparerType) -> str:

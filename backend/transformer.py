@@ -3,15 +3,32 @@ from abc import abstractmethod
 from typing import Any
 import enum
 import math
+from backend.logger import Logger
 
 """ 
 Defines an enum to list up all available transformer
 """
 class TransformerType(enum.Enum):
-    linearInverse = 1
-    exponentialInverse = 2
-    gaussianInverese = 3
-    polynomialInverse = 4
+    linearInverse = "linearInverse"
+    exponentialInverse = "exponentialInverse"
+    gaussianInverese = "gaussianInverese"
+    polynomialInverse = "polynomialInverse"
+
+    @staticmethod
+    def get_name(transformerType) -> str:
+        name = ""
+        if transformerType == TransformerType.linearInverse:
+            name = "LinearInverse"
+        elif transformerType == TransformerType.exponentialInverse:
+            name = "ExponentialInverse"
+        elif transformerType == TransformerType.gaussianInverese:
+            name = "GaussianInverese"
+        elif transformerType == TransformerType.polynomialInverse:
+            name = "PolynomialInverse"
+        else:
+            Logger.error("No name for transformer \"" + str(transformerType) + "\" specified")
+            raise ValueError("No name for transformer \"" + str(transformerType) + "\" specified")
+        return name
 
     @staticmethod
     def get_description(transformerType) -> str:
@@ -29,8 +46,8 @@ class TransformerType(enum.Enum):
             description += "Transforms similarities into distances using " \
                 + "the polynomial inverse function dist(sim) = 1 / (1 + (sim/alpha)^beta)"
         else:
-            Logger.error("No description for element comparer \"" + str(elementComparerType) + "\" specified")
-            raise ValueError("No description for element comparer \"" + str(elementComparerType) + "\" specified")
+            Logger.error("No description for transformer \"" + str(transformerType) + "\" specified")
+            raise ValueError("No description for transformer \"" + str(transformerType) + "\" specified")
         return description
 
 """ 
