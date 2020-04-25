@@ -11,6 +11,10 @@ import shutil
 import zipfile
 import io
 import pathlib
+from backend.aggregator import AggregatorType
+from backend.transformer import TransformerType
+from backend.attributeComparer import AttributeComparerType
+from backend.elementComparer import ElementComparerType
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -53,6 +57,41 @@ def taxonomies():
         taxonomyTypeName = TaxonomieType.get_name(taxonomyType)
         taxonomies.append((taxonomyTypeValueString, taxonomyTypeName))
     return render_template("taxonomies.html", taxonomies=taxonomies)
+
+@app.route("/components")
+def components():
+    aggregators = []
+    for aggregatorType in AggregatorType:
+        name = AggregatorType.get_name(aggregatorType)
+        description = AggregatorType.get_description(aggregatorType)
+        aggregators.append((name, description))
+
+    transformers = []
+    for transformerType in TransformerType:
+        name = TransformerType.get_name(transformerType)
+        description = TransformerType.get_description(transformerType)
+        transformers.append((name, description))
+
+    attributeComparers = []
+    for attributeComparerType in AttributeComparerType:
+        name = AttributeComparerType.get_name(attributeComparerType)
+        description = AttributeComparerType.get_description(attributeComparerType)
+        attributeComparers.append((name, description))
+
+    elementComparers = []
+    for elementComparerType in ElementComparerType:
+        name = ElementComparerType.get_name(elementComparerType)
+        description = ElementComparerType.get_description(elementComparerType)
+        elementComparers.append((name, description))
+    
+    return render_template(
+        "components.html", 
+        aggregators=aggregators,
+        transformers=transformers,
+        attributeComparers=attributeComparers,
+        elementComparers=elementComparers
+    )
+
 
 @app.route("/view_taxonomy_<taxonomyValueString>")
 def view_taxonomy(taxonomyValueString):

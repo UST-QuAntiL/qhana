@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Components{% endblock %}
+{% block content %}
+<h5>
+The following aggregator are currently available:
+</h5>
+<table style="width:50%; border: 1px solid black">
+    <tr style="border: 1px solid black">
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    {% for aggregator in aggregators %}
+        <tr style="border: 1px solid gray">
+            <td>{{aggregator[0]}}</td>
+            <td>{{aggregator[1]}}</td>
+        </tr>
+    {% endfor %}
+</table>
+<br />
+<br />
+<h5>
+The following transformer are currently available:
+</h5>
+<table style="width:50%; border: 1px solid black">
+    <tr style="border: 1px solid black">
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    {% for transformer in transformers %}
+        <tr style="border: 1px solid gray">
+            <td>{{transformer[0]}}</td>
+            <td>{{transformer[1]}}</td>
+        </tr>
+    {% endfor %}
+</table>
+<br />
+<br />
+<h5>
+The following attribute comparer are currently available:
+</h5>
+<table style="width:50%; border: 1px solid black">
+    <tr style="border: 1px solid black">
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    {% for attributeComparer in attributeComparers %}
+        <tr style="border: 1px solid gray">
+            <td>{{attributeComparer[0]}}</td>
+            <td>{{attributeComparer[1]}}</td>
+        </tr>
+    {% endfor %}
+</table>
+<br />
+<br />
+<h5>
+The following element comparer are currently available:
+</h5>
+<table style="width:50%; border: 1px solid black">
+    <tr style="border: 1px solid black">
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    {% for elementComparer in elementComparers %}
+        <tr style="border: 1px solid gray">
+            <td>{{elementComparer[0]}}</td>
+            <td>{{elementComparer[1]}}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
