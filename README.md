@@ -40,6 +40,16 @@ database = KostuemRepo<br/>
 
 The file must lay in the top directory, i.e. the same directory as the *main.py* script.
 
+## Usage - Web GUI
+
+In order to use the web gui, the following command needs to be executed:
+
+```
+python web.py
+```
+
+Thereby, a WSGI server will be started in the background and the home page of the application will be shown automatically.
+
 ## Usage - Command Line
 
 The program is devided into commands.
