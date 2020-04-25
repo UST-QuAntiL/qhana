@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Taxonomies{% endblock %}
+{% block content %}
+<p>
+The Taxonomies listed below are currently implemented and can be used for machine learning tasks.
+<br />
+All Taxonomies can be downloaded here:
+<br />
+<a href="/zip_taxonomies"><input type="button" value="Export All"></a>
+</p>
+
+<table style="width:50%">
+    <tr>
+        <th>Taxonomy</th>
+        <th>Action</th>
+    </tr>
+    {% for taxonomy in taxonomies %}
+        <tr>
+            <td>{{taxonomy[1]}}</td>
+            <td><a href="/view_taxonomy_{{taxonomy[0]}}"><input type="button" value="View"></a></td>
+        </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Attributes{% endblock %}
+{% block content %}
+<p>
+The Attributes listed below are currently implemented and can be used for machine learning tasks.
+<br />
+Additionally, the corresponding base is shown.
+In most cases, this is a taxonomy.
+<br />
+If this is not the case, "-" will be displayed instead.
+</p>
+
+<table style="width:50%">
+    <tr>
+        <th>Attribute</th>
+        <th>Base</th>
+    </tr>
+    {% for attribute in attributes %}
+        <tr>
+            <td>{{attribute[0]}}</td>
+            <td>{{attribute[1]}}</td>
+        </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}

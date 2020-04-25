@@ -46,8 +46,12 @@ class Database(Singleton):
                 for item in items:
                     connection_string[item[0]] = item[1]
             else:
-                Logger.error('{0} not found in the {1} file'.format(section, filename))
-                raise Exception('{0} not found in the {1} file'.format(section, filename))
+                Logger.error("{0} not found in the {1} file".format(section, filename))
+                raise Exception("{0} not found in the {1} file".format(section, filename))
+
+            self.databaseName = parser.get(section, "database")
+            self.user = parser.get(section, "user")
+            self.host = parser.get(section, "host")
         
             self.__connection = MySQLConnection(**connection_string)
         
