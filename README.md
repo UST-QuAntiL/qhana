@@ -27,7 +27,7 @@ The following packages (including their dependencies) are needed and will be ins
 | colorama               | https://anaconda.org/anaconda/colorama               |
 | scikit-learn           | https://anaconda.org/anaconda/scikit-learn           |
 | pandas                 | https://anaconda.org/anaconda/pandas                 |
-| pandas                 | https://anaconda.org/anaconda/flask                  |
+| flask                  | https://anaconda.org/anaconda/flask                  |
 
 ## Access to the database
 In order to get access to the database, one has to create a *config.ini* file such as:
