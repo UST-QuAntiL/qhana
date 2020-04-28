@@ -107,14 +107,3 @@ At the moment, the following commands are availabel:
 #### List implemented Transformer
 
 `list_implemented_transformer` - lists all the implemented transformer that can be used for machine learning
-
-## Usage - Web Gui
-
-To use the web gui, a local WSGI server is used.
-In order to run the gui, one just run the web.py script:
-
-```
-python web.py
-```
-
-After executing this command, the web gui will be displayed in the local web browser.
