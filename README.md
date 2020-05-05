@@ -27,7 +27,7 @@ The following packages (including their dependencies) are needed and will be ins
 | colorama               | https://anaconda.org/anaconda/colorama               |
 | scikit-learn           | https://anaconda.org/anaconda/scikit-learn           |
 | pandas                 | https://anaconda.org/anaconda/pandas                 |
-| pandas                 | https://anaconda.org/anaconda/flask                  |
+| flask                  | https://anaconda.org/anaconda/flask                  |
 
 ## Access to the database
 In order to get access to the database, one has to create a *config.ini* file such as:
@@ -107,14 +107,3 @@ At the moment, the following commands are availabel:
 #### List implemented Transformer
 
 `list_implemented_transformer` - lists all the implemented transformer that can be used for machine learning
-
-## Usage - Web Gui
-
-To use the web gui, a local WSGI server is used.
-In order to run the gui, one just run the web.py script:
-
-```
-python web.py
-```
-
-After executing this command, the web gui will be displayed in the local web browser.

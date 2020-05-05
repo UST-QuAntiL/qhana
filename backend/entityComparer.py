@@ -85,7 +85,7 @@ class EntityComparer:
     If there is no attribute comparer, the attribute will just use
     as a tag and do not influence the comparing result
     """
-    def compare_similarity(self, first: Entity, second: Entity) -> float:
+    def calculate_similarity(self, first: Entity, second: Entity) -> float:
         aggregationValues = []
 
         # iterate through all attributes form first entity
@@ -147,8 +147,8 @@ class EntityComparer:
     Returns the distance between the two given entities based on the 
     defined similarity transformer and attribute comparer
     """
-    def compare_distance(self, first: Entity, second: Entity) -> float:
-        return self.similarityTransformer.transform(self.compare_similarity(first, second))
+    def calculate_distance(self, first: Entity, second: Entity) -> float:
+        return self.similarityTransformer.transform(self.calculate_similarity(first, second))
 
 """
 Represents the comparer class for costumes
