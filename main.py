@@ -33,6 +33,7 @@ from backend.transformer import TransformerType
 from backend.entityService import EntityService
 import random
 import backend.savingAndLoading as sal
+from backend.entitySimilarities import EntitySimilarities
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -347,7 +348,7 @@ def test(command_args):
             EmptyAttributeAction.ignore
         )
     ]
-
+    
     # create the service
     service = EntityService()
 
@@ -388,7 +389,89 @@ def print_costumes(costumes: [Costume]) -> None:
         print(str(i) + ": " + str(costumes[i]))
 
 def old_main() -> None:
+
+
+    COSTUME_PLAN = [
+        AggregatorType.mean,
+        TransformerType.linearInverse,
+        (
+            Attribute.dominanteFarbe,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanteCharaktereigenschaft,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanterZustand,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.stereotyp,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.geschlecht,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanterAlterseindruck,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.genre, None, None, None
+        ),
+        (
+            Attribute.kostuemZeit,
+            ElementComparerType.timeTanh,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.rollenrelevanz,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        )
+    ]
     
+    simi = EntitySimilarities(COSTUME_PLAN,True,20)
+    check: Timer = Timer()   
+    check.start()
+    similarities = simi.create_matrix_limited(0,15)
+    check.stop()
+    Logger.normal("similarities")
+    Logger.normal(str(similarities))
+    Logger.normal("#entities")
+    Logger.normal(str(len(simi.get_list_entities())))
+    Logger.normal(str(simi.get_valid_entity_index()))
+    Logger.normal(str(simi.get_invalid_entity_index()))
+    Logger.normal(str(simi.get_last_sequenz()))
+    similarities = simi.create_matrix_limited(4,18)
+    Logger.normal("similarities")
+    Logger.normal(str(similarities))
+    Logger.normal("#entities")
+    Logger.normal(str(len(simi.get_list_entities())))
+    Logger.normal(str(simi.get_valid_entity_index()))
+    Logger.normal(str(simi.get_invalid_entity_index()))
+    Logger.normal(str(simi.get_last_sequenz()))
+    Logger.normal(str(simi.get_last_sequenz_id()))
+    
+    
+    
+    quit()
     # Establish connection to db
     db = Database()
     db.open()
