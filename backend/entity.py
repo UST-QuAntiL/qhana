@@ -103,7 +103,7 @@ This class creats entities based on the given attributes.
 class EntityFactory:
     """
     Creates a entitie based on the given list of attributes.
-    The default dor amount is max int, all entities that are found will be returned.
+    The default for amount is max int, all entities that are found will be returned.
     """
     @staticmethod
     def create(

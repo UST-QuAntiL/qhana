@@ -85,7 +85,7 @@ class EntityComparer:
     If there is no attribute comparer, the attribute will just use
     as a tag and do not influence the comparing result
     """
-    def compare_similarity(self, first: Entity, second: Entity) -> float:
+    def calculate_similarity(self, first: Entity, second: Entity) -> float:
         aggregationValues = []
 
         # iterate through all attributes form first entity

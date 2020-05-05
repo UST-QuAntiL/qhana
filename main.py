@@ -287,6 +287,10 @@ def test(command_args):
     db = Database()
     db.open()
 
+    # create the plan, i.e. specify which
+    # attributes we want to have and also which
+    # attribute comparer and element comparer
+    # we want to choose for the specified attribute
     COSTUME_PLAN = [
         AggregatorType.mean,
         TransformerType.linearInverse,
@@ -343,32 +347,38 @@ def test(command_args):
         )
     ]
 
+    # create the service
     service = EntityService()
+
+    # add the plan: this will just
+    # load the enums for attribute comparer
+    # element comparer, transformer and aggregator, ...
     service.add_plan(COSTUME_PLAN)
     
-    entities = service.get_entities(db, 10)
-    printAmount = 4
+    # create the entities out of the database
+    # 10 entities for example
+    amount = 10
+    service.create_entities(db, amount)
+
+    # create the components, i.e. attribute comparer
+    # element comparer ...
+    # here, the objects are created
+    service.create_components()
     
-    if len(entities) == 0:
-        print("No entities found!")
+    # get the list of entities if needed
+    # this is not necessarily the case since
+    # we can just compare entities using
+    # their ids
+    entities = service.get_entities()
 
-    #for i in range(0, printAmount):
-    #    print(entities[random.randrange(0, len(entities), 1)])
-    #    print()
-
-    #maxTime = 0
-    #maxElem = None
-
-    #for i in range(0, len(entities)):
-    #    if len(entities[i].values[Attribute.kostuemZeit]) > 0:
-    #        if entities[i].values[Attribute.kostuemZeit][0] > maxTime:
-    #            maxTime = entities[i].values[Attribute.kostuemZeit][0]
-    #            maxElem = entities[i]
-    
-    #print(maxElem)
-
-    sim = service.compare_similarity()
-    print(str(sim))
+    # compare all 10 entities with each other:
+    # at the moment, the ID of an entity is just
+    # the number, i.e. the number in the array
+    # they have been loaded out of the database.
+    for i in range(0, amount):
+        for j in range(0, amount):
+            sim = service.calculate_similarity(i, j)
+            print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
 
     return
 

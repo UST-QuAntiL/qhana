@@ -86,17 +86,18 @@ class EntityService:
         return
 
     """
-    Gets the entities based on the choosen attributes, database and amount.
+    Creates the entities from the database based on the choosen attributes and amount.
     The default for amount is int max which returns all founded entities.
     """
-    def get_entities(self, database: Database, amount: int = 2147483646) -> List[Entity]:
+    def create_entities(self, database: Database, amount: int = 2147483646) -> List[Entity]:
         self.entities = EntityFactory.create(self.attributes.keys(), database, amount)
-        return self.entities
+        return
 
     """
-    Compares the similaritie of all 
+    Creates the components, i.e. aggregator, transformer, attribute comparer and
+    element comparer.
     """
-    def compare_similarity(self) -> None:
+    def create_components(self) -> None:
         self.entitiyComparer = EntityComparer(
             self.aggregatorType,
             self.transformerType
@@ -114,5 +115,20 @@ class EntityService:
                 self.attributeComparerType[attribute],
                 self.emptyAttributeAction[attribute]
             )
-        
-        return self.entitiyComparer.compare_similarity(self.entities[0], self.entities[0])
+        return
+
+    """
+    Gets the entities based on the choosen attributes.
+    """
+    def get_entities(self) -> List[Entity]:
+        return self.entities
+
+    """
+    Calculates the similarity of two given entity IDs
+    """
+    def calculate_similarity(self, id1, id2) -> None:
+        # get the two entities out of the list
+        entity1 = next((entity for entity in self.entities if entity.id == id1), None)
+        entity2 = next((entity for entity in self.entities if entity.id == id2), None)
+        # compare their values
+        return self.entitiyComparer.calculate_similarity(entity1, entity2)
