@@ -446,31 +446,40 @@ def old_main() -> None:
             EmptyAttributeAction.ignore
         )
     ]
+
+    file_folder_1 = "Versuch_1"
+
+    saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumePlan)
+    saf_cp.set(file_folder_1,COSTUME_PLAN)
+    saf_cp.saving()
+
+    del COSTUME_PLAN
+
+    test = saf_cp.loading()
+    COSTUME_PLAN = test.get_object()
+    #print(str(COSTUME_PLAN))
+
+
     
     simi = EntitySimilarities(COSTUME_PLAN,True,20)
-    check: Timer = Timer()   
+    simi.create_matrix_limited(0,15)
+    file_folder_1 = "Versuch_1"
+
+    saf_simi = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.entitySimilarities)
+    saf_simi.set(file_folder_1,simi)
+    saf_simi.saving()
+
+    del simi
+
+    test = saf_simi.loading()
+    simi = test.get_object()
+    check = Timer()
     check.start()
-    similarities = simi.create_matrix_limited(0,15)
-    check.stop()
-    Logger.normal("similarities")
-    Logger.normal(str(similarities))
-    Logger.normal("#entities")
-    Logger.normal(str(len(simi.get_list_entities())))
-    Logger.normal(str(simi.get_valid_entity_index()))
-    Logger.normal(str(simi.get_invalid_entity_index()))
-    Logger.normal(str(simi.get_last_sequenz()))
     similarities = simi.create_matrix_limited(4,18)
-    Logger.normal("similarities")
-    Logger.normal(str(similarities))
-    Logger.normal("#entities")
-    Logger.normal(str(len(simi.get_list_entities())))
-    Logger.normal(str(simi.get_valid_entity_index()))
-    Logger.normal(str(simi.get_invalid_entity_index()))
-    Logger.normal(str(simi.get_last_sequenz()))
-    Logger.normal(str(simi.get_last_sequenz_id()))
-    
-    
-    
+    check.stop()
+
+
+
     quit()
     # Establish connection to db
     db = Database()
@@ -503,7 +512,7 @@ def old_main() -> None:
     #    Logger.normal("index="+str(i)+ " : " +str(costumes_simi[i]))
     file_folder_1 = "Versuch_1"
 
-    saf_simi = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.similarity_matrix)
+    saf_simi = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumeSimilarities)
     saf_simi.set(file_folder_1,simi)
     saf_simi.saving()
 

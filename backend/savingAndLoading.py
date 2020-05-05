@@ -2,7 +2,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
 import enum
-from backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForSimilarityMatrix, DataForScaling, DataForClustering
+from backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForCostumeSimilarities, DataForScaling, DataForClustering, DataForEntitySimilarities, DataForCostumePlan
 from backend.logger import Logger, LogLevel
 import numpy as np
 from typing import List
@@ -12,13 +12,15 @@ import sys as sys
 import backend.scaling as scal
 import backend.clustering as clu
 import backend.similarities as sim
+import backend.entitySimilarities as esim
 
 class SavingAndLoadingType(enum.Enum):
-    database            = 1
-    taxonomie           = 2
-    similarity_matrix   = 3
+    costumePlan         = 1
+    entitySimilarities  = 2
+    costumeSimilarities = 3
     scaling             = 4
     clustering          = 5
+    plots               = 6
 
 class SavingAndLoading(metaclass=ABCMeta):
     """
@@ -37,12 +39,12 @@ class SavingAndLoadingFactory:
     """
     @staticmethod
     def create(type: SavingAndLoadingType) -> SavingAndLoading:
-        if type == SavingAndLoadingType.database:
-            return SAF_Database()
-        if type == SavingAndLoadingType.taxonomie:
-            return SAF_Taxonomie()
-        if type == SavingAndLoadingType.similarity_matrix:
-            return SAF_Similarity_Matrix()
+        if type == SavingAndLoadingType.costumePlan:
+            return SAF_Costume_Plan()
+        if type == SavingAndLoadingType.entitySimilarities:
+            return SAF_Entity_Similarities()
+        if type == SavingAndLoadingType.costumeSimilarities:
+            return SAF_Costume_Similarities()
         if type == SavingAndLoadingType.scaling:
             return SAF_Scaling()
         if type == SavingAndLoadingType.clustering:
@@ -52,83 +54,141 @@ class SavingAndLoadingFactory:
             raise Exception("Unknown type of savingAndLoading.")
 
 
-class SAF_Database(SavingAndLoading):
-    def saving(self) -> bool:
-        pass
-    def loading(self) -> DataForSavingAndLoading:
-        pass
-
-class SAF_Taxonomie(SavingAndLoading):
-    def saving(self) -> bool:
-        pass
-    def loading(self) -> DataForSavingAndLoading:
-        pass
-
-class SAF_Similarity_Matrix(SavingAndLoading):
+class SAF_Costume_Plan(SavingAndLoading):
     def __init__(self):
-        self.type_name: SavingAndLoadingType = SavingAndLoadingType.similarity_matrix
-        self.bool_set: bool = False
+        self.__type_name: SavingAndLoadingType = SavingAndLoadingType.costumePlan
+        self.__bool_set: bool = False
 
-    def set(self,file_folder: str, similarities_object: sim.Similarities) -> bool:
+    def set(self,file_folder: str, similarities_object: List) -> bool:
         try:
-            self.DataForSimilarityMatrix: DataForSimilarityMatrix = DataForSimilarityMatrix(similarities_object)
-            self.file_folder: str = file_folder
-            self.bool_set = True
+            self.__DataForCostumePlan: DataForCostumePlan = DataForCostumePlan(similarities_object)
+            self.__file_folder: str = file_folder
+            self.__bool_set = True
         except Exception as error:
             Logger.error("set methode failed: {0}".format(str(error)))
-            self.bool_set = False
+            self.__bool_set = False
             raise Exception(str(error))
 
     def saving(self) -> bool:
-        if self.bool_set == False:
+        if self.__bool_set == False:
             Logger.warning("No File was saved. The set method must be called beforehand.")
             return False
 
-        _SavingAndLoadingManaging.saving(self.type_name,self.file_folder, self.DataForSimilarityMatrix)
+        _SavingAndLoadingManaging.saving(self.__type_name,self.__file_folder, self.__DataForCostumePlan)
         return True
 
     def loading(self) -> DataForSavingAndLoading:
-        loading_object: DataForSimilarityMatrix
-        if self.bool_set == False:
+        loading_object: DataForCostumePlan
+        if self.__bool_set == False:
             Logger.warning("No File was saved. The set method must be called beforehand.")
-            return DataForSimilarityMatrix()
+            return DataForCostumePlan()
         try:
-            loading_object = _SavingAndLoadingManaging.loading(self.type_name,self.file_folder)
+            loading_object = _SavingAndLoadingManaging.loading(self.__type_name,self.__file_folder)
             return loading_object
         except Exception as error:
             Logger.warning("Loading failed. The returned object is empty now. Warning:" + str(error))
-            return DataForSimilarityMatrix()
+            return DataForCostumePlan()
 
-class SAF_Scaling(SavingAndLoading):
+class SAF_Entity_Similarities(SavingAndLoading):
     def __init__(self):
-        self.type_name: SavingAndLoadingType = SavingAndLoadingType.scaling
-        self.bool_set: bool = False
+        self.__type_name: SavingAndLoadingType = SavingAndLoadingType.entitySimilarities
+        self.__bool_set: bool = False
 
-    def set(self,file_folder: str, scaling_object: scal.Scaling) -> bool:
+    def set(self,file_folder: str, similarities_object: esim.EntitySimilarities) -> bool:
         try:
-            self.DataForScaling: DataForScaling = DataForScaling(scaling_object)
-            self.file_folder: str = file_folder
-            self.bool_set = True
+            self.__DataForEntitySimilarities: DataForEntitySimilarities = DataForEntitySimilarities(similarities_object)
+            self.__file_folder: str = file_folder
+            self.__bool_set = True
         except Exception as error:
             Logger.error("set methode failed: {0}".format(str(error)))
-            self.bool_set = False
+            self.__bool_set = False
             raise Exception(str(error))
 
     def saving(self) -> bool:
-        if self.bool_set == False:
+        if self.__bool_set == False:
             Logger.warning("No File was saved. The set method must be called beforehand.")
             return False
 
-        _SavingAndLoadingManaging.saving(self.type_name,self.file_folder, self.DataForScaling)
+        _SavingAndLoadingManaging.saving(self.__type_name,self.__file_folder, self.__DataForEntitySimilarities)
+        return True
+
+    def loading(self) -> DataForSavingAndLoading:
+        loading_object: DataForEntitySimilarities
+        if self.__bool_set == False:
+            Logger.warning("No File was saved. The set method must be called beforehand.")
+            return DataForEntitySimilarities()
+        try:
+            loading_object = _SavingAndLoadingManaging.loading(self.__type_name,self.__file_folder)
+            return loading_object
+        except Exception as error:
+            Logger.warning("Loading failed. The returned object is empty now. Warning:" + str(error))
+            return DataForEntitySimilarities()
+
+class SAF_Costume_Similarities(SavingAndLoading):
+    def __init__(self):
+        self.__type_name: SavingAndLoadingType = SavingAndLoadingType.costumeSimilarities
+        self.__bool_set: bool = False
+
+    def set(self,file_folder: str, similarities_object: sim.Similarities) -> bool:
+        try:
+            self.__DataForCostumeSimilarities: DataForCostumeSimilarities = DataForCostumeSimilarities(similarities_object)
+            self.__file_folder: str = file_folder
+            self.__bool_set = True
+        except Exception as error:
+            Logger.error("set methode failed: {0}".format(str(error)))
+            self.__bool_set = False
+            raise Exception(str(error))
+
+    def saving(self) -> bool:
+        if self.__bool_set == False:
+            Logger.warning("No File was saved. The set method must be called beforehand.")
+            return False
+
+        _SavingAndLoadingManaging.saving(self.__type_name,self.__file_folder, self.__DataForCostumeSimilarities)
+        return True
+
+    def loading(self) -> DataForSavingAndLoading:
+        loading_object: DataForCostumeSimilarities
+        if self.__bool_set == False:
+            Logger.warning("No File was saved. The set method must be called beforehand.")
+            return DataForCostumeSimilarities()
+        try:
+            loading_object = _SavingAndLoadingManaging.loading(self.__type_name,self.__file_folder)
+            return loading_object
+        except Exception as error:
+            Logger.warning("Loading failed. The returned object is empty now. Warning:" + str(error))
+            return DataForCostumeSimilarities()
+
+class SAF_Scaling(SavingAndLoading):
+    def __init__(self):
+        self.__type_name: SavingAndLoadingType = SavingAndLoadingType.scaling
+        self.__bool_set: bool = False
+
+    def set(self,file_folder: str, scaling_object: scal.Scaling) -> bool:
+        try:
+            self.__DataForScaling: DataForScaling = DataForScaling(scaling_object)
+            self.__file_folder: str = file_folder
+            self.__bool_set = True
+        except Exception as error:
+            Logger.error("set methode failed: {0}".format(str(error)))
+            self.__bool_set = False
+            raise Exception(str(error))
+
+    def saving(self) -> bool:
+        if self.__bool_set == False:
+            Logger.warning("No File was saved. The set method must be called beforehand.")
+            return False
+
+        _SavingAndLoadingManaging.saving(self.__type_name,self.__file_folder, self.__DataForScaling)
         return True
 
     def loading(self) -> DataForSavingAndLoading:
         loading_object: DataForScaling
-        if self.bool_set == False:
+        if self.__bool_set == False:
             Logger.warning("No File was saved. The set method must be called beforehand.")
             return DataForScaling()
         try:
-            loading_object = _SavingAndLoadingManaging.loading(self.type_name,self.file_folder)
+            loading_object = _SavingAndLoadingManaging.loading(self.__type_name,self.__file_folder)
             return loading_object
         except Exception as error:
             Logger.warning("Loading failed. The returned object is empty now. Warning:" + str(error))
@@ -136,34 +196,34 @@ class SAF_Scaling(SavingAndLoading):
 
 class SAF_Clustering(SavingAndLoading):
     def __init__(self):
-        self.type_name: SavingAndLoadingType = SavingAndLoadingType.clustering
-        self.bool_set: bool = False
+        self.__type_name: SavingAndLoadingType = SavingAndLoadingType.clustering
+        self.__bool_set: bool = False
 
     def set(self,file_folder: str, cluster_object: clu.Clustering) -> bool:
         try:
-            self.DataForClustering: DataForClustering = DataForClustering(cluster_object)
-            self.file_folder: str = file_folder
-            self.bool_set = True
+            self.__DataForClustering: DataForClustering = DataForClustering(cluster_object)
+            self.__file_folder: str = file_folder
+            self.__bool_set = True
         except Exception as error:
             Logger.error("set methode failed: {0}".format(str(error)))
-            self.bool_set = False
+            self.__bool_set = False
             raise Exception(str(error))
 
     def saving(self) -> bool:
-        if self.bool_set == False:
+        if self.__bool_set == False:
             Logger.warning("No File was saved. The set method must be called beforehand.")
             return False
 
-        _SavingAndLoadingManaging.saving(self.type_name,self.file_folder, self.DataForClustering)
+        _SavingAndLoadingManaging.saving(self.__type_name,self.__file_folder, self.__DataForClustering)
         return True
 
     def loading(self) -> DataForSavingAndLoading:
         loading_object: DataForClustering
-        if self.bool_set == False:
+        if self.__bool_set == False:
             Logger.warning("No File was saved. The set method must be called beforehand.")
             return DataForClustering()
         try:
-            loading_object = _SavingAndLoadingManaging.loading(self.type_name,self.file_folder)
+            loading_object = _SavingAndLoadingManaging.loading(self.__type_name,self.__file_folder)
             return loading_object
         except Exception as error:
             Logger.warning("Loading failed. The returned object is empty now. Warning:" + str(error))
@@ -187,12 +247,12 @@ class _SavingAndLoadingManaging():
             os.mkdir(file_folder_path)
         
         # file name
-        if type_name == SavingAndLoadingType.database:
-            file_name: str = "database"
-        elif type_name == SavingAndLoadingType.taxonomie:
-            file_name: str = "taxonomie"
-        elif type_name == SavingAndLoadingType.similarity_matrix:
-            file_name: str = "similarity_matrix"
+        if type_name == SavingAndLoadingType.costumePlan:
+            file_name: str = "costumeplan"
+        elif type_name == SavingAndLoadingType.entitySimilarities:
+            file_name: str = "entity_similarities"
+        elif type_name == SavingAndLoadingType.costumeSimilarities:
+            file_name: str = "costume_similarities"
         elif type_name == SavingAndLoadingType.scaling:
             file_name: str = "scaling"
         elif type_name == SavingAndLoadingType.clustering:
@@ -239,12 +299,12 @@ class _SavingAndLoadingManaging():
             raise Exception("No Directory was found.")
 
         # file name
-        if type_name == SavingAndLoadingType.database:
-            file_name: str = "database"
-        elif type_name == SavingAndLoadingType.taxonomie:
-            file_name: str = "taxonomie"
-        elif type_name == SavingAndLoadingType.similarity_matrix:
-            file_name: str = "similarity_matrix"
+        if type_name == SavingAndLoadingType.costumePlan:
+            file_name: str = "costumeplan"
+        elif type_name == SavingAndLoadingType.entitySimilarities:
+            file_name: str = "entity_similarities"
+        elif type_name == SavingAndLoadingType.costumeSimilarities:
+            file_name: str = "costume_similarities"
         elif type_name == SavingAndLoadingType.scaling:
             file_name: str = "scaling"
         elif type_name == SavingAndLoadingType.clustering:
@@ -267,8 +327,6 @@ class _SavingAndLoadingManaging():
             raise Exception(str(error))
 
             
-
-
 class _Inputs():
     __input: str = ""
     
