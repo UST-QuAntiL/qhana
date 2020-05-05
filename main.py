@@ -377,7 +377,7 @@ def test(command_args):
     # they have been loaded out of the database.
     for i in range(0, amount):
         for j in range(0, amount):
-            sim = service.calculate_similarity(i, j)
+            sim = service.calculate_distance(i, j)
             print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
 
     return

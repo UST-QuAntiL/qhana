@@ -126,9 +126,19 @@ class EntityService:
     """
     Calculates the similarity of two given entity IDs
     """
-    def calculate_similarity(self, id1, id2) -> None:
+    def calculate_similarity(self, id1, id2) -> float:
         # get the two entities out of the list
         entity1 = next((entity for entity in self.entities if entity.id == id1), None)
         entity2 = next((entity for entity in self.entities if entity.id == id2), None)
         # compare their values
         return self.entitiyComparer.calculate_similarity(entity1, entity2)
+
+    """
+    Calculates the distance of two given entity IDs
+    """
+    def calculate_distance(self, id1, id2) -> float:
+        # get the two entities out of the list
+        entity1 = next((entity for entity in self.entities if entity.id == id1), None)
+        entity2 = next((entity for entity in self.entities if entity.id == id2), None)
+        # compare their values
+        return self.entitiyComparer.calculate_distance(entity1, entity2)

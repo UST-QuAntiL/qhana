@@ -147,8 +147,8 @@ class EntityComparer:
     Returns the distance between the two given entities based on the 
     defined similarity transformer and attribute comparer
     """
-    def compare_distance(self, first: Entity, second: Entity) -> float:
-        return self.similarityTransformer.transform(self.compare_similarity(first, second))
+    def calculate_distance(self, first: Entity, second: Entity) -> float:
+        return self.similarityTransformer.transform(self.calculate_similarity(first, second))
 
 """
 Represents the comparer class for costumes
