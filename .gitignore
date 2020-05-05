@@ -6,3 +6,6 @@ log/*
 plots/*
 static/*
 *.pyc
+*.plk
+Session
+test.py
