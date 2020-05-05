@@ -32,6 +32,7 @@ from backend.elementComparer import ElementComparerType
 from backend.transformer import TransformerType
 from backend.entityService import EntityService
 import random
+import backend.savingAndLoading as sal
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -377,12 +378,12 @@ def print_costumes(costumes: [Costume]) -> None:
         print(str(i) + ": " + str(costumes[i]))
 
 def old_main() -> None:
-    # Establish connection to db
     
+    # Establish connection to db
     db = Database()
     db.open()
 
-    costumes = CostumeFactory.create(db, 20)
+    costumes = CostumeFactory.create(db, 41)
     #costumeComparer = CostumeComparer()
 
     #print("Hier 1")
@@ -400,15 +401,26 @@ def old_main() -> None:
     # built a similarity matrix
     simi = Similarities.only_costumes(costumes,True)
     check.start()
-    similarities = simi.create_matrix_limited(0,40)
+    simi.create_matrix_limited(0,40)
     check.stop()
     #Logger.normal("similarities")
     #Logger.normal(str(similarities))
     #costumes_simi: List[Costume] = simi.get_list_costumes()
     #for i in simi.get_last_sequenz():
     #    Logger.normal("index="+str(i)+ " : " +str(costumes_simi[i]))
-    
-    
+    file_folder_1 = "Versuch_1"
+
+    saf_simi = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.similarity_matrix)
+    saf_simi.set(file_folder_1,simi)
+    saf_simi.saving()
+
+    del simi
+
+    test = saf_simi.loading()
+    simi = test.get_object()
+    check.start()
+    similarities = simi.create_matrix_limited(0,40)
+    check.stop()
 
     # Multidimensional scaling
     #Object
@@ -417,20 +429,36 @@ def old_main() -> None:
     mds.set_eps(1e-9)
     mds.set_dissimilarity("precomputed")
     mds.set_dimensions(2)
+    
+    #mds.d2_plot(simi.get_last_sequenz(),simi.get_list_costumes())
+
+    saf = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.scaling)
+    saf.set(file_folder_1,mds)
+    saf.saving()
+
+    del mds
+
+    test = saf.loading()
+    mds = test.get_object()
     pos = mds.scaling(similarities)
-    #Logger.normal("Position eukl.")
-    #Logger.normal(str(pos))
     stress = mds.stress_level()
     Logger.normal("Stress Level should be between 0 and 0.15")
     Logger.normal("Stress: " + str(stress))
-    #mds.d2_plot(simi.get_last_sequenz(),simi.get_list_costumes())
-
-    
-
 
     # clustering with optics
     new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
     labels = new_cluster.create_cluster(pos)
+
+    saf_clu = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.clustering)
+    saf_clu.set(file_folder_1,new_cluster)
+    saf_clu.saving()
+
+    del new_cluster
+
+    test = saf_clu.loading()
+    new_cluster = test.get_object()
+    labels = new_cluster.create_cluster(pos)
+
     
     """
         Logger.error("--------Tests-------sollten noch getestet werden ---------------")
