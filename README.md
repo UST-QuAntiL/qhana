@@ -28,6 +28,7 @@ The following packages (including their dependencies) are needed and will be ins
 | scikit-learn           | https://anaconda.org/anaconda/scikit-learn           |
 | pandas                 | https://anaconda.org/anaconda/pandas                 |
 | flask                  | https://anaconda.org/anaconda/flask                  |
+| pygraphviz             | https://anaconda.org/anaconda/pygraphviz             |
 
 ## Access to the database
 In order to get access to the database, one has to create a *config.ini* file such as:
