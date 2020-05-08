@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Taxonomies{% endblock %}
+{% block content %}
+<p>
+The Taxonomies listed below are currently implemented and can be used for machine learning tasks.
+<br />
+All Taxonomies can be downloaded here:
+<br />
+<a href="/zip_taxonomies"><input type="button" value="Export All"></a>
+</p>
+
+<label for="aggregator">Aggregator Type: </label>
+<select id="aggregator">
+    <option value="None">None</option>
+    {% for aggregator in aggregators %}   
+        <option value={{aggregator[1]}}>{{aggregator[0]}}</option>
+    {% endfor %}
+</select>
+<br />
+<label for="transformer">Transformer Type: </label>
+<select id="transformer">
+    <option value="None">None</option>
+    {% for transformer in transformers %}   
+        <option value={{transformer[1]}}>{{transformer[0]}}</option>
+    {% endfor %}
+</select>
+</p>
+
+<table style="width:50%">
+    <tr>
+        <th>Taxonomy</th>
+        <th>Element Comparer</th>
+        <th>Attribute Comparer</th>
+        <th>Empty Attribute Action</th>
+
+    </tr>
+    {% for taxonomy in taxonomies %}
+        <tr>
+            <td>{{taxonomy[1]}}</td>
+            <td>
+            <select id="elementComparer">
+                <option value="None">None</option>
+                {% for elementcomparer in elementComparers %}   
+                    <option value={{elementcomparer[1]}}>{{elementcomparer[0]}}</option>
+                {% endfor %}
+            </select>
+            </td>
+            <td>
+            <select id="attributeComparer">
+                <option value="None">None</option>
+                {% for attributecomparer in attributeComparers %}   
+                    <option value={{attributecomparer[1]}}>{{attributecomparer[0]}}</option>
+                {% endfor %}
+            </select>     
+            </td>
+            <td>
+                <select id="emptyAttributeAction">
+                    <option value="None">None</option>
+                    {% for emptyAttributeAction in emptyAttributeActions %}   
+                        <option value={{emptyAttributeAction[1]}}>{{emptyAttributeAction[0]}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}

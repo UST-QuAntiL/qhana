@@ -15,6 +15,7 @@ from backend.aggregator import AggregatorType
 from backend.transformer import TransformerType
 from backend.attributeComparer import AttributeComparerType
 from backend.elementComparer import ElementComparerType
+from backend.entityComparer import EmptyAttributeAction
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -128,6 +129,62 @@ def zip_taxonomies():
         mimetype='application/zip',
         as_attachment=True,
         attachment_filename='taxonomies.zip'
+    )
+@app.route("/costumeplan")
+def costumeplan():
+    attributes = []
+    for attribute in Attribute:
+        attributeTypeValueString = str(Attribute.get_name(attribute))
+        attributeTypeName = Attribute.get_name(attribute)
+        attributes.append((attributeTypeValueString, attributeTypeName))
+
+    taxonomies = []
+    for taxonomyType in TaxonomieType:
+        taxonomyTypeValueString = str(taxonomyType.value)
+        taxonomyTypeName = TaxonomieType.get_name(taxonomyType)
+        taxonomies.append((taxonomyTypeValueString, taxonomyTypeName))
+    
+    aggregators = []
+    for aggregatorType in AggregatorType:
+        name = AggregatorType.get_name(aggregatorType)
+        description = AggregatorType.get_description(aggregatorType)
+        aggregators.append((name, description))
+
+    transformers = []
+    for transformerType in TransformerType:
+        name = TransformerType.get_name(transformerType)
+        description = TransformerType.get_description(transformerType)
+        transformers.append((name, description))
+
+    attributeComparers = []
+    for attributeComparerType in AttributeComparerType:
+        name = AttributeComparerType.get_name(attributeComparerType)
+        description = AttributeComparerType.get_description(attributeComparerType)
+        attributeComparers.append((name, description))
+
+    elementComparers = []
+    for elementComparerType in ElementComparerType:
+        name = ElementComparerType.get_name(elementComparerType)
+        description = ElementComparerType.get_description(elementComparerType)
+        elementComparers.append((name, description))
+
+    emptyAttributeActions = []
+    for emptyAttributeActionType in EmptyAttributeAction:
+        name = EmptyAttributeAction.get_name(emptyAttributeActionType)
+        action_type = EmptyAttributeAction.get_emptyAttributeAction_type(emptyAttributeActionType)
+        emptyAttributeActions.append((name, action_type))
+
+    
+    
+    return render_template(
+        "costumeplan.html",
+        emptyAttributeActions = emptyAttributeActions,
+        attributes=attributes,
+        taxonomies=taxonomies,
+        aggregators=aggregators,
+        transformers=transformers,
+        attributeComparers=attributeComparers,
+        elementComparers=elementComparers
     )
 
 if __name__ == '__main__':
