@@ -26,12 +26,14 @@ All Taxonomies can be downloaded here:
 </select>
 </p>
 
-<table style="width:50%">
+<table style="width:50% ; float:left">
     <tr>
         <th>Taxonomy</th>
         <th>Element Comparer</th>
         <th>Attribute Comparer</th>
         <th>Empty Attribute Action</th>
+        
+        
 
     </tr>
     {% for taxonomy in taxonomies %}
@@ -63,6 +65,16 @@ All Taxonomies can be downloaded here:
             </td>
         </tr>
     {% endfor %}
-  </table>
+    </table>
+    <table style="width:50% ; float:right">
+    <tr>
+        <th>Costume Plan</th>
+    </tr>
+    <tr>
+        <td>
+            <textarea rows="30" cols="80">{{costumeplan}}</textarea>
+        </td>
+    </tr>
+    </table>
 
 {% endblock %}

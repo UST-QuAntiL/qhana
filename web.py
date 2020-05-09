@@ -174,10 +174,68 @@ def costumeplan():
         action_type = EmptyAttributeAction.get_emptyAttributeAction_type(emptyAttributeActionType)
         emptyAttributeActions.append((name, action_type))
 
+    costumeplan = [
+        AggregatorType.mean,
+        TransformerType.linearInverse,
+        (
+            Attribute.dominanteFarbe,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanteCharaktereigenschaft,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanterZustand,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.stereotyp,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.geschlecht,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.dominanterAlterseindruck,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.genre, None, None, None
+        ),
+        (
+            Attribute.kostuemZeit,
+            ElementComparerType.timeTanh,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.rollenrelevanz,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        )
+    ]
+    
+
     
     
     return render_template(
         "costumeplan.html",
+        costumeplan = str(costumeplan),
         emptyAttributeActions = emptyAttributeActions,
         attributes=attributes,
         taxonomies=taxonomies,
