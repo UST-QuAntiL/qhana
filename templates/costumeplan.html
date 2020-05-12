@@ -9,6 +9,8 @@ All Taxonomies can be downloaded here:
 <a href="/zip_taxonomies"><input type="button" value="Export All"></a>
 </p>
 
+<p id="demo"></p>
+
 <label for="aggregator">Aggregator Type: </label>
 <select id="aggregator">
     <option value="None">None</option>
@@ -33,33 +35,33 @@ All Taxonomies can be downloaded here:
         <th>Attribute Comparer</th>
         <th>Empty Attribute Action</th>
         
-        
+       
 
     </tr>
     {% for taxonomy in taxonomies %}
         <tr>
             <td>{{taxonomy[1]}}</td>
             <td>
-            <select id="elementComparer">
+            <select id="elementComparer" onchange="document.location.href=this.value">
                 <option value="None">None</option>
                 {% for elementcomparer in elementComparers %}   
-                    <option value={{elementcomparer[1]}}>{{elementcomparer[0]}}</option>
+                    <option value="/instance_costume_plan_{{taxonomy[0]}}_{{elementcomparer[1]}}">{{elementcomparer[0]}}</option>
                 {% endfor %}
             </select>
             </td>
             <td>
-            <select id="attributeComparer">
+            <select id="attributeComparer" onchange="document.location.href=this.value">
                 <option value="None">None</option>
                 {% for attributecomparer in attributeComparers %}   
-                    <option value={{attributecomparer[1]}}>{{attributecomparer[0]}}</option>
+                    <option value="/instance_costume_plan_{{taxonomy[0]}}_{{attributecomparer[0]}}">{{attributecomparer[0]}}</option>
                 {% endfor %}
             </select>     
             </td>
             <td>
-                <select id="emptyAttributeAction">
+                <select id="emptyAttributeAction" onchange="document.location.href=this.value">
                     <option value="None">None</option>
                     {% for emptyAttributeAction in emptyAttributeActions %}   
-                        <option value={{emptyAttributeAction[1]}}>{{emptyAttributeAction[0]}}</option>
+                        <option value="/instance_costume_plan_{{taxonomy[0]}}_{{emptyAttributeAction[1]}}">{{emptyAttributeAction[0]}}</option>
                     {% endfor %}
                 </select>
             </td>
@@ -72,9 +74,18 @@ All Taxonomies can be downloaded here:
     </tr>
     <tr>
         <td>
-            <textarea rows="30" cols="80">{{costumeplan}}</textarea>
+            <textarea rows="30" cols="80">{{session["strCostumePlan"]}}</textarea>
         </td>
     </tr>
     </table>
 
+    <script>
+        function myFunction() {
+          var x = document.getElementById("elementComparer").value;
+          document.getElementById("demo").innerHTML = x;
+        }
+    </script>
+
 {% endblock %}
+
+

@@ -446,6 +446,34 @@ def old_main() -> None:
             EmptyAttributeAction.ignore
         )
     ]
+    test = []
+    COSTUME_PLAN = [
+        AggregatorType.mean,
+        TransformerType.linearInverse,
+        (
+            Attribute.dominanteFarbe,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        )]
+
+    a = Attribute.rollenrelevanz
+    b = ElementComparerType.wuPalmer
+    c = AttributeComparerType.symMaxMean
+    d = EmptyAttributeAction.ignore
+    check = True
+    
+    print(COSTUME_PLAN)
+    for element in COSTUME_PLAN:
+        if isinstance(element, Attribute) and element[0] == a:
+            element[1] = b
+            element[2] = c
+            element[3] = d
+            check = False
+    if check:
+        COSTUME_PLAN.append((a,b,c,d))
+    Logger.error(str(COSTUME_PLAN))
+    quit()
 
     file_folder_1 = "Versuch_1"
 
