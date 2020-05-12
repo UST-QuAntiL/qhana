@@ -124,57 +124,57 @@ class TaxonomieType(Enum):
     @staticmethod
     def get_database_table_name(taxonomieType) -> str:
         if taxonomieType == taxonomieType.alterseindruck:
-            return "alterseindruckdomaene"
+            return "AlterseindruckDomaene"
         elif taxonomieType == taxonomieType.basiselement:
-            return "basiselementdomaene"
+            return "BasiselementDomaene"
         elif taxonomieType == taxonomieType.charaktereigenschaft:
-            return "charaktereigenschaftsdomaene"
+            return "CharaktereigenschaftsDomaene"
         elif taxonomieType == taxonomieType.design:
-            return "designdomaene"
+            return "DesignDomaene"
         elif taxonomieType == taxonomieType.farbeindruck:
             return None
         elif taxonomieType == taxonomieType.farbe:
-            return "farbendomaene"
+            return "FarbenDomaene"
         elif taxonomieType == taxonomieType.farbkonzept:
-            return "farbkonzeptdomaene"
+            return "FarbkonzeptDomaene"
         elif taxonomieType == taxonomieType.form:
-            return "formendomaene"
+            return "FormenDomaene"
         elif taxonomieType == taxonomieType.funktion:
-            return "funktionsdomaene"
+            return "FunktionsDomaene"
         elif taxonomieType == taxonomieType.genre:
-            return "genredomaene"
+            return "GenreDomaene"
         elif taxonomieType == taxonomieType.koerpermodifikation:
-            return "koerpermodifikationsdomaene"
+            return "KoerpermodifikationsDomaene"
         elif taxonomieType == taxonomieType.koerperteil:
             return None
         elif taxonomieType == taxonomieType.material:
-            return "materialdomaene"
+            return "MaterialDomaene"
         elif taxonomieType == taxonomieType.materialeindruck:
             return None
         elif taxonomieType == taxonomieType.operator:
-            return "operatordomaene"
+            return "OperatorDomaene"
         elif taxonomieType == taxonomieType.produktionsort:
-            return "produktionsortdomaene"
+            return "ProduktionsortDomaene"
         elif taxonomieType == taxonomieType.rollenberuf:
-            return "rollenberufdomaene"
+            return "RollenberufDomaene"
         elif taxonomieType == taxonomieType.spielortdetail:
-            return "spielortdetaildomaene"
+            return "SpielortDetailDomaene"
         elif taxonomieType == taxonomieType.spielort:
-            return "spielortdomaene"
+            return "SpielortDomaene"
         elif taxonomieType == taxonomieType.spielzeit:
-            return "spielzeitdomaene"
+            return "SpielzeitDomaene"
         elif taxonomieType == taxonomieType.stereotyp:
-            return "stereotypdomaene"
+            return "StereotypDomaene"
         elif taxonomieType == taxonomieType.tageszeit:
-            return "tageszeitdomaene"
+            return "TageszeitDomaene"
         elif taxonomieType == taxonomieType.teilelement:
-            return "teilelementdomaene"
+            return "TeilelementDomaene"
         elif taxonomieType == taxonomieType.trageweise:
-            return "trageweisendomaene"
+            return "TrageweisenDomaene"
         elif taxonomieType == taxonomieType.typus:
-            return "typusdomaene"
+            return "TypusDomaene"
         elif taxonomieType == taxonomieType.zustand:
-            return "zustandsdomaene"
+            return "ZustandsDomaene"
         elif taxonomieType == taxonomieType.geschlecht:
             return None
         elif taxonomieType == taxonomieType.ortsbegebenheit:
