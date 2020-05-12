@@ -6,6 +6,7 @@ import enum
 from backend.attribute import Attribute
 from backend.entity import Entity
 from backend.logger import Logger
+from typing import Any
 
 """ 
 Defines an enum to specify what should be done
@@ -67,8 +68,43 @@ class EntityComparer:
         # Creates the comparer and aggregator due to factory pattern
         self.attributeAggregator = AggregatorFactory.create(attributeAggregatorType)
         self.similarityTransformer = TransformerFactory.create(similarityTransformerType)
+
+        # format of the cache:
+        # ( ([first], [second]), value )
+        # while the lists are converted to tuples in order
+        # to be hashable
+        self.__cache = {}
         
         return
+
+    """
+    Adds the given similarity to the cache.
+    Note that the chache is not commutative, i.e.
+    if ([first], [second]) is stored, there is
+    no value for ([second], [first]).
+    This is, because some AttributeComparer may not symmetric.
+    """
+    def __add_similarity_to_cache(self, first: [Any], second: [Any], similarity: float) -> None:
+        self.__cache[(tuple(first), tuple(second))] = similarity
+
+    """
+    Returns True if the tuple of attributes is already chached.
+    """
+    def __is_similarity_in_cache(self, first: [Any], second: [Any]) -> bool:
+        return True if (tuple(first), tuple(second)) in self.__cache else False
+
+    """
+    Loads the similarity between two attributes from cache.
+    """
+    def __get_similarity_from_cache(self, first: [Any], second: [Any]) -> float:
+        if (tuple(first), tuple(second)) in self.__cache:
+            return self.__cache[(tuple(first), tuple(second))]
+        else:
+            Logger.error(
+                "Tried to load attribute similarity from cache but was not found!" + \
+                "This comparsion will be done with 0.0 similarity"
+                )
+            return 0.0
 
     """
     Registers an element comparer that will be used
@@ -139,14 +175,24 @@ class EntityComparer:
                     Logger.warning("Unknown value for EmptyAttributeAction. This attribute will be ignored.")
                     continue
 
-            # compare the attributes
-            aggregationValues.append(
-                attributeComparer.compare(
-                    first.values[attribute],
-                    second.values[attribute],
+            firstAttribute = first.values[attribute]
+            secondAttribute = second.values[attribute]
+
+            # check if value is already in chace
+            if self.__is_similarity_in_cache(firstAttribute, secondAttribute):
+                aggregationValues.append(
+                    self.__get_similarity_from_cache(firstAttribute, secondAttribute)
+                )
+            else:
+                # compare the attributes
+                temp = attributeComparer.compare(
+                    firstAttribute,
+                    secondAttribute,
                     first.bases[attribute]
                 )
-            )
+                self.__add_similarity_to_cache(firstAttribute, secondAttribute, temp)
+                aggregationValues.append(temp)
+
 
         # check if there are attributes from the second entity
         # that are not part of the first entity
@@ -158,7 +204,6 @@ class EntityComparer:
                 if attribute not in self.attributeComparer:
                     continue
 
-                attributeComparer = self.attributeComparer[attribute][0]
                 emptyAttributeAction = self.attributeComparer[attribute][1]
 
                 if emptyAttributeAction == EmptyAttributeAction.ignore:

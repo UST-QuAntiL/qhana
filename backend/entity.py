@@ -16,8 +16,9 @@ class Entity:
     """
     Initializes the entity object.
     """
-    def __init__(self, name: str, kostuemId: int, rollenId: int, filmId: int) -> None:
+    def __init__(self, name: str, id: int, kostuemId: int, rollenId: int, filmId: int) -> None:
         self.name = name
+        self.id = id
         self.kostuemId = kostuemId
         self.rollenId = rollenId
         self.filmId = filmId
@@ -172,7 +173,7 @@ class EntityFactory:
             dominanteFunktion = row_costume[6]
             dominanterZustand = row_costume[7]
 
-            entity = Entity("Entity", kostuemId, rollenId, filmId)
+            entity = Entity("Entity", count, kostuemId, rollenId, filmId)
 
             if Attribute.ortsbegebenheit in attributes:
                 entity.add_attribute(Attribute.ortsbegebenheit)

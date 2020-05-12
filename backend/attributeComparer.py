@@ -51,6 +51,44 @@ class AttributeComparerType(enum.Enum):
 Represents the abstract attribute comprarer base class.
 """
 class AttributeComparer(metaclass=ABCMeta):
+    """
+    Initializes the super attribute comparer class.
+    """
+    def __init__(self) -> None:
+        # format of the cache:
+        # ( (first, second), value )
+        self.__cache = {}
+        return
+
+    """
+    Adds the given similarity to the cache.
+    Note that the chache is not commutative, i.e.
+    if (firstElement, secondElement) is stored, there is
+    no value for (secondElement, firstElement).
+    This is, because some AttributeComparer may not symmetric.
+    """
+    def add_similarity_to_cache(self, firstElement: Any, secondElement: Any, similarity: float) -> None:
+        self.__cache[(firstElement, secondElement)] = similarity
+
+    """
+    Returns True if the tuple of elements is already chached.
+    """
+    def is_similarity_in_cache(self, firstElement: Any, secondElement: Any) -> bool:
+        return True if (firstElement, secondElement) in self.__cache else False
+
+    """
+    Loads the similarity between two elements from cache.
+    """
+    def get_similarity_from_cache(self, firstElement: Any, secondElement: Any) -> float:
+        if (firstElement, secondElement) in self.__cache:
+            return self.__cache[(firstElement, secondElement)]
+        else:
+            Logger.error(
+                "Tried to load element similarity from cache but was not found!" + \
+                "This comparsion will be done with 0.0 similarity"
+                )
+            return 0.0
+    
     """ 
     Returns the comparison value of first and second attribute.
     """
@@ -103,7 +141,15 @@ class SymMaxMean(AttributeComparer):
             # Get maximum element_compare(a, b) with b in second
             max = 0.0
             for b in second:
-                temp = self.elementComparer.compare(a, b, base)
+                temp = 0.0
+
+                # check if value is already in cache
+                if self.is_similarity_in_cache(a, b):
+                    temp = self.get_similarity_from_cache(a, b)
+                else:
+                    temp = self.elementComparer.compare(a, b, base)
+                    self.add_similarity_to_cache(a, b, temp)
+
                 if temp > max:
                     max = temp
             
@@ -117,7 +163,15 @@ class SymMaxMean(AttributeComparer):
             # Get maximum element_compare(b, a) with a in first
             max = 0.0
             for a in first:
-                temp = self.elementComparer.compare(b, a, base)
+                temp = 0.0
+
+                # check if value is already in cache
+                if self.is_similarity_in_cache(b, a):
+                    temp = self.get_similarity_from_cache(b, a)
+                else:
+                    temp = self.elementComparer.compare(b, a, base)
+                    self.add_similarity_to_cache(b, a, temp)
+
                 if temp > max:
                     max = temp
             
@@ -147,4 +201,10 @@ class SingleElement(AttributeComparer):
     setsim(A,B) = sim(a,b).
     """
     def compare(self, first: [Any], second: [Any], base: Any) -> float:
-        return self.elementComparer.compare(first[0], second[0], base)
+        # check if value is already in cache
+        if self.is_similarity_in_cache(first[0], second[0]):
+            temp = self.get_similarity_from_cache(first[0], second[0])
+        else:
+            temp = self.elementComparer.compare(first[0], second[0], base)
+            self.add_similarity_to_cache(first[0], second[0], temp)
+        return temp
