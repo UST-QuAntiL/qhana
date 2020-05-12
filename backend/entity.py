@@ -5,6 +5,9 @@ from backend.logger import Logger
 from backend.database import Database
 from backend.taxonomie import Taxonomie
 from datetime import datetime, timedelta
+from backend.attribute import Attribute
+
+MUSE_URL = "http://129.69.214.108/"
 
 """
 This class represents a entity such as a costume or a basic element.
@@ -13,17 +16,22 @@ class Entity:
     """
     Initializes the entity object.
     """
-    def __init__(self, name: str, id: Any) -> None:
+    def __init__(self, name: str, kostuemId: int, rollenId: int, filmId: int) -> None:
         self.name = name
-        self.id = id
+        self.kostuemId = kostuemId
+        self.rollenId = rollenId
+        self.filmId = filmId
         # format: (attribute, None)
         self.attributes = {}
         # format: (attribute, value)
         self.values = {}
         # format: (attribute, base)
         self.bases = {}
-        # format: (name, value)
-        self.infos = {}
+
+        self.filmUrl = MUSE_URL + "#/filme/" + str(self.filmId)
+        self.rollenUrl = self.filmUrl + "/rollen/" + str(self.rollenId)
+        self.kostuemUrl = self.rollenUrl + "/kostueme/" + str(self.kostuemId)
+
         return
 
     """
@@ -54,14 +62,6 @@ class Entity:
         return
 
     """
-    Adds an info to the infos list. Infos are IDs or
-    url or descriptions...
-    """
-    def add_info(self, name: str, value: str) -> None:
-        self.infos[name] = value
-        return
-
-    """
     Removes an attribute from the attributes list.
     """
     def remove_attribute(self, attribute: Attribute) -> None:
@@ -81,12 +81,6 @@ class Entity:
     def remove_base(self, attribute: Attribute) -> None:
         del self.bases[attribute]
         return
-
-    """
-    Removes an info from the infos list
-    """
-    def remove_info(self, name: str) -> None:
-        del self.infos[name]
 
     """
     Returns the entity in a single string.
@@ -178,10 +172,7 @@ class EntityFactory:
             dominanteFunktion = row_costume[6]
             dominanterZustand = row_costume[7]
 
-            entity = Entity("Entity", count)
-            entity.add_info("KostuemID", kostuemId)
-            entity.add_info("RollenID", rollenId)
-            entity.add_info("FilmID", filmId)
+            entity = Entity("Entity", kostuemId, rollenId, filmId)
 
             if Attribute.ortsbegebenheit in attributes:
                 entity.add_attribute(Attribute.ortsbegebenheit)
