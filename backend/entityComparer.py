@@ -12,9 +12,12 @@ Defines an enum to specify what should be done
 if an attribute is missing
 """
 class EmptyAttributeAction(enum.Enum):
-    ignore = 1
-    evaluateAsZero = 2
+    ignore = "ignore"
+    evaluateAsZero = "evaluateAsZero"
 
+    """
+    Returns the name of the EmptyAttributeAction.
+    """
     @staticmethod
     def get_name(variable) -> str:
         if variable == EmptyAttributeAction.ignore:
@@ -26,6 +29,9 @@ class EmptyAttributeAction(enum.Enum):
             raise ValueError("No name for EmptyAttributeAction \"" + str(variable) + "\" specified")
         return
 
+    """
+    Returns the EmptyAttributeActionType given to the name
+    """
     @staticmethod
     def get_emptyAttributeAction_type(variable) -> str:
         if variable == EmptyAttributeAction.ignore:
