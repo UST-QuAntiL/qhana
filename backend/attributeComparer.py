@@ -12,6 +12,9 @@ class AttributeComparerType(enum.Enum):
     symMaxMean = "symMaxMean"
     singleElement = "singleElement"
 
+    """
+    Returns the name of a given AttributeComparerType.
+    """
     @staticmethod
     def get_name(attributeComparerType) -> str:
         name = ""
@@ -24,6 +27,9 @@ class AttributeComparerType(enum.Enum):
             raise ValueError("No name for attribute comparer \"" + str(attributeComparerType) + "\" specified")
         return name
 
+    """
+    Returns the description to the given AttributeComparerType.
+    """
     @staticmethod
     def get_description(attributeComparerType) -> str:
         description = ""

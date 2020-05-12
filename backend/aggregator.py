@@ -13,6 +13,9 @@ class AggregatorType(enum.Enum):
     max = "max"
     min = "min"
 
+    """
+    Returns the name of the gioven AggregatorType.
+    """
     @staticmethod
     def get_name(aggregatorType) -> str:
         name = ""
@@ -29,7 +32,9 @@ class AggregatorType(enum.Enum):
             raise ValueError("No name for aggregator \"" + str(aggregatorType) + "\" specified")
         return name
 
-
+    """
+    Returns the description of the given AggregatorType.
+    """
     @staticmethod
     def get_description(aggregatorType) -> str:
         description = ""

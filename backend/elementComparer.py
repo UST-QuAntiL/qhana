@@ -15,6 +15,9 @@ class ElementComparerType(enum.Enum):
     wuPalmer = "wuPalmer"
     timeTanh = "timeTanh"
 
+    """
+    Returns the name of the given ElementComparerType.
+    """
     @staticmethod
     def get_name(elementComparerType) -> str:
         name = ""
@@ -27,6 +30,9 @@ class ElementComparerType(enum.Enum):
             raise ValueError("No name for element comparer \"" + str(elementComparerType) + "\" specified")
         return name
 
+    """
+    Returns the description of the given ElementComparerType.
+    """
     @staticmethod
     def get_description(elementComparerType) -> str:
         description = ""
