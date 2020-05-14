@@ -481,6 +481,29 @@ class EntityFactory:
                     entity.add_value(Attribute.kostuemZeit, [kostuemZeit])
                     entity.add_base(Attribute.kostuemZeit, Attribute.get_base(Attribute.kostuemZeit, database))
 
+            # load familienstand if needed
+            if Attribute.familienstand in attributes:
+                query = "SELECT Familienstand FROM RolleFamilienstand " \
+                    + "WHERE RollenID = %s AND FilmID = %s"
+                cursor.execute(query, (row_costume[1], row_costume[2]))
+                rows = cursor.fetchall()
+
+                entity.add_attribute(Attribute.familienstand)
+
+                if len(rows) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no Familienstand. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                    )
+                    entity.add_value(Attribute.familienstand, [])
+                else:
+                    familienstand = rows[0][0].pop()
+                    entity.add_value(Attribute.familienstand, [familienstand])
+                    entity.add_base(Attribute.familienstand, Attribute.get_base(Attribute.familienstand, database))
+
             entities.append(entity)
             count += 1
 

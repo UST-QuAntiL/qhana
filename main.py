@@ -293,6 +293,7 @@ def test(command_args):
     # attributes we want to have and also which
     # attribute comparer and element comparer
     # we want to choose for the specified attribute
+    """
     COSTUME_PLAN = [
         AggregatorType.mean,
         TransformerType.linearInverse,
@@ -348,7 +349,24 @@ def test(command_args):
             EmptyAttributeAction.ignore
         )
     ]
-    
+    """
+    COSTUME_PLAN = [
+        AggregatorType.mean,
+        TransformerType.linearInverse,
+        (
+            Attribute.dominanteFarbe,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.familienstand,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.singleElement,
+            EmptyAttributeAction.ignore
+        )
+    ]
+
     # create the service
     service = EntityService()
 

@@ -53,6 +53,7 @@ class TaxonomieType(Enum):
     ortsbegebenheit = "ortsbegebenheit"
     stereotypRelevant = "stereotypRelevant"
     rollenrelevanz = "rollenrelevanz"
+    familienstand = "familienstand"
 
     @staticmethod
     def get_name(taxonomieType) -> str:
@@ -116,6 +117,8 @@ class TaxonomieType(Enum):
             return "StereotypRelevant"
         elif taxonomieType == taxonomieType.rollenrelevanz:
             return "Rollenrelevanz"
+        elif taxonomieType == taxonomieType.familienstand:
+            return "Familienstand"
         else:
             Logger.error("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
             raise ValueError("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
@@ -182,6 +185,8 @@ class TaxonomieType(Enum):
         elif taxonomieType == taxonomieType.stereotypRelevant:
             return None
         elif taxonomieType == taxonomieType.rollenrelevanz:
+            return None
+        elif taxonomieType == taxonomieType.familienstand:
             return None 
         else:
             Logger.error("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
@@ -310,6 +315,16 @@ class Taxonomie:
                 graph.add_edge("Rollenrelevanz", "Hauptrolle")
                 graph.add_edge("Rollenrelevanz", "Nebenrolle")
                 graph.add_edge("Rollenrelevanz", "Statist")
+            elif taxonomieType == taxonomieType.familienstand:
+                graph.add_node("Familienstand")
+                graph.add_node("ledig")
+                graph.add_node("verheiratet")
+                graph.add_node("geschieden")
+                graph.add_node("verwitwet")
+                graph.add_edge("Familienstand", "ledig")
+                graph.add_edge("Familienstand", "verheiratet")
+                graph.add_edge("Familienstand", "geschieden")
+                graph.add_edge("Familienstand", "verwitwet")
             else:
                 Logger.error("\"" + str(taxonomieType) + "\" is a unknown taxonomieType")
         
