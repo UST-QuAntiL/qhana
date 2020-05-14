@@ -366,7 +366,7 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.form,
+            Attribute.trageweise,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore

@@ -826,6 +826,35 @@ class EntityFactory:
                         entity_basis.add_value(Attribute.form, list(forms))
                         entity_basis.add_base(Attribute.form, Attribute.get_base(Attribute.form, database))
 
+                    # load trageweise if needed
+                    if Attribute.form in attributes:
+                        query_trait = "SELECT Trageweisename FROM BasiselementTrageweise "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Trageweisename. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.trageweise)
+                            entity_basis.add_value(Attribute.trageweise, [])
+
+                        # use set to avoid duplicates
+                        trageweisen = set()
+
+                        for row in rows:
+                            trageweisen.add(row[0])
+
+                        entity_basis.add_attribute(Attribute.trageweise)
+                        entity_basis.add_value(Attribute.trageweise, list(trageweisen))
+                        entity_basis.add_base(Attribute.trageweise, Attribute.get_base(Attribute.trageweise, database))
+
 
                     entity_basis.set_id(count)
                     entities.append(entity_basis)
