@@ -708,7 +708,9 @@ class EntityFactory:
             # each datapoint as a basiselement
             if  Attribute.basiselement in attributes or \
                 Attribute.design in attributes or \
-                Attribute.form in attributes:
+                Attribute.form in attributes or \
+                Attribute.trageweise in attributes or \
+                Attribute.zustand in attributes:
 
                 be_basiselement = True
                 query_trait = "SELECT BasiselementID FROM KostuemBasiselement "
@@ -827,7 +829,7 @@ class EntityFactory:
                         entity_basis.add_base(Attribute.form, Attribute.get_base(Attribute.form, database))
 
                     # load trageweise if needed
-                    if Attribute.form in attributes:
+                    if Attribute.trageweise in attributes:
                         query_trait = "SELECT Trageweisename FROM BasiselementTrageweise "
                         query_trait += "WHERE BasiselementID = %s"
                         cursor.execute(query_trait % basiselementID)
@@ -854,6 +856,35 @@ class EntityFactory:
                         entity_basis.add_attribute(Attribute.trageweise)
                         entity_basis.add_value(Attribute.trageweise, list(trageweisen))
                         entity_basis.add_base(Attribute.trageweise, Attribute.get_base(Attribute.trageweise, database))
+
+                    # load zustand if needed
+                    if Attribute.zustand in attributes:
+                        query_trait = "SELECT Zustandsname FROM BasiselementZustand "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Zustandsname. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.zustand)
+                            entity_basis.add_value(Attribute.zustand, [])
+
+                        # use set to avoid duplicates
+                        zustande = set()
+
+                        for row in rows:
+                            zustande.add(row[0])
+
+                        entity_basis.add_attribute(Attribute.zustand)
+                        entity_basis.add_value(Attribute.zustand, list(zustande))
+                        entity_basis.add_base(Attribute.zustand, Attribute.get_base(Attribute.zustand, database))
 
 
                     entity_basis.set_id(count)

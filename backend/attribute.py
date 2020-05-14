@@ -41,6 +41,7 @@ class Attribute(enum.Enum):
     design = "design"
     form = "form"
     trageweise = "trageweise"
+    zustand = "zustand"
 
     """
     Returns the human representable name for the
@@ -102,6 +103,8 @@ class Attribute(enum.Enum):
             return "Form"
         elif attribute == Attribute.trageweise:
             return "Trageweise"
+        elif attribute == Attribute.zustand:
+            return "Zustand"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -169,6 +172,8 @@ class Attribute(enum.Enum):
             return TaxonomieType.form
         elif attribute == Attribute.trageweise:
             return TaxonomieType.trageweise
+        elif attribute == Attribute.zustand:
+            return TaxonomieType.zustand
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
