@@ -710,7 +710,8 @@ class EntityFactory:
                 Attribute.design in attributes or \
                 Attribute.form in attributes or \
                 Attribute.trageweise in attributes or \
-                Attribute.zustand in attributes:
+                Attribute.zustand in attributes or \
+                Attribute.funktion in attributes:
 
                 be_basiselement = True
                 query_trait = "SELECT BasiselementID FROM KostuemBasiselement "
@@ -885,6 +886,35 @@ class EntityFactory:
                         entity_basis.add_attribute(Attribute.zustand)
                         entity_basis.add_value(Attribute.zustand, list(zustande))
                         entity_basis.add_base(Attribute.zustand, Attribute.get_base(Attribute.zustand, database))
+
+                    # load funktion if needed
+                    if Attribute.funktion in attributes:
+                        query_trait = "SELECT Funktionsname FROM BasiselementFunktion "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Funktionsname. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.funktion)
+                            entity_basis.add_value(Attribute.funktion, [])
+
+                        # use set to avoid duplicates
+                        funktionen = set()
+
+                        for row in rows:
+                            funktionen.add(row[0])
+
+                        entity_basis.add_attribute(Attribute.funktion)
+                        entity_basis.add_value(Attribute.funktion, list(funktionen))
+                        entity_basis.add_base(Attribute.funktion, Attribute.get_base(Attribute.funktion, database))
 
 
                     entity_basis.set_id(count)
