@@ -344,7 +344,7 @@ class Taxonomie:
         name_with_extension = (taxonomieType.get_name(taxonomieType) + ".json") if file is None else file
         file_name = directory + "/" + name_with_extension
 
-        with open(filename) as file_object:
+        with open(file_name) as file_object:
             graph_json = json.load(file_object)
 
         graph = json_graph.node_link_graph(graph_json)
