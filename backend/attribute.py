@@ -32,6 +32,7 @@ class Attribute(enum.Enum):
     koerpermodifikation = "koerpermodifikation"
     kostuemZeit = "kostuemZeit"
     familienstand = "familienstand"
+    charaktereigenschaft = "charaktereigenschaft"
 
     """
     Returns the human representable name for the
@@ -75,6 +76,8 @@ class Attribute(enum.Enum):
             return "Kostümzeit"
         elif attribute == Attribute.familienstand:
             return "Familienstand"
+        elif attribute == Attribute.charaktereigenschaft:
+            return "Charaktereigenschaft"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -124,6 +127,8 @@ class Attribute(enum.Enum):
             return None
         elif attribute == Attribute.familienstand:
             return TaxonomieType.familienstand
+        elif attribute == Attribute.charaktereigenschaft:
+            return TaxonomieType.charaktereigenschaft
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")

@@ -362,7 +362,13 @@ def test(command_args):
         (
             Attribute.familienstand,
             ElementComparerType.wuPalmer,
-            AttributeComparerType.singleElement,
+            AttributeComparerType.symMaxMean,
+            EmptyAttributeAction.ignore
+        ),
+        (
+            Attribute.charaktereigenschaft,
+            ElementComparerType.wuPalmer,
+            AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
         )
     ]
@@ -377,7 +383,7 @@ def test(command_args):
     
     # create the entities out of the database
     # 10 entities for example
-    amount = 10
+    amount = 100
     service.create_entities(db, amount)
 
     # create the components, i.e. attribute comparer
@@ -396,9 +402,11 @@ def test(command_args):
     # the number, i.e. the number in the array
     # they have been loaded out of the database.
     for i in range(0, amount):
+        print(entities[i])
+        print(entities[i].kostuemUrl)
         for j in range(0, amount):
             sim = service.calculate_distance(i, j)
-            print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
+            #print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
 
     return
 

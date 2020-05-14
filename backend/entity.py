@@ -500,9 +500,37 @@ class EntityFactory:
                     )
                     entity.add_value(Attribute.familienstand, [])
                 else:
-                    familienstand = rows[0][0].pop()
-                    entity.add_value(Attribute.familienstand, [familienstand])
+                    familienstaende = []
+                    for familienstand in rows[0][0]:
+                        familienstaende.append(familienstand)
+                    entity.add_value(Attribute.familienstand, familienstaende)
                     entity.add_base(Attribute.familienstand, Attribute.get_base(Attribute.familienstand, database))
+
+            # load charakterEigenschaft if needed
+            if Attribute.charaktereigenschaft in attributes:
+                query = "SELECT Charaktereigenschaft FROM KostuemCharaktereigenschaft " \
+                    + "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
+                rows = cursor.fetchall()
+
+                entity.add_attribute(Attribute.charaktereigenschaft)
+
+                if len(rows) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no Charaktereigenschaft. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                    )
+                    entity.add_value(Attribute.charaktereigenschaft, [])
+                else:
+                    charaktereigenschaften = []
+                    for charaktereigenschaft in rows:
+                        charaktereigenschaften.append(charaktereigenschaft[0])
+                    entity.add_value(Attribute.charaktereigenschaft, charaktereigenschaften)
+                    entity.add_base(Attribute.charaktereigenschaft, Attribute.get_base(Attribute.charaktereigenschaft, database))
+
 
             entities.append(entity)
             count += 1
