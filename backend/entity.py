@@ -6,6 +6,7 @@ from backend.database import Database
 from backend.taxonomie import Taxonomie
 from datetime import datetime, timedelta
 from backend.attribute import Attribute
+import copy
 
 MUSE_URL = "http://129.69.214.108/"
 
@@ -16,12 +17,12 @@ class Entity:
     """
     Initializes the entity object.
     """
-    def __init__(self, name: str, id: int, kostuemId: int, rollenId: int, filmId: int) -> None:
+    def __init__(self, name: str) -> None:
         self.name = name
-        self.id = id
-        self.kostuemId = kostuemId
-        self.rollenId = rollenId
-        self.filmId = filmId
+        self.id = 0
+        self.kostuemId = 0
+        self.rollenId = 0
+        self.filmId = 0
         # format: (attribute, None)
         self.attributes = {}
         # format: (attribute, value)
@@ -29,11 +30,90 @@ class Entity:
         # format: (attribute, base)
         self.bases = {}
 
-        self.filmUrl = MUSE_URL + "#/filme/" + str(self.filmId)
-        self.rollenUrl = self.filmUrl + "/rollen/" + str(self.rollenId)
-        self.kostuemUrl = self.rollenUrl + "/kostueme/" + str(self.kostuemId)
-
         return
+
+    """
+    Sets the id of the entity.
+    """
+    def set_id(self, id: int) -> None:
+        self.id = id
+        return
+
+    """
+    Gets the id of the entity.
+    """
+    def get_id(self) -> int:
+        return self.id
+
+    """
+    Sets the basiselementId of the entity.
+    """
+    def set_basiselement_id(self, basiselementId: int) -> None:
+        self.basiselementId = basiselementId
+        return
+
+    """
+    Gets the basiselementId of the entity.
+    """
+    def get_basiselement_id(self) -> int:
+        return self.basiselementId
+
+    """
+    Sets the kostuemId of the entity.
+    """
+    def set_kostuem_id(self, kostuemId: int) -> None:
+        self.kostuemId = kostuemId
+        return
+
+    """
+    Gets the kostuemId of the entity.
+    """
+    def get_kostuem_id(self) -> int:
+        return self.kostuemId
+
+    """
+    Sets the rollenId of the entity.
+    """
+    def set_rollen_id(self, rollenId: int) -> None:
+        self.rollenId = rollenId
+        return
+
+    """
+    Gets the rollenId of the entity.
+    """
+    def get_rollen_id(self) -> int:
+        return self.rollenId
+
+    """
+    Sets the filmId of the entity.
+    """
+    def set_film_id(self, filmId: int) -> None:
+        self.filmId = filmId
+        return
+
+    """
+    Gets the filmid of the entity.
+    """
+    def get_film_id(self) -> int:
+        return self.filmId
+
+    """
+    Gets the film url of the entity.
+    """
+    def get_film_url(self) -> str:
+        return MUSE_URL + "#/filme/" + str(self.get_film_id())
+
+    """
+    Gets the rollen url of the entity.
+    """
+    def get_rollen_url(self) -> str:
+        return self.get_film_url() + "/rollen/" + str(self.get_rollen_id())
+
+    """
+    Gets the kostuem url of the entity.
+    """
+    def get_kostuem_url(self) -> str:
+        return self.get_rollen_url() + "/kostueme/" + str(self.get_kostuem_id())
 
     """
     Adds an attribute to the attributes list.
@@ -97,7 +177,7 @@ This class creats entities based on the given attributes.
 """
 class EntityFactory:
     """
-    Creates a entitie based on the given list of attributes.
+    Creates a entity based on the given list of attributes.
     The default for amount is max int, all entities that are found will be returned.
     """
     @staticmethod
@@ -120,22 +200,25 @@ class EntityFactory:
         cursor.execute(query_costume)
         rows_costume = cursor.fetchall()
 
-        totalAmount = len(rows_costume) if amount > len(rows_costume) else amount
-
-        Logger.debug("Found " + str(len(rows_costume)) + " entities in total")
-
         # i.e. print 10 steps of loading
-        printCount = (int) (totalAmount / 10)
+        printMod = 10
 
         count = 0
 
+        # First, run as we are just collecting
+        # costumes. If there is an attribute set
+        # that is just part of a basiselement,
+        # this flag will be changed and all
+        # entities will be trated as basiselements.
+        be_basiselement = False
+
+        # flag that indicates if we break after
+        # reaching the required amount of
+        # basiselements insteadof 
+        # using costumes
+        finished = False
+
         for row_costume in rows_costume:
-            if count >= totalAmount:
-                break
-
-            if count % printCount == 0:
-                Logger.normal(str(count) + " / " + str(totalAmount) + " entities loaded")
-
             if row_costume[0] == None:
                 invalid_entries += 1
                 Logger.warning("Found entry with KostuemID = None. This entry will be skipped.")
@@ -173,7 +256,10 @@ class EntityFactory:
             dominanteFunktion = row_costume[6]
             dominanterZustand = row_costume[7]
 
-            entity = Entity("Entity", count, kostuemId, rollenId, filmId)
+            entity = Entity("Entity")
+            entity.set_film_id(filmId)
+            entity.set_rollen_id(rollenId)
+            entity.set_kostuem_id(kostuemId)
 
             if Attribute.ortsbegebenheit in attributes:
                 entity.add_attribute(Attribute.ortsbegebenheit)
@@ -617,11 +703,88 @@ class EntityFactory:
                         entity.add_value(Attribute.alter, list(alters))
                         entity.add_base(Attribute.alter, Attribute.get_base(Attribute.alter, database))
 
+            # load basiselement if needed
+            # this also means that we are now treat
+            # each datapoint as a basiselement
+            if Attribute.basiselement in attributes:
+                be_basiselement = True
+                query_trait = "SELECT BasiselementID FROM KostuemBasiselement "
+                query_trait += "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query_trait, (row_costume[0], row_costume[1], row_costume[2]))
+                rows_basiselement = cursor.fetchall()
 
-            entities.append(entity)
-            count += 1
+                if len(rows_basiselement) == 0:
+                    invalid_entries += 1
+                    Logger.warning(
+                        "Found entry with no Basiselement. Associated entries are: " \
+                        + "KostuemID = " + str(row_costume[0]) +", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                    )
 
-        Logger.normal(str(count) + " / " + str(totalAmount) + " entities loaded")
+                kostuemID = row_costume[0]
+                rollenID = row_costume[1]
+                filmID = row_costume[2]
+
+                for row_basiselement in rows_basiselement:
+                    # copy entity because every basiselement
+                    # will now be an own entity
+                    entity_basis = copy.deepcopy(entity)
+                    
+                    basiselementID = row_basiselement[0]
+
+                    entity_basis.set_basiselement_id(basiselementID)
+
+                    if Attribute.basiselement in attributes: 
+                        query_trait = "SELECT Basiselementname FROM Basiselement "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Basiselementname. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.basiselement)
+                            entity_basis.add_value(Attribute.basiselement, [])
+
+                        # use set to avoid duplicates
+                        basiselementNames = set()
+
+                        for row in rows:
+                            basiselementNames.add(row[0])
+
+                        entity_basis.add_attribute(Attribute.basiselement)
+                        entity_basis.add_value(Attribute.basiselement, list(basiselementNames))
+
+                    entity_basis.set_id(count)
+                    entities.append(entity_basis)
+                    count += 1
+                    if count % printMod == 0:
+                        Logger.normal(str(count) + " / " + str(amount) + " entities loaded")     
+                    if count >= amount:
+                        finished = True
+                        break
+
+            if finished == True:
+                break
+
+            if be_basiselement == False:
+                entity.set_id(count)
+                entities.append(entity)
+                count += 1
+                if count % printMod == 0:
+                    Logger.normal(str(count) + " / " + str(amount) + " entities loaded")     
+                if count >= amount:
+                    break
+
+
+        Logger.normal(str(count) + " entities loaded with " + str(invalid_entries) + " being invalid.")
 
         return entities
 

@@ -366,8 +366,8 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.alter,
-            ElementComparerType.timeTanh,
+            Attribute.basiselement,
+            ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
         )
@@ -403,7 +403,7 @@ def test(command_args):
     # they have been loaded out of the database.
     for i in range(0, amount):
         print(entities[i])
-        print(entities[i].kostuemUrl)
+        print(entities[i].get_kostuem_url())
         #for j in range(0, amount):
             #sim = service.calculate_distance(i, j)
             #print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
