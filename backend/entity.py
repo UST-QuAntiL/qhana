@@ -540,9 +540,6 @@ class EntityFactory:
                 cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
                 rows = cursor.fetchall()
 
-                entity.add_attribute(Attribute.spielort)
-                entity.add_attribute(Attribute.spielortDetail)
-
                 if len(rows) == 0:
                     invalid_entries += 1
                     Logger.warning( \
@@ -552,9 +549,11 @@ class EntityFactory:
                         + "FilmID = " + str(row_costume[2]) + ". " \
                     )
                     if Attribute.spielort in attributes:
+                        entity.add_attribute(Attribute.spielort)
                         entity.add_value(Attribute.spielort, [])
                     
                     if Attribute.spielortDetail in attributes:
+                        entity.add_attribute(Attribute.spielortDetail)
                         entity.add_value(Attribute.spielortDetail, [])
                 else:
                     # use set to avoid duplicates
@@ -566,12 +565,57 @@ class EntityFactory:
                         spielortdetails.add(row[1])
 
                     if Attribute.spielort in attributes:
+                        entity.add_attribute(Attribute.spielort)
                         entity.add_value(Attribute.spielort, list(spielorte))
                         entity.add_base(Attribute.spielort, Attribute.get_base(Attribute.spielort, database))
 
                     if Attribute.spielortDetail in attributes:
+                        entity.add_attribute(Attribute.spielortDetail)
                         entity.add_value(Attribute.spielortDetail, list(spielortdetails))
                         entity.add_base(Attribute.spielortDetail, Attribute.get_base(Attribute.spielortDetail, database))
+
+            # load alterseindruck or alter if needed
+            if  Attribute.alterseindruck in attributes or \
+                Attribute.alter in attributes:
+
+                query = "SELECT Alterseindruck, NumAlter FROM KostuemAlterseindruck " \
+                    + "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
+                rows = cursor.fetchall()
+
+                if len(rows) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no Spielort or SpielortDetail. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                    )
+                    if Attribute.alterseindruck in attributes:
+                        entity.add_attribute(Attribute.alterseindruck)
+                        entity.add_value(Attribute.alterseindruck, [])
+                    
+                    if Attribute.alter in attributes:
+                        entity.add_attribute(Attribute.alter)
+                        entity.add_value(Attribute.alter, [])
+                else:
+                    # use set to avoid duplicates
+                    alterseindrucke = set()
+                    alters = set()
+
+                    for row in rows:
+                        alterseindrucke.add(row[0])
+                        alters.add(row[1])
+
+                    if Attribute.alterseindruck in attributes:
+                        entity.add_attribute(Attribute.alterseindruck)
+                        entity.add_value(Attribute.alterseindruck, list(alterseindrucke))
+                        entity.add_base(Attribute.alterseindruck, Attribute.get_base(Attribute.alterseindruck, database))
+
+                    if Attribute.alter in attributes:
+                        entity.add_attribute(Attribute.alter)
+                        entity.add_value(Attribute.alter, list(alters))
+                        entity.add_base(Attribute.alter, Attribute.get_base(Attribute.alter, database))
 
 
             entities.append(entity)

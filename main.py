@@ -360,14 +360,14 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.spielort,
+            Attribute.alterseindruck,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.spielortDetail,
-            ElementComparerType.wuPalmer,
+            Attribute.alter,
+            ElementComparerType.timeTanh,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
         )
@@ -404,8 +404,8 @@ def test(command_args):
     for i in range(0, amount):
         print(entities[i])
         print(entities[i].kostuemUrl)
-        for j in range(0, amount):
-            sim = service.calculate_distance(i, j)
+        #for j in range(0, amount):
+            #sim = service.calculate_distance(i, j)
             #print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
 
     return

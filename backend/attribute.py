@@ -35,6 +35,8 @@ class Attribute(enum.Enum):
     charaktereigenschaft = "charaktereigenschaft"
     spielort = "spielort"
     spielortDetail = "spielortDetail"
+    alterseindruck = "alterseindruck"
+    alter = "alter"
 
     """
     Returns the human representable name for the
@@ -49,7 +51,7 @@ class Attribute(enum.Enum):
         elif attribute == Attribute.stereotypRelevant:
             return "Stereotyp relevant"
         elif attribute == Attribute.dominanteFunktion:
-            return "dominante Funktion"
+            return "Dominante Funktion"
         elif attribute == Attribute.dominanterZustand:
             return "Dominanter Zustand"
         elif attribute == Attribute.dominanteCharaktereigenschaft:
@@ -84,6 +86,10 @@ class Attribute(enum.Enum):
             return "Spielort"
         elif attribute == Attribute.spielortDetail:
             return "SpielortDetail"
+        elif attribute == Attribute.alterseindruck:
+            return "Alterseindruck"
+        elif attribute == Attribute.alter:
+            return "Alter"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -139,6 +145,10 @@ class Attribute(enum.Enum):
             return TaxonomieType.spielort
         elif attribute == Attribute.spielortDetail:
             return TaxonomieType.spielortDetail
+        elif attribute == Attribute.alterseindruck:
+            return TaxonomieType.alterseindruck
+        elif attribute == Attribute.alter:
+            return None
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
@@ -153,5 +163,7 @@ class Attribute(enum.Enum):
         if attribute == Attribute.dominantesAlter:
             return None
         elif attribute == Attribute.kostuemZeit:
+            return None
+        elif attribute == Attribute.alter:
             return None
         return Taxonomie.create_from_db(Attribute.get_taxonomie_type(attribute), database)
