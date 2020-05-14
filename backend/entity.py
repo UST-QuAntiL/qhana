@@ -707,7 +707,8 @@ class EntityFactory:
             # this also means that we are now treat
             # each datapoint as a basiselement
             if  Attribute.basiselement in attributes or \
-                Attribute.design in attributes:
+                Attribute.design in attributes or \
+                Attribute.form in attributes:
 
                 be_basiselement = True
                 query_trait = "SELECT BasiselementID FROM KostuemBasiselement "
@@ -795,6 +796,36 @@ class EntityFactory:
                         entity_basis.add_attribute(Attribute.design)
                         entity_basis.add_value(Attribute.design, list(designs))
                         entity_basis.add_base(Attribute.design, Attribute.get_base(Attribute.design, database))
+
+                    # load form if needed
+                    if Attribute.form in attributes:
+                        query_trait = "SELECT Formname FROM BasiselementForm "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Formname. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.form)
+                            entity_basis.add_value(Attribute.form, [])
+
+                        # use set to avoid duplicates
+                        forms = set()
+
+                        for row in rows:
+                            forms.add(row[0])
+
+                        entity_basis.add_attribute(Attribute.form)
+                        entity_basis.add_value(Attribute.form, list(forms))
+                        entity_basis.add_base(Attribute.form, Attribute.get_base(Attribute.form, database))
+
 
                     entity_basis.set_id(count)
                     entities.append(entity_basis)

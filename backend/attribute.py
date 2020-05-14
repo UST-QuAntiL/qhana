@@ -39,6 +39,7 @@ class Attribute(enum.Enum):
     alter = "alter"
     basiselement = "basiselement"
     design = "design"
+    form = "form"
 
     """
     Returns the human representable name for the
@@ -96,6 +97,8 @@ class Attribute(enum.Enum):
             return "Basiselement"
         elif attribute == Attribute.design:
             return "Design"
+        elif attribute == Attribute.form:
+            return "Form"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -159,6 +162,8 @@ class Attribute(enum.Enum):
             return TaxonomieType.basiselement
         elif attribute == Attribute.design:
             return TaxonomieType.design
+        elif attribute == Attribute.form:
+            return TaxonomieType.form
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")

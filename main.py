@@ -366,7 +366,7 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.basiselement,
+            Attribute.form,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
@@ -404,9 +404,9 @@ def test(command_args):
     for i in range(0, amount):
         print(entities[i])
         print(entities[i].get_kostuem_url())
-        #for j in range(0, amount):
-            #sim = service.calculate_distance(i, j)
-            #print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
+        for j in range(0, amount):
+            sim = service.calculate_distance(i, j)
+            print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
 
     return
 
