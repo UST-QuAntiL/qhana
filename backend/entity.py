@@ -706,7 +706,9 @@ class EntityFactory:
             # load basiselement if needed
             # this also means that we are now treat
             # each datapoint as a basiselement
-            if Attribute.basiselement in attributes:
+            if  Attribute.basiselement in attributes or \
+                Attribute.design in attributes:
+
                 be_basiselement = True
                 query_trait = "SELECT BasiselementID FROM KostuemBasiselement "
                 query_trait += "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
@@ -735,6 +737,7 @@ class EntityFactory:
 
                     entity_basis.set_basiselement_id(basiselementID)
 
+                    # load basiselementName if needed
                     if Attribute.basiselement in attributes: 
                         query_trait = "SELECT Basiselementname FROM Basiselement "
                         query_trait += "WHERE BasiselementID = %s"
@@ -761,6 +764,37 @@ class EntityFactory:
 
                         entity_basis.add_attribute(Attribute.basiselement)
                         entity_basis.add_value(Attribute.basiselement, list(basiselementNames))
+                        entity_basis.add_base(Attribute.basiselement, Attribute.get_base(Attribute.basiselement, database))
+
+
+                    # load design if needed
+                    if Attribute.design in attributes:
+                        query_trait = "SELECT Designname FROM BasiselementDesign "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Designname. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.design)
+                            entity_basis.add_value(Attribute.design, [])
+
+                        # use set to avoid duplicates
+                        designs = set()
+
+                        for row in rows:
+                            designs.add(row[0])
+
+                        entity_basis.add_attribute(Attribute.design)
+                        entity_basis.add_value(Attribute.design, list(designs))
+                        entity_basis.add_base(Attribute.design, Attribute.get_base(Attribute.design, database))
 
                     entity_basis.set_id(count)
                     entities.append(entity_basis)

@@ -38,6 +38,7 @@ class Attribute(enum.Enum):
     alterseindruck = "alterseindruck"
     alter = "alter"
     basiselement = "basiselement"
+    design = "design"
 
     """
     Returns the human representable name for the
@@ -93,6 +94,8 @@ class Attribute(enum.Enum):
             return "Alter"
         elif attribute == Attribute.basiselement:
             return "Basiselement"
+        elif attribute == Attribute.design:
+            return "Design"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -154,6 +157,8 @@ class Attribute(enum.Enum):
             return None
         elif attribute == Attribute.basiselement:
             return TaxonomieType.basiselement
+        elif attribute == Attribute.design:
+            return TaxonomieType.design
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")

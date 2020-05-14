@@ -360,7 +360,7 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.alterseindruck,
+            Attribute.design,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
