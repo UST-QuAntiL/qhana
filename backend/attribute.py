@@ -33,6 +33,8 @@ class Attribute(enum.Enum):
     kostuemZeit = "kostuemZeit"
     familienstand = "familienstand"
     charaktereigenschaft = "charaktereigenschaft"
+    spielort = "spielort"
+    spielortDetail = "spielortDetail"
 
     """
     Returns the human representable name for the
@@ -78,6 +80,10 @@ class Attribute(enum.Enum):
             return "Familienstand"
         elif attribute == Attribute.charaktereigenschaft:
             return "Charaktereigenschaft"
+        elif attribute == Attribute.spielort:
+            return "Spielort"
+        elif attribute == Attribute.spielortDetail:
+            return "SpielortDetail"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -129,6 +135,10 @@ class Attribute(enum.Enum):
             return TaxonomieType.familienstand
         elif attribute == Attribute.charaktereigenschaft:
             return TaxonomieType.charaktereigenschaft
+        elif attribute == Attribute.spielort:
+            return TaxonomieType.spielort
+        elif attribute == Attribute.spielortDetail:
+            return TaxonomieType.spielortDetail
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")

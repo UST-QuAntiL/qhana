@@ -531,6 +531,48 @@ class EntityFactory:
                     entity.add_value(Attribute.charaktereigenschaft, charaktereigenschaften)
                     entity.add_base(Attribute.charaktereigenschaft, Attribute.get_base(Attribute.charaktereigenschaft, database))
 
+            # load spielort or spielortDetail if needed
+            if  Attribute.spielort in attributes or \
+                Attribute.spielortDetail in attributes:
+
+                query = "SELECT Spielort, SpielortDetail FROM KostuemSpielort " \
+                    + "WHERE KostuemID = %s AND RollenID = %s AND FilmID = %s"
+                cursor.execute(query, (row_costume[0], row_costume[1], row_costume[2]))
+                rows = cursor.fetchall()
+
+                entity.add_attribute(Attribute.spielort)
+                entity.add_attribute(Attribute.spielortDetail)
+
+                if len(rows) == 0:
+                    invalid_entries += 1
+                    Logger.warning( \
+                        "Found entry with no Spielort or SpielortDetail. Associated entry is: " \
+                        + "KostuemID = " + str(row_costume[0]) + ", " \
+                        + "RollenID = " + str(row_costume[1]) + ", " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                    )
+                    if Attribute.spielort in attributes:
+                        entity.add_value(Attribute.spielort, [])
+                    
+                    if Attribute.spielortDetail in attributes:
+                        entity.add_value(Attribute.spielortDetail, [])
+                else:
+                    # use set to avoid duplicates
+                    spielorte = set()
+                    spielortdetails = set()
+
+                    for row in rows:
+                        spielorte.add(row[0])
+                        spielortdetails.add(row[1])
+
+                    if Attribute.spielort in attributes:
+                        entity.add_value(Attribute.spielort, list(spielorte))
+                        entity.add_base(Attribute.spielort, Attribute.get_base(Attribute.spielort, database))
+
+                    if Attribute.spielortDetail in attributes:
+                        entity.add_value(Attribute.spielortDetail, list(spielortdetails))
+                        entity.add_base(Attribute.spielortDetail, Attribute.get_base(Attribute.spielortDetail, database))
+
 
             entities.append(entity)
             count += 1

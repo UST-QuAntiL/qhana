@@ -360,13 +360,13 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.familienstand,
+            Attribute.spielort,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.charaktereigenschaft,
+            Attribute.spielortDetail,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore

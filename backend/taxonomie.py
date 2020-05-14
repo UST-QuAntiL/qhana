@@ -40,7 +40,7 @@ class TaxonomieType(Enum):
     operator = "operator"
     produktionsort = "produktionsort"
     rollenberuf = "rollenberuf"
-    spielortdetail = "spielortdetail"
+    spielortDetail = "spielortDetail"
     spielort = "spielort"
     spielzeit = "spielzeit"
     stereotyp = "stereotyp"
@@ -91,8 +91,8 @@ class TaxonomieType(Enum):
             return "Produktionsort"
         elif taxonomieType == taxonomieType.rollenberuf:
             return "Rollenberuf"
-        elif taxonomieType == taxonomieType.spielortdetail:
-            return "Spielortdetail"
+        elif taxonomieType == taxonomieType.spielortDetail:
+            return "SpielortDetail"
         elif taxonomieType == taxonomieType.spielort:
             return "Spielort"
         elif taxonomieType == taxonomieType.spielzeit:
@@ -160,7 +160,7 @@ class TaxonomieType(Enum):
             return "ProduktionsortDomaene"
         elif taxonomieType == taxonomieType.rollenberuf:
             return "RollenberufDomaene"
-        elif taxonomieType == taxonomieType.spielortdetail:
+        elif taxonomieType == taxonomieType.spielortDetail:
             return "SpielortDetailDomaene"
         elif taxonomieType == taxonomieType.spielort:
             return "SpielortDomaene"
