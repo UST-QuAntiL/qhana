@@ -101,7 +101,7 @@ class WuPalmer(ElementComparer):
         d2 = nx.algorithms.shortest_paths.generic.shortest_path_length(ud_graph, second, lowest_common_ancestor)
         d3 = nx.algorithms.shortest_paths.generic.shortest_path_length(ud_graph, lowest_common_ancestor, root)
 
-        return 2 * d3 / (d1 + d2 + 2* d3)
+        return 2 * d3 / (d1 + d2 + 2 * d3)
 
 """
 Represents a timecode comparer using the tanh function.

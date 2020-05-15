@@ -711,7 +711,11 @@ class EntityFactory:
                 Attribute.form in attributes or \
                 Attribute.trageweise in attributes or \
                 Attribute.zustand in attributes or \
-                Attribute.funktion in attributes:
+                Attribute.funktion in attributes or \
+                Attribute.material in attributes or \
+                Attribute.materialeindruck in attributes or \
+                Attribute.farbe in attributes or \
+                Attribute.farbeindruck in attributes:
 
                 be_basiselement = True
                 query_trait = "SELECT BasiselementID FROM KostuemBasiselement "
@@ -915,6 +919,86 @@ class EntityFactory:
                         entity_basis.add_attribute(Attribute.funktion)
                         entity_basis.add_value(Attribute.funktion, list(funktionen))
                         entity_basis.add_base(Attribute.funktion, Attribute.get_base(Attribute.funktion, database))
+
+                    # load materialName and materialEindruck if needed
+                    if  Attribute.material in attributes or \
+                        Attribute.materialeindruck in attributes:
+                        query_trait = "SELECT Materialname, Materialeindruck FROM BasiselementMaterial "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Materialname and Materialeindruck. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.material)
+                            entity_basis.add_value(Attribute.material, [])
+                            entity_basis.add_attribute(Attribute.materialeindruck)
+                            entity_basis.add_value(Attribute.materialeindruck, [])
+
+                        # use set to avoid duplicates
+                        materialien = set()
+                        materialEindrucke = set()
+
+                        for row in rows:
+                            materialien.add(row[0])
+                            materialEindrucke.add(row[1])
+
+                        if Attribute.material in attributes:
+                            entity_basis.add_attribute(Attribute.material)
+                            entity_basis.add_value(Attribute.material, list(materialien))
+                            entity_basis.add_base(Attribute.material, Attribute.get_base(Attribute.material, database))
+
+                        if Attribute.materialeindruck in attributes:
+                            entity_basis.add_attribute(Attribute.materialeindruck)
+                            entity_basis.add_value(Attribute.materialeindruck, list(materialEindrucke))
+                            entity_basis.add_base(Attribute.materialeindruck, Attribute.get_base(Attribute.materialeindruck, database))
+
+                    # load farbName and farbEindruck if needed
+                    if  Attribute.farbe in attributes or \
+                        Attribute.farbeindruck in attributes:
+                        query_trait = "SELECT Farbname, Farbeindruck FROM BasiselementFarbe "
+                        query_trait += "WHERE BasiselementID = %s"
+                        cursor.execute(query_trait % basiselementID)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 0:
+                            invalid_entries += 1
+                            Logger.warning(
+                                "Found entry with no Farbname and Farbeindruck. Associated entries are: " \
+                                + "BasiselementID = " + str(basiselementID) +", " \
+                                + "KostuemID = " + str(kostuemID) +", " \
+                                + "RollenID = " + str(rollenID) + ", " \
+                                + "FilmID = " + str(filmID) + ". " \
+                            )
+                            entity_basis.add_attribute(Attribute.farbe)
+                            entity_basis.add_value(Attribute.farbe, [])
+                            entity_basis.add_attribute(Attribute.farbeindruck)
+                            entity_basis.add_value(Attribute.farbeindruck, [])
+
+                        # use set to avoid duplicates
+                        farben = set()
+                        farbeindrucke = set()
+
+                        for row in rows:
+                            farben.add(row[0])
+                            farbeindrucke.add(row[1])
+
+                        if Attribute.farbe in attributes:
+                            entity_basis.add_attribute(Attribute.farbe)
+                            entity_basis.add_value(Attribute.farbe, list(farben))
+                            entity_basis.add_base(Attribute.farbe, Attribute.get_base(Attribute.farbe, database))
+
+                        if Attribute.farbeindruck in attributes:
+                            entity_basis.add_attribute(Attribute.farbeindruck)
+                            entity_basis.add_value(Attribute.farbeindruck, list(farbeindrucke))
+                            entity_basis.add_base(Attribute.farbeindruck, Attribute.get_base(Attribute.farbeindruck, database))
 
 
                     entity_basis.set_id(count)

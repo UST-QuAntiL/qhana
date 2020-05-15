@@ -43,6 +43,10 @@ class Attribute(enum.Enum):
     trageweise = "trageweise"
     zustand = "zustand"
     funktion = "funktion"
+    material = "material"
+    materialeindruck = "materialeindruck"
+    farbe = "farbe"
+    farbeindruck = "farbeindruck"
 
     """
     Returns the human representable name for the
@@ -108,6 +112,14 @@ class Attribute(enum.Enum):
             return "Zustand"
         elif attribute == Attribute.funktion:
             return "Funktion"
+        elif attribute == Attribute.material:
+            return "Material"
+        elif attribute == Attribute.materialeindruck:
+            return "Materialeindruck"
+        elif attribute == Attribute.farbe:
+            return "Farbe"
+        elif attribute == Attribute.farbeindruck:
+            return "Farbeindruck"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -179,6 +191,14 @@ class Attribute(enum.Enum):
             return TaxonomieType.zustand
         elif attribute == Attribute.funktion:
             return TaxonomieType.funktion
+        elif attribute == Attribute.material:
+            return TaxonomieType.material
+        elif attribute == Attribute.materialeindruck:
+            return TaxonomieType.materialeindruck
+        elif attribute == Attribute.farbe:
+            return TaxonomieType.farbe
+        elif attribute == Attribute.farbeindruck:
+            return TaxonomieType.farbeindruck
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")

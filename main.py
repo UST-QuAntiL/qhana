@@ -360,13 +360,13 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.design,
+            Attribute.farbeindruck,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.funktion,
+            Attribute.dominanteCharaktereigenschaft,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
@@ -405,7 +405,14 @@ def test(command_args):
         print(entities[i])
         print(entities[i].get_kostuem_url())
         for j in range(0, amount):
-            sim = service.calculate_distance(i, j)
+            try:
+                sim = service.calculate_distance(i, j)
+            except Exception as err:
+                print("Exception!!")
+                print(entities[i])
+                print(entities[i].get_kostuem_url())
+                raise err
+
             #print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
 
     return
