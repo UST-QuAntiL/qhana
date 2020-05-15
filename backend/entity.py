@@ -297,6 +297,29 @@ class EntityFactory:
                     entity.add_value(Attribute.dominanterZustand, [dominanterZustand])
                     entity.add_base(Attribute.dominanterZustand, Attribute.get_base(Attribute.dominanterZustand, database))
 
+            # load farbkonzept if needed
+            if Attribute.farbkonzept in attributes:
+                query = "SELECT Farbkonzept FROM FilmFarbkonzept "
+                query += "WHERE FilmID = %s"
+                cursor.execute(query % row_costume[2])
+                rows = cursor.fetchall()
+
+                if len(rows) == 0:
+                    invalid_entries += 1
+                    Logger.warning(
+                        "Found entry with no Farbkonzept. Associated entries are: " \
+                        + "FilmID = " + str(row_costume[2]) + ". " \
+                    )
+            
+                farbkonzepte = set()
+
+                for row in rows:
+                    farbkonzepte.add(row[0])
+
+                entity.add_attribute(Attribute.farbkonzept)
+                entity.add_value(Attribute.farbkonzept, list(farbkonzepte))
+                entity.add_base(Attribute.farbkonzept, Attribute.get_base(Attribute.farbkonzept, database))
+ 
             # load dominanteCharaktereigenschaft if needed
             if Attribute.dominanteCharaktereigenschaft in attributes:
                 query_trait = "SELECT DominanteCharaktereigenschaft FROM RolleDominanteCharaktereigenschaft "
@@ -999,7 +1022,6 @@ class EntityFactory:
                             entity_basis.add_attribute(Attribute.farbeindruck)
                             entity_basis.add_value(Attribute.farbeindruck, list(farbeindrucke))
                             entity_basis.add_base(Attribute.farbeindruck, Attribute.get_base(Attribute.farbeindruck, database))
-
 
                     entity_basis.set_id(count)
                     entities.append(entity_basis)

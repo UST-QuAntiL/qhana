@@ -360,7 +360,7 @@ def test(command_args):
             EmptyAttributeAction.ignore
         ),
         (
-            Attribute.farbeindruck,
+            Attribute.farbkonzept,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore

@@ -47,6 +47,7 @@ class Attribute(enum.Enum):
     materialeindruck = "materialeindruck"
     farbe = "farbe"
     farbeindruck = "farbeindruck"
+    farbkonzept = "farbkonzept"
 
     """
     Returns the human representable name for the
@@ -120,6 +121,8 @@ class Attribute(enum.Enum):
             return "Farbe"
         elif attribute == Attribute.farbeindruck:
             return "Farbeindruck"
+        elif attribute == Attribute.farbkonzept:
+            return "Farbkonzept"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -199,6 +202,8 @@ class Attribute(enum.Enum):
             return TaxonomieType.farbe
         elif attribute == Attribute.farbeindruck:
             return TaxonomieType.farbeindruck
+        elif attribute == Attribute.farbkonzept:
+            return TaxonomieType.farbkonzept
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
