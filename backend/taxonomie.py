@@ -259,6 +259,7 @@ class Taxonomie:
                 graph.add_edge("Farbeindruck", "pastellig")
                 graph.add_edge("Farbeindruck", "pastellig")
                 graph.add_edge("Farbeindruck", "stumpf")
+                graph.add_edge("Farbeindruck", "transparent")
             elif taxonomieType == taxonomieType.koerperteil:
                 graph.add_node("Körperteil")
                 graph.add_node("Bein")
