@@ -31,6 +31,23 @@ class Attribute(enum.Enum):
     tageszeit = "tageszeit"
     koerpermodifikation = "koerpermodifikation"
     kostuemZeit = "kostuemZeit"
+    familienstand = "familienstand"
+    charaktereigenschaft = "charaktereigenschaft"
+    spielort = "spielort"
+    spielortDetail = "spielortDetail"
+    alterseindruck = "alterseindruck"
+    alter = "alter"
+    basiselement = "basiselement"
+    design = "design"
+    form = "form"
+    trageweise = "trageweise"
+    zustand = "zustand"
+    funktion = "funktion"
+    material = "material"
+    materialeindruck = "materialeindruck"
+    farbe = "farbe"
+    farbeindruck = "farbeindruck"
+    farbkonzept = "farbkonzept"
 
     """
     Returns the human representable name for the
@@ -45,7 +62,7 @@ class Attribute(enum.Enum):
         elif attribute == Attribute.stereotypRelevant:
             return "Stereotyp relevant"
         elif attribute == Attribute.dominanteFunktion:
-            return "dominante Funktion"
+            return "Dominante Funktion"
         elif attribute == Attribute.dominanterZustand:
             return "Dominanter Zustand"
         elif attribute == Attribute.dominanteCharaktereigenschaft:
@@ -72,6 +89,40 @@ class Attribute(enum.Enum):
             return "Körpermodifikation"
         elif attribute == Attribute.kostuemZeit:
             return "Kostümzeit"
+        elif attribute == Attribute.familienstand:
+            return "Familienstand"
+        elif attribute == Attribute.charaktereigenschaft:
+            return "Charaktereigenschaft"
+        elif attribute == Attribute.spielort:
+            return "Spielort"
+        elif attribute == Attribute.spielortDetail:
+            return "SpielortDetail"
+        elif attribute == Attribute.alterseindruck:
+            return "Alterseindruck"
+        elif attribute == Attribute.alter:
+            return "Alter"
+        elif attribute == Attribute.basiselement:
+            return "Basiselement"
+        elif attribute == Attribute.design:
+            return "Design"
+        elif attribute == Attribute.form:
+            return "Form"
+        elif attribute == Attribute.trageweise:
+            return "Trageweise"
+        elif attribute == Attribute.zustand:
+            return "Zustand"
+        elif attribute == Attribute.funktion:
+            return "Funktion"
+        elif attribute == Attribute.material:
+            return "Material"
+        elif attribute == Attribute.materialeindruck:
+            return "Materialeindruck"
+        elif attribute == Attribute.farbe:
+            return "Farbe"
+        elif attribute == Attribute.farbeindruck:
+            return "Farbeindruck"
+        elif attribute == Attribute.farbkonzept:
+            return "Farbkonzept"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")
@@ -119,6 +170,40 @@ class Attribute(enum.Enum):
             return TaxonomieType.koerpermodifikation
         elif attribute == Attribute.kostuemZeit:
             return None
+        elif attribute == Attribute.familienstand:
+            return TaxonomieType.familienstand
+        elif attribute == Attribute.charaktereigenschaft:
+            return TaxonomieType.charaktereigenschaft
+        elif attribute == Attribute.spielort:
+            return TaxonomieType.spielort
+        elif attribute == Attribute.spielortDetail:
+            return TaxonomieType.spielortDetail
+        elif attribute == Attribute.alterseindruck:
+            return TaxonomieType.alterseindruck
+        elif attribute == Attribute.alter:
+            return None
+        elif attribute == Attribute.basiselement:
+            return TaxonomieType.basiselement
+        elif attribute == Attribute.design:
+            return TaxonomieType.design
+        elif attribute == Attribute.form:
+            return TaxonomieType.form
+        elif attribute == Attribute.trageweise:
+            return TaxonomieType.trageweise
+        elif attribute == Attribute.zustand:
+            return TaxonomieType.zustand
+        elif attribute == Attribute.funktion:
+            return TaxonomieType.funktion
+        elif attribute == Attribute.material:
+            return TaxonomieType.material
+        elif attribute == Attribute.materialeindruck:
+            return TaxonomieType.materialeindruck
+        elif attribute == Attribute.farbe:
+            return TaxonomieType.farbe
+        elif attribute == Attribute.farbeindruck:
+            return TaxonomieType.farbeindruck
+        elif attribute == Attribute.farbkonzept:
+            return TaxonomieType.farbkonzept
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
@@ -133,5 +218,7 @@ class Attribute(enum.Enum):
         if attribute == Attribute.dominantesAlter:
             return None
         elif attribute == Attribute.kostuemZeit:
+            return None
+        elif attribute == Attribute.alter:
             return None
         return Taxonomie.create_from_db(Attribute.get_taxonomie_type(attribute), database)

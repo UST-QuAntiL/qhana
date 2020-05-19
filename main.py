@@ -293,6 +293,7 @@ def test(command_args):
     # attributes we want to have and also which
     # attribute comparer and element comparer
     # we want to choose for the specified attribute
+    """
     COSTUME_PLAN = [
         AggregatorType.mean,
         TransformerType.linearInverse,
@@ -348,7 +349,27 @@ def test(command_args):
             EmptyAttributeAction.ignore
         )
     ]
-    
+    """
+    COSTUME_PLAN = [
+        AggregatorType.mean,
+        TransformerType.linearInverse,
+    ]
+
+    for attribute in Attribute:
+        if  attribute == Attribute.dominantesAlter or \
+            attribute == Attribute.kostuemZeit or \
+            attribute == Attribute.alter or \
+            attribute == Attribute.trageweise:
+            continue
+        COSTUME_PLAN.append(
+            (
+                attribute, 
+                ElementComparerType.wuPalmer, 
+                AttributeComparerType.singleElement, 
+                EmptyAttributeAction.ignore
+            )
+        )
+
     # create the service
     service = EntityService()
 
@@ -359,8 +380,8 @@ def test(command_args):
     
     # create the entities out of the database
     # 10 entities for example
-    amount = 10
-    service.create_entities(db, amount)
+    amount = 100
+    service.create_entities(db)
 
     # create the components, i.e. attribute comparer
     # element comparer ...
@@ -373,14 +394,32 @@ def test(command_args):
     # their ids
     entities = service.get_entities()
 
+    # create timer
+    check: Timer = Timer()
+
+    # starttimer
+    check.start()
+
     # compare all 10 entities with each other:
     # at the moment, the ID of an entity is just
     # the number, i.e. the number in the array
     # they have been loaded out of the database.
+    count = 0
     for i in range(0, amount):
         for j in range(0, amount):
-            sim = service.calculate_distance(i, j)
-            print("Element " + str(i) + " <-> Element " + str(j) + " = " + str(sim))
+            count += 1
+            if count % (amount * amount * 0.1) == 0:
+                print(str(int(count/(amount * amount) * 100)) + " % compared from " + str(amount * amount) + " comparsions")
+            try:
+                sim = service.calculate_distance(i, j)
+            except Exception as err:
+                print("Exception!!")
+                print(entities[i])
+                print(entities[i].get_kostuem_url())
+                raise err
+
+    # stop timer
+    check.stop()
 
     return
 

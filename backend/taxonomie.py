@@ -40,7 +40,7 @@ class TaxonomieType(Enum):
     operator = "operator"
     produktionsort = "produktionsort"
     rollenberuf = "rollenberuf"
-    spielortdetail = "spielortdetail"
+    spielortDetail = "spielortDetail"
     spielort = "spielort"
     spielzeit = "spielzeit"
     stereotyp = "stereotyp"
@@ -53,6 +53,7 @@ class TaxonomieType(Enum):
     ortsbegebenheit = "ortsbegebenheit"
     stereotypRelevant = "stereotypRelevant"
     rollenrelevanz = "rollenrelevanz"
+    familienstand = "familienstand"
 
     @staticmethod
     def get_name(taxonomieType) -> str:
@@ -90,8 +91,8 @@ class TaxonomieType(Enum):
             return "Produktionsort"
         elif taxonomieType == taxonomieType.rollenberuf:
             return "Rollenberuf"
-        elif taxonomieType == taxonomieType.spielortdetail:
-            return "Spielortdetail"
+        elif taxonomieType == taxonomieType.spielortDetail:
+            return "SpielortDetail"
         elif taxonomieType == taxonomieType.spielort:
             return "Spielort"
         elif taxonomieType == taxonomieType.spielzeit:
@@ -116,6 +117,8 @@ class TaxonomieType(Enum):
             return "StereotypRelevant"
         elif taxonomieType == taxonomieType.rollenrelevanz:
             return "Rollenrelevanz"
+        elif taxonomieType == taxonomieType.familienstand:
+            return "Familienstand"
         else:
             Logger.error("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
             raise ValueError("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
@@ -124,57 +127,57 @@ class TaxonomieType(Enum):
     @staticmethod
     def get_database_table_name(taxonomieType) -> str:
         if taxonomieType == taxonomieType.alterseindruck:
-            return "alterseindruckdomaene"
+            return "AlterseindruckDomaene"
         elif taxonomieType == taxonomieType.basiselement:
-            return "basiselementdomaene"
+            return "BasiselementDomaene"
         elif taxonomieType == taxonomieType.charaktereigenschaft:
-            return "charaktereigenschaftsdomaene"
+            return "CharaktereigenschaftsDomaene"
         elif taxonomieType == taxonomieType.design:
-            return "designdomaene"
+            return "DesignDomaene"
         elif taxonomieType == taxonomieType.farbeindruck:
             return None
         elif taxonomieType == taxonomieType.farbe:
-            return "farbendomaene"
+            return "FarbenDomaene"
         elif taxonomieType == taxonomieType.farbkonzept:
-            return "farbkonzeptdomaene"
+            return "FarbkonzeptDomaene"
         elif taxonomieType == taxonomieType.form:
-            return "formendomaene"
+            return "FormenDomaene"
         elif taxonomieType == taxonomieType.funktion:
-            return "funktionsdomaene"
+            return "FunktionsDomaene"
         elif taxonomieType == taxonomieType.genre:
-            return "genredomaene"
+            return "GenreDomaene"
         elif taxonomieType == taxonomieType.koerpermodifikation:
-            return "koerpermodifikationsdomaene"
+            return "KoerpermodifikationsDomaene"
         elif taxonomieType == taxonomieType.koerperteil:
             return None
         elif taxonomieType == taxonomieType.material:
-            return "materialdomaene"
+            return "MaterialDomaene"
         elif taxonomieType == taxonomieType.materialeindruck:
             return None
         elif taxonomieType == taxonomieType.operator:
-            return "operatordomaene"
+            return "OperatorDomaene"
         elif taxonomieType == taxonomieType.produktionsort:
-            return "produktionsortdomaene"
+            return "ProduktionsortDomaene"
         elif taxonomieType == taxonomieType.rollenberuf:
-            return "rollenberufdomaene"
-        elif taxonomieType == taxonomieType.spielortdetail:
-            return "spielortdetaildomaene"
+            return "RollenberufDomaene"
+        elif taxonomieType == taxonomieType.spielortDetail:
+            return "SpielortDetailDomaene"
         elif taxonomieType == taxonomieType.spielort:
-            return "spielortdomaene"
+            return "SpielortDomaene"
         elif taxonomieType == taxonomieType.spielzeit:
-            return "spielzeitdomaene"
+            return "SpielzeitDomaene"
         elif taxonomieType == taxonomieType.stereotyp:
-            return "stereotypdomaene"
+            return "StereotypDomaene"
         elif taxonomieType == taxonomieType.tageszeit:
-            return "tageszeitdomaene"
+            return "TageszeitDomaene"
         elif taxonomieType == taxonomieType.teilelement:
-            return "teilelementdomaene"
+            return "TeilelementDomaene"
         elif taxonomieType == taxonomieType.trageweise:
-            return "trageweisendomaene"
+            return "TrageweisenDomaene"
         elif taxonomieType == taxonomieType.typus:
-            return "typusdomaene"
+            return "TypusDomaene"
         elif taxonomieType == taxonomieType.zustand:
-            return "zustandsdomaene"
+            return "ZustandsDomaene"
         elif taxonomieType == taxonomieType.geschlecht:
             return None
         elif taxonomieType == taxonomieType.ortsbegebenheit:
@@ -182,6 +185,8 @@ class TaxonomieType(Enum):
         elif taxonomieType == taxonomieType.stereotypRelevant:
             return None
         elif taxonomieType == taxonomieType.rollenrelevanz:
+            return None
+        elif taxonomieType == taxonomieType.familienstand:
             return None 
         else:
             Logger.error("No name for taxonomieType \"" + str(taxonomieType) + "\" specified")
@@ -254,6 +259,7 @@ class Taxonomie:
                 graph.add_edge("Farbeindruck", "pastellig")
                 graph.add_edge("Farbeindruck", "pastellig")
                 graph.add_edge("Farbeindruck", "stumpf")
+                graph.add_edge("Farbeindruck", "transparent")
             elif taxonomieType == taxonomieType.koerperteil:
                 graph.add_node("Körperteil")
                 graph.add_node("Bein")
@@ -310,6 +316,16 @@ class Taxonomie:
                 graph.add_edge("Rollenrelevanz", "Hauptrolle")
                 graph.add_edge("Rollenrelevanz", "Nebenrolle")
                 graph.add_edge("Rollenrelevanz", "Statist")
+            elif taxonomieType == taxonomieType.familienstand:
+                graph.add_node("Familienstand")
+                graph.add_node("ledig")
+                graph.add_node("verheiratet")
+                graph.add_node("geschieden")
+                graph.add_node("verwitwet")
+                graph.add_edge("Familienstand", "ledig")
+                graph.add_edge("Familienstand", "verheiratet")
+                graph.add_edge("Familienstand", "geschieden")
+                graph.add_edge("Familienstand", "verwitwet")
             else:
                 Logger.error("\"" + str(taxonomieType) + "\" is a unknown taxonomieType")
         
@@ -329,7 +345,7 @@ class Taxonomie:
         name_with_extension = (taxonomieType.get_name(taxonomieType) + ".json") if file is None else file
         file_name = directory + "/" + name_with_extension
 
-        with open(filename) as file_object:
+        with open(file_name) as file_object:
             graph_json = json.load(file_object)
 
         graph = json_graph.node_link_graph(graph_json)

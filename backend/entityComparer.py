@@ -166,7 +166,18 @@ class EntityComparer:
             firstAttribute = first.values[attribute]
             secondAttribute = second.values[attribute]
 
-            # check if value is already in chace
+            # check if the attributes has values
+            if len(firstAttribute) == 0 or len(secondAttribute) == 0:
+                # act according to emptyAttributeAction
+                if emptyAttributeAction == EmptyAttributeAction.ignore:
+                    continue
+                elif emptyAttributeAction == EmptyAttributeAction.evaluateAsZero:
+                    return 0.0
+                else:
+                    Logger.warning("Unknown value for EmptyAttributeAction. This attribute will be ignored.")
+                    continue
+
+            # check if value is already in cache
             if self.__is_similarity_in_cache(firstAttribute, secondAttribute):
                 aggregationValues.append(
                     self.__get_similarity_from_cache(firstAttribute, secondAttribute)
