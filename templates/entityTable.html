@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Entity Table{% endblock %}
+{% block content %}
+<p>
+    <h5>
+        The following costume are choosen:
+    </h5>
+        <table style=" border: 1px solid black">
+            {% for component in table %}
+                <tr style="border: 1px solid black">
+                    {% for comp in component%}    
+                        {% if component == table[0] %}
+                            <th>{{comp}}</th>
+                        {% else %}
+                            {% if comp == component[1] or comp == component[2] or comp == component[3] %}
+                                <td><a href={{comp}}> Link</a></td>
+                            {% else %}
+                                <td>{{comp}}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+</p>
+
+
+{% endblock %}

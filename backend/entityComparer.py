@@ -30,19 +30,7 @@ class EmptyAttributeAction(enum.Enum):
             raise ValueError("No name for EmptyAttributeAction \"" + str(variable) + "\" specified")
         return
 
-    """
-    Returns the EmptyAttributeActionType given to the name
-    """
-    @staticmethod
-    def get_emptyAttributeAction_type(variable) -> str:
-        if variable == EmptyAttributeAction.ignore:
-            return EmptyAttributeAction.ignore
-        elif variable == EmptyAttributeAction.evaluateAsZero:
-            return EmptyAttributeAction.evaluateAsZero
-        else:
-            Logger.error("No Type for EmptyAttributeAction \"" + str(variable) + "\" specified")
-            raise ValueError("No Type for EmptyAttributeAction \"" + str(variable) + "\" specified")
-        return
+    
 
 """
 Represents the comparer class for arbitrary entities

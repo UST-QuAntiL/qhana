@@ -67,5 +67,39 @@ The following element comparer are currently available:
         </tr>
     {% endfor %}
 </table>
+<br />
+<br />
+<h5>
+The following scalingTypes are currently available:
+</h5>
+<table style="width:50%; border: 1px solid black">
+    <tr style="border: 1px solid black">
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    {% for scaling in scalings %}
+        <tr style="border: 1px solid gray">
+            <td>{{scaling[0]}}</td>
+            <td>{{scaling[1]}}</td>
+        </tr>
+    {% endfor %}
+</table>
+<br />
+<br />
+<h5>
+The following clusteringTypes are currently available:
+</h5>
+<table style="width:50%; border: 1px solid black">
+    <tr style="border: 1px solid black">
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    {% for clustering in clusterings %}
+        <tr style="border: 1px solid gray">
+            <td>{{clustering[0]}}</td>
+            <td>{{clustering[1]}}</td>
+        </tr>
+    {% endfor %}
+</table>
 
 {% endblock %}

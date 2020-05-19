@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}calculating{% endblock %}
+{% block content %}
+<p>
+    <h5>
+        The following costume are choosen:
+    </h5>
+        <table style="width:80%; border: 1px solid black">
+            <tr style="border: 1px solid black">
+                <th>Aggregator Type</th>
+                <th>Transformer Type</th>
+                <th>Attribute</th>
+                <th>Element Comparer</th>
+                <th>Attribute Comparer</th>
+                <th>Empty Attribute Comparer</th>
+            </tr>
+            {% for component in strCostumePlan %}
+                {% if component == strCostumePlan[0] %}
+                <td rowspan="0" align=center style="border: 1px solid black">{{component}}</td>
+                {% elif component == strCostumePlan[1] %}
+                <td rowspan="0" align=center style="border: 1px solid black">{{component}}</td>
+                {% else %}
+                    <tr style="border: 1px solid gray">
+                        <td>{{component[0]}}</td>
+                        <td>{{component[1]}}</td>
+                        <td>{{component[2]}}</td>
+                        <td>{{component[3]}}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+</p>
+<p>
+    <h5>
+    The following Entity Similarities Type are choosen:
+    </h5>
+        <table style="width:80%; border: 1px solid black">
+            <tr style="border: 1px solid black">
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+                <th>Debug</th>
+            </tr>
+        {% for simiParam in simiParams%}
+            {% if simiParam[0] == "name" or simiParam[0] == "entityNumber" or simiParam[0] == "EIM" or simiParam[0] == "EIM" or simiParam[0] == "memoryBool" or simiParam[0] == "errorentitySimilarities" %}
+                <tr>
+                    <td>{{simiParam[1]}}</td>
+                    <td>{{simiParam[2]}}</td>
+                    <td>{{simiParam[3]}}</td>
+                    <td>{{simiParam}}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </table>
+    
+</p>
+<p>
+    <h5>
+    The following Scaling Type are choosen:
+    </h5>
+        <table style="width:80%; border: 1px solid black">
+            <tr style="border: 1px solid black">
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+                <th>Debug</th>
+            </tr>
+        {% for scalingParam in scalingParams%}
+                <tr>
+                    <td>{{scalingParam[1]}}</td>
+                    <td>{{scalingParam[2]}}</td>
+                    <td>{{scalingParam[3]}}</td>
+                    <td>{{scalingParam}}</td>
+                </tr>
+        {% endfor %}
+        </table>
+    
+</p>
+<p>
+    <h5>
+    The following Clustering Type are choosen:
+    </h5>
+        <table style="width:80%; border: 1px solid black">
+            <tr style="border: 1px solid black">
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Value</th>
+                <th>Debug</th>
+            </tr>
+        {% for clusteringParam in clusteringParams%}
+                <tr>
+                    <td>{{clusteringParam[1]}}</td>
+                    <td>{{clusteringParam[2]}}</td>
+                    <td>{{clusteringParam[3]}}</td>
+                    <td>{{clusteringParam}}</td>
+                </tr>
+        {% endfor %}
+        </table>
+</p>
+    <form  action = "/start_calculating" method = "POST">
+        {% for simiParam in simiParams %}
+            {% if simiParam[0] == "entityNumber" %}
+                <label for="min">Min</label>
+                <input type="number" id="min" name="min" min=0 value=0>
+                <label for="max">Max</label>
+                <input type="number" id="max" name="max" min="0" value={{simiParam[3]-1}}>
+                <br />
+                <input type = 'submit' name = 'Start' value = 'Start calculating'/>
+            {% endif %}
+        {% endfor %}
+    </form>
+<p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+</p>
+
+
+
+
+{% endblock %}

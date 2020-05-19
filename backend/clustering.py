@@ -15,6 +15,32 @@ Enums for Clustertyps
 class ClusteringType(enum.Enum):
     optics = 0  # OPTICS =:Ordering Points To Identify the Clustering Structure 
 
+    @staticmethod
+    def get_name(clusteringTyp) -> str:
+        name = ""
+        if clusteringTyp == ClusteringType.optics :
+            name = "optics"
+        else:
+            Logger.error("No name for clustering \"" + str(clusteringTyp) + "\" specified")
+            raise ValueError("No name for clustering \"" + str(clusteringTyp) + "\" specified")
+        return name
+
+    """
+    Returns the description of the given ScalingType.
+    """
+    @staticmethod
+    def get_description(clusteringTyp) -> str:
+        description = ""
+        if clusteringTyp == ClusteringType.optics:
+            description = ("Ordering points to identify the clustering structure (OPTICS)" 
+                         + " is an algorithm for finding density-based clusters"
+                         + " in spatial data")
+        else:
+            Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
+            raise ValueError("No description for clustering \"" + str(clusteringTyp) + "\" specified")
+        return description
+
+
 class Clustering(metaclass=ABCMeta):
     """
     Interface for Scaling Object
@@ -22,6 +48,15 @@ class Clustering(metaclass=ABCMeta):
     @abstractmethod
     def create_cluster(self, position_matrix : np.matrix ) -> np.matrix:
         pass
+    
+    @abstractmethod
+    def get_param_list(self) -> list:
+        pass
+
+    @abstractmethod
+    def set_param_list(self, params: list = []) -> np.matrix:
+        pass
+
     @abstractmethod
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
@@ -507,7 +542,69 @@ class Optics(Clustering):
             Logger.error("An Exception occurs by OPTICS initialization: " + str(error))
             raise Exception("Exception occurs in Method __create_optics_instance by OPTICS initialization.")
 
+    # setter and getter params
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        clusteringTypeName = "OPTICS"
+        params.append(("name", "ClusterTyp" ,"description", clusteringTypeName ,"header"))
+        parameter_minSamples = self.get_min_samples()
+        params.append(("minSamples", "min Samples" ,"description", parameter_minSamples, "number", 1 , 1 ))
+        parameter_maxEps = self.get_max_eps()
+        params.append(("maxEps", "max Epsilon" ,"description", parameter_maxEps, "text" ))
+        parameter_metric = self.get_metric()
+        params.append(("metric", " Metric" ,"description", parameter_metric , "select" , ('precomputed','minkowski','cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan')))
+        parameter_p = self.get_p()
+        params.append(("p" , "Parameter p for minkowski" ,"description", parameter_p, "number" , 1,1 ))
+        parameter_cluster_method = self.get_cluster_method()
+        params.append(("cluster_method","Cluster Method","description", parameter_cluster_method, "select" , ("xi" , "dbscan")))
+        parameter_eps = self.get_eps()
+        params.append(("eps", "Epsilon","description", parameter_eps , "text"))
+        parameter_xi = self.get_xi()
+        params.append(("xi","Xi" ,"description", parameter_xi, "number" , 0, 0.001))
+        parameter_predecessor_correction = self.get_predecessor_correction()
+        params.append(("predecessor_correction", "Predecessor Correction" ,"description", parameter_predecessor_correction, "checkbox"))
+        parameter_min_cluster_size = self.get_min_cluster_size()
+        params.append(("min_cluster_size","Min Cluster Size","description", parameter_min_cluster_size, "text"))
+        parameter_algorithm = self.get_algorithm()
+        params.append(("algorithm","Algorithm" ,"description", parameter_algorithm , "select" , ('auto', 'ball_tree', 'kd_tree', 'brute')))
+        parameter_leaf_size = self.get_leaf_size()
+        params.append(("leaf_size","Leaf Size" ,"description", parameter_leaf_size, "number", 0 , 1))
+        return params
 
+    def set_param_list(self, params: list = []) -> np.matrix:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        for param in params:
+            if param[0] == "minSamples":
+                self.set_min_samples(param[3])
+            elif param[0] == "maxEps":
+                self.set_max_eps(param[3])
+            elif param[0] == "metric":
+                self.set_metric(param[3])
+            elif param[0] == "p":
+                self.set_p(param[3])
+            elif param[0] == "cluster_method":
+                self.set_cluster_method(param[3])
+            elif param[0] == "eps":
+                self.set_eps(param[3])
+            elif param[0] == "xi":
+                self.set_xi(param[3])
+            elif param[0] == "predecessor_correction":
+                self.set_predecessor_correction(param[3])
+            elif param[0] == "min_cluster_size":
+                self.set_min_cluster_size(param[3])
+            elif param[0] == "algorithm":
+                self.set_algorithm(param[3])
+            elif param[0] == "leaf_size":
+                self.set_leaf_size(param[3])
 
 
                 

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}scaling{% endblock %}
+{% block content %}
+<p>
+    <form action = "/saveload_scaling" method = "POST">
+        <p><h6> Enter Session Name <tab id=t2>: 
+        <input type = 'text' name = 'session' value="{{session["saveload"]}}"/></p>
+        <p><input type = 'submit' name = 'saveload' value = 'Save scaling'/>
+        <input type = 'submit' name = 'saveload' value = 'Load scaling'/>
+     </form>
+</p>
+<p>
+    <h5>Initialize Scaling Type</h5>
+    <form action = "/initialize_scaling" method = "POST">
+        <p><h6> Enter scaling type <tab id=t2>: 
+        <select id="scaling" name="scaling">
+            {% for scaling in scalings %}   
+                <option value={{scaling[1]}}>{{scaling[0]}}</option>
+            {% endfor %}
+        </select>
+        <input type = 'submit' name = 'loadScalingType' value = 'initialize scaling type'/>
+        
+     </form>
+</p>
+{% if existScaling %}
+<p>
+    <form action = "/set_scaling" method = "POST">
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Input</th>
+                <th>Debug</th>
+            </tr>
+        {% for param in params%}
+            {% if param[4] == "header"%}
+                <tr>
+                    <td>{{param[1]}}</td>
+                    <td>{{param[2]}}</td>
+                    <td>{{param[3]}}</td>
+                    <td>{{param}}</td>
+                </tr>
+            {% elif param[4] == "number" %}
+                <tr>
+                    <td>{{param[1]}}</td>
+                    <td>{{param[2]}}</td>
+                    <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} min={{param[5]}} step={{param[6]}} value={{param[3]}}></td>
+                    <td>{{param}}</td>
+                </tr>
+            {% elif param[4] == "text" %}
+                <tr>
+                    <td>{{param[1]}}</td>
+                    <td>{{param[2]}}</td>
+                    <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} value={{param[3]}}></td>
+                    <td>{{param}}</td>
+                </tr>
+            {% elif param[4] == "select" %}
+                <tr>
+                    <td>{{param[1]}}</td>
+                    <td>{{param[2]}}</td>
+                <td><select id={{param[0]}} name={{param[0]}}>
+                    {%for option in param[5] %}
+                        {%if option == param[3]%} 
+                            <option value={{option}} selected="selected" >{{option}}</option>
+                        {% else %}
+                            <option value={{option}}>{{option}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select></td>
+                <td>{{param}}</td>
+            {% elif param[4] == "checkbox" %}
+                <tr>
+                    <td>{{param[1]}}</td>
+                    <td>{{param[2]}}</td>
+                    {% if param[3] %}
+                        <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
+                    {% else %}
+                        <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
+                    {% endif %}
+                    <td>{{param}}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </table>
+        <br>
+        <input type = 'submit' name = 'setScalingParameters' value = 'set scaling parameter'/>
+    </form>
+</p>
+{% endif %}
+{% endblock %}
+
+

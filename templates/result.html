@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}result{% endblock %}
+{% block content %}
+<p>
+    <h5>
+    The following result are calculated:
+    </h5>
+        <table style="width:80%; border: 1px solid black">
+            <tr style="border: 1px solid black">
+                <th style="border: 1px solid black">Parameter</th>
+                <th style="border: 1px solid black">Description</th>
+                <th style="border: 1px solid black">Value</th>
+                <th style="border: 1px solid black">Action</th>
+                <th style="border: 1px solid black" width=300 >Result of Action</th>
+            </tr>
+        {% for param in params%}
+            {% if param[0] == "lastSequenzID" or param[0] == "stressLevel" %}
+                <tr style="border: 1px solid black">
+                    <td style="border: 1px solid black">{{param[1]}}</td>
+                    <td style="border: 1px solid black">{{param[2]}}</td>
+                    <td style="border: 1px solid black">{{param[3]}}</td>
+                    <td style="border: 1px solid black"></td>
+                    <td style="border: 1px solid black"></td>
+                </tr>
+            {% elif param[0] == "similarityMatrix"%}
+            <tr style="border: 1px solid black">
+                <td style="border: 1px solid black">{{param[1]}}</td>
+                <td style="border: 1px solid black">{{param[2]}}</td>
+                <td style="border: 1px solid black"><img src="/static/similarities.png" alt="image" style="width:200px"></td>
+                <td style="border: 1px solid black"><a href="/view_result_{{param[0]}}"><input type="button" value="View similarity plot"></a>
+                    <br />
+                    <form  action = "/result_value_similarity" method = "POST">
+                        <br /> 
+                        Compare Entities:
+                        <br />
+                                <label for="min">Entity 1:</label>
+                                <input type="number" id="min" name="min" style="width:60px;"> 
+                                <br />
+                                <label for="max">Entity 2:</label>
+                                <input type="number" id="max" name="max" style="width:60px;">
+                        <br />
+                        <input type = 'submit' name = 'Start' value = 'get Value similarity'/>
+                    </form>
+                </td>
+                <td style="border: 1px solid black">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <ul class=flashes>
+                            {% for category, message in messages %}
+                                {% if category == "similarity"%}
+                                    <li class="{{ category }}">{{ message }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% elif param[0] == "positionMatrix2D"%}
+            <tr style="border: 1px solid black">
+                <td style="border: 1px solid black">{{param[1]}}</td>
+                <td style="border: 1px solid black">{{param[2]}}</td>
+                <td style="border: 1px solid black"><img src="/static/scaling.png" alt="image" style="width:200px"></td>
+                <td style="border: 1px solid black"><a href="/view_result_{{param[0]}}"><input type="button" value="View scaling plot"></a>
+                    <br />
+                    <form  action = "/result_coordinates" method = "POST">
+                        <br /> 
+                        N-Dim Coordinates of Entities:
+                        <br />
+                                <label for="coordinates">Entity:</label>
+                                <input type="number" id="coordinates" name="coordinates" style="width:60px;"> 
+                        <br />
+                        <input type = 'submit' name = 'Start' value = 'get coordinate'/>
+                    </form>
+                </td>
+                <td style="border: 1px solid black">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <ul class=flashes>
+                            {% for category, message in messages %}
+                                {% if category == "scaling"%}
+                                    <li class="{{ category }}">{{ message }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% elif param[0] == "labels" %}
+            <tr style="border: 1px solid black">
+                <td style="border: 1px solid black">{{param[1]}}</td>
+                <td style="border: 1px solid black">{{param[2]}}</td>
+                <td style="border: 1px solid black"><img src="/static/clustering.png" alt="image" style="width:200px"></td>
+                <td style="border: 1px solid black"><a href="/view_result_{{param[0]}}"><input type="button" value="View clustering plot"></a>
+                    <br />
+                    <form  action = "/result_cluster" method = "POST">
+                        <br /> 
+                        Cluster of Entities:
+                        <br />
+                                <label for="clusterEntity">Cluster ID:</label>
+                                <input type="number" id="clusterEntity" name="clusterEntity" style="width:60px;"> 
+                        <br />
+                        <input type = 'submit' name = 'Start' value = 'get Entities of Cluster'/>
+                    </form>
+                </td>
+                <td style="border: 1px solid black">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <ul class=flashes>
+                            {% for category, message in messages %}
+                                {% if category == "cluster"%}
+                                    <li class="{{ category }}">{{ message }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        </table>
+</p>
+<p>
+    <form  action = "/instance_table_costume_plan" method = "POST">
+        <input type="text" id="sequenzId" name="sequenzId" value="[1,2,3,4]">
+        <input type = 'submit' name = 'Start' value = 'Table Entities of List'/>
+    </form>
+</p>
+
+
+
+{% endblock %}

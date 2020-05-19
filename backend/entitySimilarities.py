@@ -87,6 +87,57 @@ class EntitySimilarities():
         else:
             Logger.warning("No Memory initialized. The Programm will be quit know.")
             return np.zeros((1, 1))
+    # entities in memory
+    def get_entities_in_memory(self) -> str:
+        EIM: str = ""
+        sequenz_bool : bool = False
+        for number in range(self.__entity_number):
+            if sequenz_bool == False:
+                if number in self.__valid_entity_index or number in self.__invalid_entity_index:
+                    EIM += str(number) + "-"
+                    sequenz_bool = True
+            else:
+                if  not (number in self.__valid_entity_index or number in self.__invalid_entity_index):
+                    EIM += str(number-1) + "; "
+                    sequenz_bool = False
+                elif (number in self.__valid_entity_index or number in self.__invalid_entity_index) and number == self.__entity_number-1:
+                    EIM += str(number) + "; "
+                    sequenz_bool = False
+        if self.__bool_memory:
+            return EIM
+        else:
+            return "No memory initialized"
+
+                
+
+
+# setter and getter params
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        similaritiesTypeName = "Entity Similarities"
+        params.append(("name", "Similarities Type" ,"description", similaritiesTypeName ,"header"))
+        parameter_entity_number = self.get_entity_number()
+        params.append(("entityNumber", "Entity Number" ,"description", parameter_entity_number, "header" ))
+        parameter_costume_plan = self.get_costume_plan()
+        params.append(("costumePlan", "Costume Plan" ,"description", parameter_costume_plan, "header"))
+        parameter_entitiesInMemory_index = self.get_entities_in_memory()
+        params.append(("EIM", "Entities in Memory" ,"description", parameter_entitiesInMemory_index , "header"))
+        parameter_last_sequenz_id = self.get_last_sequenz_id()
+        params.append(("lastSequenz" , "Last ID Sequenz" ,"description", parameter_last_sequenz_id, "header"))
+        parameter_bool_memory = self.get_bool_memory()
+        params.append(("memoryBool","Memory Initialized","description", parameter_bool_memory, "header"))
+        return params
+
+    
+
+
+
+
 
     # create limited similarity matrix
     def create_matrix_limited(self, first:int,last:int) -> np.matrix:

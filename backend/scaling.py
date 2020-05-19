@@ -13,7 +13,36 @@ from matplotlib.collections import LineCollection
 
 class ScalingType(enum.Enum):
     mds = 0     # metric multidimensional scaling
-    nmds = 1    # nonmetric multidimensional scaling
+
+    """
+    Returns the name of the given ScalingType.
+    """
+    @staticmethod
+    def get_name(scalingType) -> str:
+        name = ""
+        if scalingType == ScalingType.mds:
+            name = "mds"
+        else:
+            Logger.error("No name for scaling \"" + str(scalingType) + "\" specified")
+            raise ValueError("No name for scaling \"" + str(scalingType) + "\" specified")
+        return name
+
+    """
+    Returns the description of the given ScalingType.
+    """
+    @staticmethod
+    def get_description(scalingType) -> str:
+        description = ""
+        if scalingType == ScalingType.mds:
+            description = ("Multidimensioal scaling (MDS) is a means of visualizing"
+                    + "the level of similarity of individual cases of dataset." 
+                    + "MDS is used to translate 'information about the pairwise" 
+                    + "distances among a set of n objects or individuals" 
+                    + "into a configuration of n points mapped into an abstract Cartesian space.")
+        else:
+            Logger.error("No description for scaling \"" + str(scalingType) + "\" specified")
+            raise ValueError("No description for scaling \"" + str(scalingType) + "\" specified")
+        return description
 
 class Scaling(metaclass=ABCMeta):
     """
@@ -25,6 +54,15 @@ class Scaling(metaclass=ABCMeta):
     @abstractmethod
     def stress_level(self) -> int:
         pass
+
+    @abstractmethod
+    def get_param_list(self) -> list:
+        pass
+
+    @abstractmethod
+    def set_param_list(self, params: list = []) -> np.matrix:
+        pass
+
     @abstractmethod
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
@@ -178,6 +216,47 @@ class MultidimensionalScaling(Scaling):
     def d2_plot(self,last_sequenz: List[int] , costumes: List[Costume]) -> None:
         _Plots_in_scaling._two_dim_plot(self.__similarity_matrix,self.__position_matrix,last_sequenz,costumes)
         
+# setter and getter params
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        ScalingTypeName = "Multidimensional Scaling"
+        params.append(("name", "ScalingTyp" ,"description", ScalingTypeName ,"header"))
+        parameter_dimensions = self.get_dimensions()
+        params.append(("dimensions", "Dimensions" ,"description", parameter_dimensions, "number", 1 , 1 ))
+        parameter_repeatSMACOF = self.get_repeatSMACOF()
+        params.append(("repeatSMACOF", "repeat SMACOF Algorithm" ,"description", parameter_repeatSMACOF, "number", 1,1 ))
+        parameter_maxIter = self.get_max_iter()
+        params.append(("maxIter", "Number Iterations" ,"description", parameter_maxIter , "number" , 1,1))
+        parameter_dissimilarity = self.get_dissimilarity()
+        params.append(("dissimilarity" , "Dissimilarity" ,"description", parameter_dissimilarity, "select",("precomputed", "euclidean")))
+        parameter_eps = self.get_eps()
+        params.append(("eps","Epsilon","description", parameter_eps, "number" ,0,0.000000001 ))
+        return params
+
+    def set_param_list(self, params: list = []) -> np.matrix:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        for param in params:
+            if param[0] == "dimensions":
+                self.set_dimensions(param[3])
+            elif param[0] == "repeatSMACOF":
+                self.set_repeatSMACOF(param[3])
+            elif param[0] == "maxIter":
+                self.set_max_iter(param[3])
+            elif param[0] == "dissimilarity":
+                self.set_dissimilarity(param[3])
+            elif param[0] == "eps":
+                self.set_eps(param[3])
+            
+
 """
 class manage the plots
 """

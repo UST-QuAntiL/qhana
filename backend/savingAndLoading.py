@@ -333,7 +333,8 @@ class _Inputs():
     def check_file_exists(self, file_path: str , file_folder: str , file_name: str) -> bool:
         if os.path.isfile(file_path + ".pkl"):
             while True:
-                self.__input = input("File with the name \"{0}\" in Session \"{1}\" already exists. Do you want to overwrite it? ([y]es/[n]o): ".format(file_name + ".pkl",file_folder))
+                #self.__input = input("File with the name \"{0}\" in Session \"{1}\" already exists. Do you want to overwrite it? ([y]es/[n]o): ".format(file_name + ".pkl",file_folder))
+                self.__input = 'y'
                 if self.__input == 'y':
                     return True
                 elif self.__input == 'n':
