@@ -551,29 +551,86 @@ class Optics(Clustering):
         """
         params = []
         clusteringTypeName = "OPTICS"
-        params.append(("name", "ClusterTyp" ,"description", clusteringTypeName ,"header"))
+        params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
+
         parameter_minSamples = self.get_min_samples()
-        params.append(("minSamples", "min Samples" ,"description", parameter_minSamples, "number", 1 , 1 ))
+        description_minSamples = "int > 1 or float between 0 and 1 (default=5)"\
+                            +"The number of samples in a neighborhood for a point to be considered as a "\
+                            +"core point. Also, up and down steep regions can’t have more then min_samples "\
+                            +"consecutive non-steep points. Expressed as an absolute number or a " \
+                            +"fraction of the number of samples (rounded to be at least 2)."
+        params.append(("minSamples", "min Samples" ,description_minSamples, parameter_minSamples, "number", 1 , 1 ))
+        
         parameter_maxEps = self.get_max_eps()
-        params.append(("maxEps", "max Epsilon" ,"description", parameter_maxEps, "text" ))
+        description_maxEps = "float, optional (default=np.inf) "\
+                            +"The maximum distance between two samples for one to be considered as in "\
+                            +"the neighborhood of the other. Default value of np.inf will identify clusters "\
+                            +"across all scales; reducing max_eps will result in shorter run times."
+        params.append(("maxEps", "max Epsilon" ,description_maxEps, parameter_maxEps, "text" ))
+        
         parameter_metric = self.get_metric()
-        params.append(("metric", " Metric" ,"description", parameter_metric , "select" , ('precomputed','minkowski','cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan')))
+        description_metric = "str or callable, optional (default=’minkowski’) "\
+                            +"Metric to use for distance computation. Any metric from scikit-learn or "\
+                            +"scipy.spatial.distance can be used."
+        params.append(("metric", " Metric" ,description_metric, parameter_metric , "select" , ('precomputed','minkowski','cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan')))
+        
         parameter_p = self.get_p()
-        params.append(("p" , "Parameter p for minkowski" ,"description", parameter_p, "number" , 1,1 ))
+        description_p = "int, optional (default=2) "\
+                            +"Parameter for the Minkowski metric from sklearn.metrics.pairwise_distances. "\
+                            +"When p = 1, this is equivalent to using manhattan_distance (l1), and euclidean"\
+                            +"_distance (l2) for p = 2. For arbitrary p, minkowski_distance (l_p) is used."
+        params.append(("p" , "Parameter p for minkowski" ,description_p, parameter_p, "number" , 1,1 ))
+        
         parameter_cluster_method = self.get_cluster_method()
-        params.append(("cluster_method","Cluster Method","description", parameter_cluster_method, "select" , ("xi" , "dbscan")))
+        description_cluster_method = "str, optional (default=’xi’) "\
+                                    +"The extraction method used to extract clusters using the calculated reachability "\
+                                    +"and ordering. Possible values are “xi” and “dbscan”."
+        params.append(("cluster_method","Cluster Method",description_cluster_method, parameter_cluster_method, "select" , ("xi" , "dbscan")))
+        
         parameter_eps = self.get_eps()
-        params.append(("eps", "Epsilon","description", parameter_eps , "text"))
+        description_eps =    "float, optional (default=None) "\
+                            +"The maximum distance between two samples for one to be considered as in the "\
+                            +"neighborhood of the other. By default it assumes the same value as max_eps. Used only "\
+                            +"when cluster_method='dbscan'."
+        params.append(("eps", "Epsilon",description_eps, parameter_eps , "text"))
+        
         parameter_xi = self.get_xi()
-        params.append(("xi","Xi" ,"description", parameter_xi, "number" , 0, 0.001))
+        description_xi = "float, between 0 and 1, optional (default=0.05) "\
+                            +"Determines the minimum steepness on the reachability plot that constitutes a cluster "\
+                            +"boundary. For example, an upwards point in the reachability plot is defined " \
+                            +"by the ratio from one point to its successor being at most 1-xi. Used only when "\
+                            +"cluster_method='xi'."
+        params.append(("xi","Xi" ,description_xi, parameter_xi, "number" , 0, 0.001))
+        
         parameter_predecessor_correction = self.get_predecessor_correction()
-        params.append(("predecessor_correction", "Predecessor Correction" ,"description", parameter_predecessor_correction, "checkbox"))
+        description_predecessor_correction = "bool, optional (default=True) "\
+                            +"Correct clusters according to the predecessors calculated by OPTICS [R2c55e37003fe-2]. "\
+                            +"This parameter has minimal effect on most datasets. Used only when cluster_method='xi'."
+        params.append(("predecessor_correction", "Predecessor Correction" ,description_predecessor_correction, parameter_predecessor_correction, "checkbox"))
+        
         parameter_min_cluster_size = self.get_min_cluster_size()
-        params.append(("min_cluster_size","Min Cluster Size","description", parameter_min_cluster_size, "text"))
+        description_min_cluster_size = "int > 1 or float between 0 and 1 (default=None) "\
+                            +"Minimum number of samples in an OPTICS cluster, expressed as an absolute number or a "\
+                            +"fraction of the number of samples (rounded to be at least 2). If None, the value of "\
+                            +"min_samples is used instead. Used only when cluster_method='xi'."
+        params.append(("min_cluster_size","Min Cluster Size",description_min_cluster_size, parameter_min_cluster_size, "text"))
+        
         parameter_algorithm = self.get_algorithm()
-        params.append(("algorithm","Algorithm" ,"description", parameter_algorithm , "select" , ('auto', 'ball_tree', 'kd_tree', 'brute')))
+        description_algorithm = "{‘auto’, ‘ball_tree’, ‘kd_tree’, ‘brute’}, optional "\
+                            +"Algorithm used to compute the nearest neighbors: "\
+                            +"‘ball_tree’ will use BallTree "\
+                            +"‘kd_tree’ will use KDTree "\
+                            +"‘brute’ will use a brute-force search. "\
+                            +"‘auto’ will attempt to decide the most appropriate algorithm based on the values passed "\
+                            +"to fit method. (default)"
+        params.append(("algorithm","Algorithm" ,description_algorithm, parameter_algorithm , "select" , ('auto', 'ball_tree', 'kd_tree', 'brute')))
+        
         parameter_leaf_size = self.get_leaf_size()
-        params.append(("leaf_size","Leaf Size" ,"description", parameter_leaf_size, "number", 0 , 1))
+        description_leaf_size = "int, optional (default=30) "\
+                            +"Leaf size passed to BallTree or KDTree. This can affect the speed of the construction "\
+                            +"and query, as well as the memory required to store the tree. The optimal value depends on "\
+                            +"the nature of the problem."
+        params.append(("leaf_size","Leaf Size" ,description_leaf_size, parameter_leaf_size, "number", 0 , 1))
         return params
 
     def set_param_list(self, params: list = []) -> np.matrix:

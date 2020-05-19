@@ -225,17 +225,33 @@ class MultidimensionalScaling(Scaling):
         """
         params = []
         ScalingTypeName = "Multidimensional Scaling"
-        params.append(("name", "ScalingTyp" ,"description", ScalingTypeName ,"header"))
+        description_name = "choosen Scaling Type"
+        params.append(("name", "ScalingTyp" ,description_name, ScalingTypeName ,"header"))
         parameter_dimensions = self.get_dimensions()
-        params.append(("dimensions", "Dimensions" ,"description", parameter_dimensions, "number", 1 , 1 ))
+        description_dimensions = "(int, optional, default: 2) Number of dimensions in which to immerse the dissimilarities."
+        params.append(("dimensions", "Dimensions" ,description_dimensions, parameter_dimensions, "number", 1 , 1 ))
         parameter_repeatSMACOF = self.get_repeatSMACOF()
-        params.append(("repeatSMACOF", "repeat SMACOF Algorithm" ,"description", parameter_repeatSMACOF, "number", 1,1 ))
+        description_repeatSMACOF = ("(int, optional, default: 4) "
+                                   + "Number of times the SMACOF algorithm will be run with different initializations. " 
+                                   + "The final results will be the best output of the runs, determined by the run with "
+                                   + "the smallest final stress.")
+        params.append(("repeatSMACOF", "repeat SMACOF Algorithm" , description_repeatSMACOF, parameter_repeatSMACOF, "number", 1,1 ))
         parameter_maxIter = self.get_max_iter()
-        params.append(("maxIter", "Number Iterations" ,"description", parameter_maxIter , "number" , 1,1))
+        description_maxIter =   ("(int, optional, default: 300) "
+                                +"Maximum number of iterations of the SMACOF algorithm for a single run.")
+        params.append(("maxIter", "Number Iterations" ,description_maxIter, parameter_maxIter , "number" , 1,1))
         parameter_dissimilarity = self.get_dissimilarity()
-        params.append(("dissimilarity" , "Dissimilarity" ,"description", parameter_dissimilarity, "select",("precomputed", "euclidean")))
+        description_dissimilarity = ("(‘euclidean’ | ‘precomputed’, optional, default: ‘euclidean’) "
+                                    +"Dissimilarity measure to use: "
+                                    +"‘euclidean’: "
+                                    +"Pairwise Euclidean distances between points in the dataset. "
+                                    +"‘precomputed’: "
+                                    +"Pre-computed dissimilarities are passed directly to fit and fit_transform.")
+        params.append(("dissimilarity" , "Dissimilarity" ,description_dissimilarity, parameter_dissimilarity, "select",("precomputed", "euclidean")))
         parameter_eps = self.get_eps()
-        params.append(("eps","Epsilon","description", parameter_eps, "number" ,0,0.000000001 ))
+        description_eps = ("(float, optional, default: 1e-3) "
+                          +"Relative tolerance with respect to stress at which to declare convergence.")
+        params.append(("eps","Epsilon",description_eps, parameter_eps, "number" ,0,0.000000001 ))
         return params
 
     def set_param_list(self, params: list = []) -> np.matrix:
