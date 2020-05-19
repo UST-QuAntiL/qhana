@@ -25,40 +25,40 @@
 {% if existClustering %}
 <p>
     <form action = "/set_clustering" method = "POST">
-        <table>
-            <tr>
-                <th>Parameter</th>
-                <th>Description</th>
-                <th>Input</th>
-                <th>Debug</th>
+        <table style="width:70%; border: 1px solid black">
+            <tr style="border: 1px solid black">
+                <th style="border: 1px solid black">Parameter</th>
+                <th style="border: 1px solid black">Description</th>
+                <th style="border: 1px solid black">Input</th>
+                <!--<th style="border: 1px solid black">Debug</th>-->
             </tr>
         {% for param in params%}
             {% if param[4] == "header"%}
-                <tr>
-                    <td>{{param[1]}}</td>
-                    <td>{{param[2]}}</td>
-                    <td>{{param[3]}}</td>
-                    <td>{{param}}</td>
+                <tr style="border: 1px solid black">
+                    <td style="border: 1px solid black">{{param[1]}}</td>
+                    <td style="border: 1px solid black">{{param[2]}}</td>
+                    <td style="border: 1px solid black">{{param[3]}}</td>
+                    <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "number" %}
-                <tr>
-                    <td>{{param[1]}}</td>
-                    <td>{{param[2]}}</td>
-                    <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} min={{param[5]}} step={{param[6]}} value={{param[3]}}></td>
-                    <td>{{param}}</td>
+                <tr style="border: 1px solid black">
+                    <td style="border: 1px solid black">{{param[1]}}</td>
+                    <td style="border: 1px solid black">{{param[2]}}</td>
+                    <td style="border: 1px solid black"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} min={{param[5]}} step={{param[6]}} value={{param[3]}}></td>
+                    <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "text" %}
-                <tr>
-                    <td>{{param[1]}}</td>
-                    <td>{{param[2]}}</td>
-                    <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} value={{param[3]}}></td>
-                    <td>{{param}}</td>
+                <tr style="border: 1px solid black">
+                    <td style="border: 1px solid black">{{param[1]}}</td>
+                    <td style="border: 1px solid black">{{param[2]}}</td>
+                    <td style="border: 1px solid black"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} value={{param[3]}}></td>
+                    <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "select" %}
-                <tr>
-                    <td>{{param[1]}}</td>
-                    <td>{{param[2]}}</td>
-                <td><select id={{param[0]}} name={{param[0]}}>
+                <tr style="border: 1px solid black">
+                    <td style="border: 1px solid black">{{param[1]}}</td>
+                    <td style="border: 1px solid black">{{param[2]}}</td>
+                <td style="border: 1px solid black"><select id={{param[0]}} name={{param[0]}}>
                     {%for option in param[5] %}
                         {%if option == param[3]%} 
                             <option value={{option}} selected="selected" >{{option}}</option>
@@ -67,17 +67,17 @@
                         {% endif %}
                     {% endfor %}
                 </select></td>
-                <td>{{param}}</td>
+                <!--<td style="border: 1px solid black">{{param}}</td>-->
             {% elif param[4] == "checkbox" %}
-                <tr>
-                    <td>{{param[1]}}</td>
-                    <td>{{param[2]}}</td>
+                <tr style="border: 1px solid black">
+                    <td style="border: 1px solid black">{{param[1]}}</td>
+                    <td style="border: 1px solid black">{{param[2]}}</td>
                     {% if param[3] %}
-                        <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
+                        <td style="border: 1px solid black"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
                     {% else %}
-                        <td><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
+                        <td style="border: 1px solid black"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
                     {% endif %}
-                    <td>{{param}}</td>
+                    <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% endif %}
         {% endfor %}
