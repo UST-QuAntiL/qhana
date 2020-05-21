@@ -30,6 +30,8 @@ class EntityService:
         self.aggregatorType = None
         self.transformerType = None
 
+        self.entitiyComparer = None
+
         self.entities = []
 
         return
