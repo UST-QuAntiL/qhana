@@ -214,11 +214,11 @@ class Attribute(enum.Enum):
     with others.
     """
     @staticmethod
-    def get_base(attribute, database: Database) -> Any:
+    def get_base(attribute) -> Any:
         if attribute == Attribute.dominantesAlter:
             return None
         elif attribute == Attribute.kostuemZeit:
             return None
         elif attribute == Attribute.alter:
             return None
-        return Taxonomie.create_from_db(Attribute.get_taxonomie_type(attribute), database)
+        return Taxonomie.create_from_db(Attribute.get_taxonomie_type(attribute))

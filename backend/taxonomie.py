@@ -217,15 +217,18 @@ class Taxonomie:
     If the taxonomie is already in the pool, it will be used from there instead.
     """
     @staticmethod
-    def create_from_db(taxonomieType: TaxonomieType, database: Database):
+    def create_from_db(taxonomieType: TaxonomieType):
         if taxonomieType in Taxonomie.taxonomiePool:
             return Taxonomie.taxonomiePool[taxonomieType]
 
         graph = None
 
+        db = Database()
+        db.open()
+
         # take the values from database if available
         if TaxonomieType.get_database_table_name(taxonomieType) is not None:
-            graph = Taxonomie.__get_graph(taxonomieType.get_database_table_name(taxonomieType), database)
+            graph = Taxonomie.__get_graph(taxonomieType.get_database_table_name(taxonomieType), db)
         # if not, create the graph here
         else:
             graph = nx.DiGraph()

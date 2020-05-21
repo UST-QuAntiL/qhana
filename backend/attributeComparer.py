@@ -4,6 +4,7 @@ from abc import abstractmethod
 from typing import Any
 import enum
 from backend.logger import Logger
+from backend.attribute import Attribute
 
 """ 
 Defines an enum to list up all available attribute comparer.
@@ -105,12 +106,13 @@ class AttributeComparerFactory:
     """
     @staticmethod
     def create(attributeComparerType: AttributeComparerType,
-        elementComparer: ElementComparer
+        elementComparer: ElementComparer,
+        attribute: Attribute
         ) -> AttributeComparer:
         if attributeComparerType == AttributeComparerType.symMaxMean:
-            return SymMaxMean(elementComparer)
+            return SymMaxMean(elementComparer, Attribute.get_base(attribute))
         elif attributeComparerType == AttributeComparerType.singleElement:
-            return SingleElement(elementComparer)
+            return SingleElement(elementComparer, Attribute.get_base(attribute))
         else:
             raise Exception("Unknown type of attribute comparer")
 
@@ -122,9 +124,10 @@ class SymMaxMean(AttributeComparer):
     """
     Initializes the SymMaxMean attribute comparer.
     """
-    def __init__(self, elementComparer: ElementComparer) -> None:
+    def __init__(self, elementComparer: ElementComparer, base: Any) -> None:
         super().__init__()
         self.elementComparer: ElementComparer = elementComparer
+        self.base: Any = base
         return
 
     """
@@ -132,7 +135,7 @@ class SymMaxMean(AttributeComparer):
     setsim(A,B) = 1/2 * (1/|A| sum_{a in A} max_{b in B} sim(a,b) 
                 + 1/|B| sum_{b in B} max_{a in A} sim(b,a))
     """
-    def compare(self, first: [Any], second: [Any], base: Any) -> float:
+    def compare(self, first: [Any], second: [Any]) -> float:
         sum1 = 0.0
         sum2 = 0.0
 
@@ -147,7 +150,7 @@ class SymMaxMean(AttributeComparer):
                 if self.is_similarity_in_cache(a, b):
                     temp = self.get_similarity_from_cache(a, b)
                 else:
-                    temp = self.elementComparer.compare(a, b, base)
+                    temp = self.elementComparer.compare(a, b, self.base)
                     self.add_similarity_to_cache(a, b, temp)
 
                 if temp > max:
@@ -169,7 +172,7 @@ class SymMaxMean(AttributeComparer):
                 if self.is_similarity_in_cache(b, a):
                     temp = self.get_similarity_from_cache(b, a)
                 else:
-                    temp = self.elementComparer.compare(b, a, base)
+                    temp = self.elementComparer.compare(b, a, self.base)
                     self.add_similarity_to_cache(b, a, temp)
 
                 if temp > max:
@@ -191,20 +194,21 @@ class SingleElement(AttributeComparer):
     """
     Initializes the SingleElement attribute comparer.
     """
-    def __init__(self, elementComparer: ElementComparer) -> None:
+    def __init__(self, elementComparer: ElementComparer, base: Any) -> None:
         super().__init__()
         self.elementComparer: ElementComparer = elementComparer
+        self.base: Any = base
         return
 
     """
     Compares two attributes, i.e. sets of elements, where each set has just one element:
     setsim(A,B) = sim(a,b).
     """
-    def compare(self, first: [Any], second: [Any], base: Any) -> float:
+    def compare(self, first: [Any], second: [Any]) -> float:
         # check if value is already in cache
         if self.is_similarity_in_cache(first[0], second[0]):
             temp = self.get_similarity_from_cache(first[0], second[0])
         else:
-            temp = self.elementComparer.compare(first[0], second[0], base)
+            temp = self.elementComparer.compare(first[0], second[0], self.base)
             self.add_similarity_to_cache(first[0], second[0], temp)
         return temp

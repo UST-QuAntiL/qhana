@@ -380,8 +380,8 @@ def test(command_args):
     
     # create the entities out of the database
     # 10 entities for example
-    amount = 100
-    service.create_entities(db)
+    amount = 10
+    service.create_entities(db, amount)
 
     # create the components, i.e. attribute comparer
     # element comparer ...
@@ -420,6 +420,8 @@ def test(command_args):
 
     # stop timer
     check.stop()
+
+    db.close()
 
     return
 
