@@ -30,8 +30,6 @@ class EmptyAttributeAction(enum.Enum):
             raise ValueError("No name for EmptyAttributeAction \"" + str(variable) + "\" specified")
         return
 
-    
-
 """
 Represents the comparer class for arbitrary entities
 """
@@ -221,94 +219,3 @@ class EntityComparer:
     """
     def calculate_distance(self, first: Entity, second: Entity) -> float:
         return self.similarityTransformer.transform(self.calculate_similarity(first, second))
-
-"""
-Represents the comparer class for costumes
-"""
-class CostumeComparer(EntityComparer):
-    """
-    Initializes the costume comparer
-    """
-    def __init__(
-        self,
-        attributeAggregatorType: AggregatorType = AggregatorType.mean,
-        similarityTransformerType: TransformerType = TransformerType.linearInverse) -> None:
-
-        super().__init__(attributeAggregatorType, similarityTransformerType)
-
-        # register all the element comparer for the costume comparing
-        # this needs to be done first
-        # dominanteFarbe
-        self.add_element_comparer(
-            Attribute.dominanteFarbe,
-            ElementComparerType.wuPalmer
-        )
-        # dominanteCharactereigenschaft
-        self.add_element_comparer(
-            Attribute.dominanteCharaktereigenschaft,
-            ElementComparerType.wuPalmer
-        )
-        # dominanterZustand
-        self.add_element_comparer(
-            Attribute.dominanterZustand,
-            ElementComparerType.wuPalmer
-        )
-        # stereotyp
-        self.add_element_comparer(
-            Attribute.stereotyp,
-            ElementComparerType.wuPalmer,
-        )
-        # geschlecht
-        self.add_element_comparer(
-            Attribute.geschlecht,
-            ElementComparerType.wuPalmer,
-        )
-        # dominanterAlterseindruck
-        self.add_element_comparer(
-            Attribute.dominanterAlterseindruck,
-            ElementComparerType.wuPalmer,
-        )
-        # genre
-        # do nothing - just a tag
-
-        # register all the attribute comparer for the costume comparing
-        # dominanteFarbe
-        self.add_attribute_comparer(
-            Attribute.dominanteFarbe,
-            AttributeComparerType.symMaxMean,
-            EmptyAttributeAction.ignore
-        )
-        # dominanteCharaktereigenschaft
-        self.add_attribute_comparer(
-            Attribute.dominanteCharaktereigenschaft,
-            AttributeComparerType.symMaxMean,
-            EmptyAttributeAction.ignore
-        )
-        # dominanterZustand
-        self.add_attribute_comparer(
-            Attribute.dominanterZustand,
-            AttributeComparerType.symMaxMean,
-            EmptyAttributeAction.ignore
-        )
-        # stereotyp
-        self.add_attribute_comparer(
-            Attribute.stereotyp,
-            AttributeComparerType.symMaxMean,
-            EmptyAttributeAction.ignore
-        )
-        # geschlecht
-        self.add_attribute_comparer(
-            Attribute.geschlecht,
-            AttributeComparerType.symMaxMean,
-            EmptyAttributeAction.ignore
-        )
-        # dominanterAlterseindruck
-        self.add_attribute_comparer(
-            Attribute.dominanterAlterseindruck,
-            AttributeComparerType.symMaxMean,
-            EmptyAttributeAction.ignore
-        )
-        # genre
-        # do nothing - just a tag
-
-        return
