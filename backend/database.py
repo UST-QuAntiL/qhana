@@ -18,7 +18,6 @@ class Database(Singleton):
     """
     def __init__(self) -> None:
         self.__connection = None
-        self.__connected = False
         self.__cursor = None
         return
     
@@ -33,6 +32,10 @@ class Database(Singleton):
     Opens the database using the config.ini file.
     """
     def open(self, filename = None) -> None:
+        # if already connected do nothing
+        if self.__connection is not None and self.__connection.is_connected():
+            return
+
         if filename == None:
             filename = Database.config_file_default
         try:
@@ -57,7 +60,6 @@ class Database(Singleton):
         
             if self.__connection.is_connected():
                 Logger.debug("Successfully connected to database")
-                self.__connected = True
 
         except Error as error:
             Logger.error(str(error) + " The application will quit now.")
@@ -69,7 +71,6 @@ class Database(Singleton):
     def close(self) -> None:
         if self.__connection is not None and self.__connection.is_connected():
             self.__connection.close()
-            self.__connected = False
             self.__cursor = None
             Logger.debug("Successfully disconnected from database")
 
