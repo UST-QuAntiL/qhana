@@ -10,6 +10,17 @@
      </form>
 </p>
 <p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+</p>
+<p>
     <h5>Initialize Scaling Type</h5>
     <form action = "/initialize_scaling" method = "POST">
         <p><h6> Enter scaling type <tab id=t2>: 

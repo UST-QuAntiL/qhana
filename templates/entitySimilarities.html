@@ -11,6 +11,17 @@
      </form>
 </p>
 <p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+</p>
+<p>
     <h3> Initialize entitySimilarities</h3>
     <br>
     <form  action = "/entitySimilarities_initialize" method = "POST">
@@ -21,11 +32,11 @@
         <input type="checkbox" id="memory" name="memory" ></input>
         {% endif %}
         <br>
-        <label for="noic">Number of import Costumes:</label>
+        <label for="noic">Number of import Entities:</label>
         <input type="number" id="noic" name="noic" min="1" value={{numberCostumes}}>
         <p>
             <h5>
-                The following costume are for initialize:
+                The following entity plan are for initialize:
             </h5>
                 <table style="width:80%; border: 1px solid black">
                     <tr style="border: 1px solid black">
@@ -61,12 +72,12 @@
 <p>
     <h6> Initialized entitySimilarities</h6>
     <br>
-    Costumes: {{numberCostumes}}  
+    Import Entities: {{numberCostumes}}  
     <br>  
     Memory: {{memory}}
     <br> 
     <h5>
-        Initialized costume :
+        Initialized entity plan :
     </h5>
         <table style="width:80%; border: 1px solid black">
             <tr style="border: 1px solid black">
@@ -95,7 +106,7 @@
 </p>
 <p>
     <form  action = "/entitySimilarities_create_similaritiesMatrix" method = "POST">
-        <h6> Number of Costumes for Similarities Matrix: </h6>
+        <h6> Number of Entities for Similarities Matrix: </h6>
         <label for="NoCfSMMin">Min</label>
         <input type="number" id="NoCfSMin" name="NoCfSMMin" min="0" value={{min_value}}>
         <label for="NoCfSMMax">Max</label>
