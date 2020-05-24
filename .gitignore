@@ -9,3 +9,4 @@ static/*
 *.plk
 sessions
 test.py
+debug.log
