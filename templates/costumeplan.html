@@ -1,23 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Costume Plan{% endblock %}
 {% block content %}
+<body background="/static/logos/planqkbackground2.jpg">
 <p>
 
 <form action = "/saveload_costume_plan" method = "POST">
     <p><h6> Enter Session Name <tab id=t2>: 
     <input type = 'text' name = 'session' value="{{session["saveload"]}}"/></p>
-    <p><input type = 'submit' name = 'saveload' value = 'Save Costume Plan'/>
-    <input type = 'submit' name = 'saveload' value = 'Load Costume Plan'/>
+    <p><input type = 'submit' name = 'saveload' value = 'Save Entity Plan'/>
+    <input type = 'submit' name = 'saveload' value = 'Load Entity Plan'/>
     
  </form>
- 
- <p>
-<h4> Costume Plan </h4>
+</p>
+<p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+</p>
+
+<p>
+<h4> Entity Plan </h4>
  </p>
 <p><a href="/reset_costume_plan" ><input type="button" value="reset to defaults"></a>
 <br>
 <br>
-<a href="/load_costume_plan_entitySimilarities" ><input type="button" value="load costume plan from entitySimilarities"></a>
+<a href="/load_costume_plan_entitySimilarities" ><input type="button" value="load entity plan from entitySimilarities"></a>
 <br>
 </p>
 <p>
@@ -46,6 +59,7 @@
 <table style="width:50% ; float:left">
     <tr>
         <th>Attribute</th>
+        <th>Checkbox</th>
         <th>Element Comparer</th>
         <th>Attribute Comparer</th>
         <th>Empty Attribute Action</th>
@@ -56,6 +70,13 @@
     {% for attribute in attributes %}
         <tr>
             <td>{{attribute[0]}}</td>
+            <td><input type="checkbox" id="attributeCheck" name="attributeCheck" onchange="document.location.href=this.value" value="/instance_costume_plan_attribute_{{attribute[1]}}"
+                {% for element in session["strCostumePlan"]  %}
+                    {% if element[0] == attribute[0] %}
+                    checked        
+                    {% endif %}
+                {% endfor %}
+                ></input></td>
             <td>
             <select id="elementComparer" onchange="document.location.href=this.value">
                 <option value="None">None</option>
@@ -111,8 +132,7 @@
         </td>
     </tr>
     </table>
-
-
+</body>
 {% endblock %}
 
 
