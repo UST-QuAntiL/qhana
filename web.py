@@ -37,10 +37,16 @@ app.clustering: Clustering = None
 app.strCostumePlan: list = None
 app.result: list = None
 app.tablelist: list = None
+app.start: bool = True
 
 @app.route("/home")
 @app.route("/")
 def home():
+    if app.start :
+        session["saveload"] = ""
+        initialize_costumeplan()
+
+
     attributes = []
     for attribute in Attribute:
         attributes.append(Attribute.get_name(attribute))
@@ -53,8 +59,6 @@ def home():
         dbConnectionString =  str(error)
 
     session["dbConnectionString"] = dbConnectionString
-    
-    
 
     return render_template("home.html", attributes=attributes)
 
