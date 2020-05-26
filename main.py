@@ -9,6 +9,7 @@ from backend.logger import Logger, LogLevel
 import numpy as np
 import re
 import csv
+import copy
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 from sklearn import manifold
@@ -28,12 +29,14 @@ from backend.entity import Costume, CostumeFactory, Entity, EntityFactory
 from backend.entityComparer import CostumeComparer, EmptyAttributeAction
 from backend.attributeComparer import AttributeComparerType
 from backend.aggregator import AggregatorType
-from backend.elementComparer import ElementComparerType
+from backend.elementComparer import ElementComparerType, WuPalmer
 from backend.transformer import TransformerType
 from backend.entityService import EntityService
 import random
 import backend.savingAndLoading as sal
 from backend.entitySimilarities import EntitySimilarities
+import concurrent.futures
+from multiprocessing import Pool
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -285,10 +288,141 @@ def export_csv(command_args):
             writer.writerow(body)
     return
 
+def calc(node_pairs, tax):
+    sims = {}
+    comparer = WuPalmer()
+
+    for node1, node2 in node_pairs:
+        sim = comparer.compare(node1, node2, tax)
+        sims[(node1, node2)] = sim
+
+    return sims
+
 def test(command_args):
     db = Database()
     db.open()
+    """
+    tax = Taxonomie.create_from_db(TaxonomieType.charaktereigenschaft)
+    graph = tax.graph
+    tuples = graph.nodes.items()
+    nodes = []
+    amount = graph.number_of_nodes()
+    # set custom amount
+    amount = 40
 
+    for name, value in tuples:
+        nodes.append(name)
+
+    print("Elements = " + str(amount))
+
+    comparer = WuPalmer()
+
+    # this shall be the dict with
+    # { (taxonomie_entry_1, taxonomie_entry_2), value }
+    base_parallel1 = {}
+    base_parallel2 = {}
+    base_serial = {}
+
+    # create timer
+    check: Timer = Timer()
+
+    # starttimer
+    check.start()
+
+    # Z.B. Charaktereigenschaften
+    # --> 800 möglichkeiten
+    # --> ^2 => 800^2
+
+    threads = 4
+    taxs = []
+    node_pairs = []
+    node_pairs_thread = []
+    inputs = []
+
+    # make copy for each thread
+    for t in range(0, threads):
+        node_pairs_thread.append([])
+        taxs.append(copy.deepcopy(tax))
+
+    # get each thread his work
+    for i in range(0, amount):
+        for j in range(i, amount):
+            node_pairs.append((nodes[i], nodes[j]))
+
+    for i in range(0, len(node_pairs)):
+        t = i % threads
+        node_pairs_thread[t].append(node_pairs[i])
+
+    # create inputs
+    for t in range(0, threads):
+        inputs.append((node_pairs_thread[t], taxs[t]))
+
+    # print work per thread
+    for t in range(0, threads):
+        print("Thread " + str(t) + " has " + str(len(node_pairs_thread[t])) + " to do")
+
+    # start task on threadpool
+    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = { executor.submit(calc, n, t): (n, t) for n, t in inputs }
+
+    # get results
+    for future in concurrent.futures.as_completed(futures):
+        sims = future.result()
+        base_parallel1.update(sims)
+
+    # stop timer
+    check.stop()
+
+    # create timer
+    check: Timer = Timer()
+
+    # starttimer
+    check.start()
+
+    # start task on threadpool with multithreading (process based)
+    pool = Pool(processes=threads)
+    handles = []
+
+    # start jobs
+    for thread_input in inputs:
+        handles.append(pool.apply_async(calc, (thread_input[0], thread_input[1])))
+
+    # get results
+    for handle in handles:
+        sims = handle.get()
+        base_parallel2.update(sims)
+
+    # stop timer
+    check.stop()
+
+    # create timer
+    check: Timer = Timer()
+
+    # starttimer
+    check.start()
+
+    for i in range(0, amount):
+        for j in range(i, amount):
+            node1 = nodes[i]
+            node2 = nodes[j]
+            sim = comparer.compare(node1, node2, tax)
+            base_serial[(node1, node2)] = sim
+
+    # stop timer
+    check.stop()
+
+    diff1 = 0.0
+    diff2 = 0.0
+
+    for node1, node2 in base_serial.keys():
+        diff1 += abs(base_serial[(node1, node2)] - base_parallel1[(node1, node2)])
+        diff2 += abs(base_serial[(node1, node2)] - base_parallel2[(node1, node2)])
+
+    print("The difference between serial and parallel1 is " + str(diff1))
+    print("The difference between serial and parallel2 is " + str(diff2))
+
+    return
+    """
     # create the plan, i.e. specify which
     # attributes we want to have and also which
     # attribute comparer and element comparer
@@ -380,7 +514,7 @@ def test(command_args):
     
     # create the entities out of the database
     # 10 entities for example
-    amount = 10
+    amount = 1000000
     service.create_entities(db, amount)
 
     # create the components, i.e. attribute comparer
@@ -411,7 +545,8 @@ def test(command_args):
             if count % (amount * amount * 0.1) == 0:
                 print(str(int(count/(amount * amount) * 100)) + " % compared from " + str(amount * amount) + " comparsions")
             try:
-                sim = service.calculate_distance(i, j)
+                #sim = service.calculate_distance(i, j)
+                sim = service.entitiyComparer.calculate_distance(entities[i], entities[j])
             except Exception as err:
                 print("Exception!!")
                 print(entities[i])
