@@ -36,7 +36,9 @@ app.scaling: Scaling = None
 app.clustering: Clustering = None
 app.strCostumePlan: list = None
 app.result: list = None
+app.tablelist: list = None
 
+@app.route("/home")
 @app.route("/")
 def home():
     attributes = []
@@ -51,19 +53,25 @@ def home():
         dbConnectionString =  str(error)
 
     session["dbConnectionString"] = dbConnectionString
+    
+    
+
+    return render_template("home.html", attributes=attributes)
+
+@app.route("/reset_all")
+def reset_all():
     ###### initialize pages ##########
     session["saveload"] = ""
-    #app.entitySimilarities: EntitySimilarities = None
+    app.entitySimilarities: EntitySimilarities = None
     app.scaling: Scaling = None
     app.clustering: Clustering = None
     app.strCostumePlan: list = None
     app.result: list = None
+    app.tablelist: list = None
     initialize_costumeplan()
     #app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     ##################################
-    
-
-    return render_template("home.html", attributes=attributes)
+    return redirect(url_for('home'))
 
 @app.route("/attributes")
 def attributes():
@@ -184,6 +192,9 @@ def costumeplan():
         attributeType = attribute
         attributes.append((attributeName, attributeType))
 
+    attributes1, attributes2 = split_list(attributes)
+
+
     taxonomies = []
     for taxonomyType in TaxonomieType:
         taxonomyName = TaxonomieType.get_name(taxonomyType)
@@ -217,13 +228,19 @@ def costumeplan():
     return render_template(
         "costumeplan.html",
         emptyAttributeActions = emptyAttributeActions,
-        attributes=attributes,
+        attributes1=attributes1,
+        attributes2=attributes2,
         taxonomies=taxonomies,
         aggregators=aggregators,
         transformers=transformers,
         attributeComparers=attributeComparers,
         elementComparers=elementComparers
     )
+
+def split_list(a_list):
+    half = len(a_list)//2
+    return a_list[:half], a_list[half:]
+
 
 @app.route('/saveload_costume_plan', methods = ['POST', 'GET'])
 def saveload_costume_plan():
@@ -409,6 +426,7 @@ def entitySimilarities():
     number_costumes = 2147483646
     strCostumePlan = ""
     last_sequenz_id = []
+    entities_in_memory: str = ""
     min_value = -1
     max_value = -1
 
@@ -418,6 +436,7 @@ def entitySimilarities():
         number_costumes = app.entitySimilarities.get_entity_number()
         strCostumePlan =  costumePlanToStr(app.entitySimilarities.get_costume_plan())
         last_sequenz_id = app.entitySimilarities.get_last_sequenz_id()
+        entities_in_memory = app.entitySimilarities.get_entities_in_memory()
         if len(last_sequenz_id) != 0:
             min_value = last_sequenz_id[0]
             max_value = last_sequenz_id[-1]
@@ -439,7 +458,8 @@ def entitySimilarities():
         last_sequenz_id = last_sequenz_id,
         min_value = min_value,
         max_value = max_value,
-        showplot = showplot
+        showplot = showplot,
+        EIN = entities_in_memory
     )
 
 @app.route("/entitySimilarities_initialize" , methods = ['POST', 'GET'])
@@ -958,7 +978,23 @@ def result_cluster():
     
     return result()
     
+@app.route("/table_list")
+def table_list():
+    tablelist_bool: bool = True
+    entitySimi_bool: bool = True
+    if not isinstance(app.tablelist , list):
+        tablelist_bool = False
+        flash("No table list generated")
+    if not isinstance(app.entitySimilarities , EntitySimilarities):
+        entitySimi_bool = False
+        flash("No EntitySimilarities Object instantiated")
 
+    return render_template(
+            "entityTable.html",
+            table = app.tablelist,
+            tableListBool = tablelist_bool,
+            entitySimiBool = entitySimi_bool
+        )
 
 
 @app.route("/instance_table_costume_plan" , methods = ['POST', 'GET'])
@@ -999,11 +1035,9 @@ def instance_table_costume_plan():
             for attribute in attributes_list:
                 entityList.append(entity.values[attribute])
             show_table_list.append(tuple(entityList))
-                
-    return render_template(
-            "entityTable.html",
-            table = show_table_list
-        )
+    app.tablelist = show_table_list
+
+    return redirect(url_for('table_list'))
 
 
 
