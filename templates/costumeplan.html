@@ -1,27 +1,71 @@
 {% extends "base.html" %}
 {% block title %}Costume Plan{% endblock %}
 {% block content %}
+<body background="/static/logos/planqkbackground2.jpg">
 <p>
-
-<form action = "/saveload_costume_plan" method = "POST">
-    <p><h6> Enter Session Name <tab id=t2>: 
-    <input type = 'text' name = 'session' value="{{session["saveload"]}}"/></p>
-    <p><input type = 'submit' name = 'saveload' value = 'Save Costume Plan'/>
-    <input type = 'submit' name = 'saveload' value = 'Load Costume Plan'/>
     
- </form>
- 
- <p>
-<h4> Costume Plan </h4>
- </p>
-<p><a href="/reset_costume_plan" ><input type="button" value="reset to defaults"></a>
-<br>
-<br>
-<a href="/load_costume_plan_entitySimilarities" ><input type="button" value="load costume plan from entitySimilarities"></a>
-<br>
 </p>
 <p>
-<label for="aggregator">Aggregator Type: </label>
+<table style="width: 100%">
+        <tr>
+            <td style="width: 50%">
+            <h2 font color="blue"> <span style="color:white;">Entity Plan</span> </h2>
+            <table style="width:fit-content;border: 1px solid white">
+                <tr style="border: 1px solid white">
+                    <th><span style="color: white">Aggregator Type</span></th>
+                    <th><span style="color: white">Transformer Type</span></th>
+                    <th><span style="color: white">Attribute</span></th>
+                    <th><span style="color: white">Element Comparer</span></th>
+                    <th><span style="color: white">Attribute Comparer</span></th>
+                    <th><span style="color: white">Empty Attribute Action</span></th>
+                </tr>
+                    {% for component in session["strCostumePlan"] %}
+                        {% if component == session["strCostumePlan"][0] %}
+                            <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                        {% elif component == session["strCostumePlan"][1] %}
+                            <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                        {% else %}
+                        <tr style="border: 1px solid white">
+                            <td><span style="color: white">{{component[0]}}</span></td>
+                            <td><span style="color: white">{{component[1]}}</span></td>
+                            <td><span style="color: white">{{component[2]}}</span></td>
+                            <td><span style="color: white">{{component[3]}}</span></td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+            </table>
+            </td>
+            <td valign="top" align="middle" style="width: 45%" >
+            <div id="bereich" style="width: fit-content; padding: 10px ; height: fit-content ;background-color: #cc0033; border: 3px #cc0033;" >
+                <h4> Saving and Loading</h4>
+                <form action = "/saveload_costume_plan" method = "POST">
+                    <h6> Enter sessions Name <tab id=t2>: 
+                    <input type = 'text' name = 'session' value="{{session["saveload"]}}"/>
+                    <br>
+                    <br>
+                    <input type = 'submit' name = 'saveload' value = 'Save Entity Plan'/>
+                    <input type = 'submit' name = 'saveload' value = 'Load Entity Plan'/>
+                </form>
+                <a href="/load_costume_plan_entitySimilarities" ><input type="button" value="Load Entity Plan from entitySimilarities"></a>
+                <br>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul class=flashes>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+            </div >
+            </td> 
+        </tr>
+</table>
+</p>
+<p>
+<br>
+<a href="/reset_costume_plan" ><input type="button" value="reset to defaults"></a>
+<label for="aggregator"><span style="color: white">Aggregator Type :</span></label>
 <select id="aggregator" onchange="document.location.href=this.value">
     {% for aggregator in aggregators %}   
         {% if aggregator[0] == session["strCostumePlan"][0] %}
@@ -31,7 +75,7 @@
         {% endif %}
     {% endfor %}
 </select>
-<label for="transformer">Transformer Type: </label>
+<label for="transformer"><span style="color: white">Transformer Type :</span></label>
 <select id="transformer" onchange="document.location.href=this.value">
     {% for transformer in transformers %}   
         {% if transformer[0] == session["strCostumePlan"][1] %}   
@@ -42,21 +86,37 @@
     {% endfor %}
 </select>
 </p>
-
-<table style="width:50% ; float:left">
+<table style="width:48% ; float:left">
     <tr>
-        <th>Attribute</th>
-        <th>Element Comparer</th>
-        <th>Attribute Comparer</th>
-        <th>Empty Attribute Action</th>
+        <th><span style="color: white">Attribute</span></th>
+        <th><span style="color: white">Checkbox</span></th>
+        <th><span style="color: white">Element Comparer</span></th>
+        <th><span style="color: white">Attribute Comparer</span></th>
+        <th><span style="color: white">Empty Attribute Action</span></th>
         
        
 
     </tr>
-    {% for attribute in attributes %}
+    {% for attribute in attributes1 %}
         <tr>
-            <td>{{attribute[0]}}</td>
+            <td><span style="color: white">{{attribute[0]}}</span></td>
+            <td align="middle"><input type="checkbox" id="attributeCheck" name="attributeCheck" onchange="document.location.href=this.value" value="/instance_costume_plan_attribute_{{attribute[1]}}"
+                {% for element in session["strCostumePlan"]  %}
+                    {% if element[0] == attribute[0] %}
+                    checked        
+                    {% endif %}
+                {% endfor %}
+                ></input></td>
             <td>
+            
+            <fieldset disabled>
+            {% for element in session["strCostumePlan"]  %}
+                {% if element[0] == attribute[0] %}
+                    </fieldset>
+                    <fieldset>        
+                {% endif %}
+            {% endfor %}
+            
             <select id="elementComparer" onchange="document.location.href=this.value">
                 <option value="None">None</option>
                 {% for elementcomparer in elementComparers %}
@@ -69,8 +129,18 @@
                     >{{elementcomparer[0]}}</option>
                 {% endfor %}
             </select>
+            </fieldset>
             </td>
             <td>
+
+            <fieldset disabled>
+            {% for element in session["strCostumePlan"]  %}
+                {% if element[0] == attribute[0] %}
+                    </fieldset>
+                    <fieldset>        
+                {% endif %}
+            {% endfor %}
+
             <select id="attributeComparer" onchange="document.location.href=this.value">
                 <option value="None">None</option>
                 {% for attributecomparer in attributeComparers %}   
@@ -82,9 +152,20 @@
                         {% endfor %}
                     >{{attributecomparer[0]}}</option>
                 {% endfor %}
-            </select>     
+            </select> 
+            </fieldset>    
             </td>
             <td>
+
+            <fieldset disabled>
+            {% for element in session["strCostumePlan"]  %}
+                {% if element[0] == attribute[0] %}
+                    </fieldset>
+                    <fieldset>        
+                {% endif %}
+            {% endfor %}
+
+
                 <select id="emptyAttributeAction" onchange="document.location.href=this.value">
                     <option value="None">None</option>
                     {% for emptyAttributeAction in emptyAttributeActions %}   
@@ -97,22 +178,107 @@
                         >{{emptyAttributeAction[0]}}</option>
                     {% endfor %}
                 </select>
+            </fieldset>
             </td>
         </tr>
     {% endfor %}
-    </table>
-    <table style="width:50% ; float:right">
+</table>
+<table style="width:48% ; float:right">
     <tr>
-        <th>Costume Plan</th>
-    </tr>
-    <tr>
-        <td>
-            <textarea rows="17" cols="80">{{session["strCostumePlan"]}}</textarea>
-        </td>
-    </tr>
-    </table>
+        <th><span style="color: white">Attribute</span></th>
+        <th><span style="color: white">Checkbox</span></th>
+        <th><span style="color: white">Element Comparer</span></th>
+        <th><span style="color: white">Attribute Comparer</span></th>
+        <th><span style="color: white">Empty Attribute Action</span></th>
+        
+       
 
+    </tr>
+    {% for attribute in attributes2 %}
+        <tr>
+            <td><span style="color: white">{{attribute[0]}}</span></td>
+            <td align="middle"><input type="checkbox" id="attributeCheck" name="attributeCheck" onchange="document.location.href=this.value" value="/instance_costume_plan_attribute_{{attribute[1]}}"
+                {% for element in session["strCostumePlan"]  %}
+                    {% if element[0] == attribute[0] %}
+                    checked        
+                    {% endif %}
+                {% endfor %}
+                ></input></td>
+            <td>
 
+            <fieldset disabled>
+            {% for element in session["strCostumePlan"]  %}
+                {% if element[0] == attribute[0] %}
+                    </fieldset>
+                    <fieldset>        
+                {% endif %}
+            {% endfor %}
+
+            <select id="elementComparer" onchange="document.location.href=this.value">
+                <option value="None">None</option>
+                {% for elementcomparer in elementComparers %}
+                    <option value="/instance_costume_plan/{{attribute[1]}}/{{elementcomparer[1]}}"    
+                        {% for element in session["strCostumePlan"]  %}
+                            {% if element[0] == attribute[0] and elementcomparer[0] == element[1] %}
+                                selected="selected"
+                            {% endif  %}
+                        {% endfor %}
+                    >{{elementcomparer[0]}}</option>
+                {% endfor %}
+            </select>
+            </fieldset>
+            </td>
+            <td>
+
+            <fieldset disabled>
+            {% for element in session["strCostumePlan"]  %}
+                {% if element[0] == attribute[0] %}
+                    </fieldset>
+                    <fieldset>        
+                {% endif %}
+            {% endfor %}
+
+            <select id="attributeComparer" onchange="document.location.href=this.value">
+                <option value="None">None</option>
+                {% for attributecomparer in attributeComparers %}   
+                    <option value="/instance_costume_plan/{{attribute[1]}}/{{attributecomparer[1]}}"
+                        {% for element in session["strCostumePlan"]  %}
+                            {% if element[0] == attribute[0] and attributecomparer[0] == element[2] %}
+                                selected="selected"
+                            {% endif  %}
+                        {% endfor %}
+                    >{{attributecomparer[0]}}</option>
+                {% endfor %}
+            </select> 
+            </fieldset>    
+            </td>
+            <td>
+            <fieldset disabled>
+            {% for element in session["strCostumePlan"]  %}
+                {% if element[0] == attribute[0] %}
+                    </fieldset>
+                    <fieldset>        
+                {% endif %}
+            {% endfor %}
+                <select id="emptyAttributeAction" onchange="document.location.href=this.value">
+                    <option value="None">None</option>
+                    {% for emptyAttributeAction in emptyAttributeActions %}   
+                        <option value="/instance_costume_plan/{{attribute[1]}}/{{emptyAttributeAction[1]}}"
+                            {% for element in session["strCostumePlan"]  %}
+                                {% if element[0] == attribute[0] and emptyAttributeAction[0] == element[3] %}
+                                    selected="selected"
+                                {% endif  %}
+                            {% endfor %}
+                        >{{emptyAttributeAction[0]}}</option>
+                    {% endfor %}
+                </select>
+            </fieldset>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+    
+</body>
 {% endblock %}
 
 

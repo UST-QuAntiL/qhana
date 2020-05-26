@@ -233,7 +233,7 @@ class _SavingAndLoadingManaging():
     
     @staticmethod
     def saving( type_name: SavingAndLoadingType, file_folder: str , save_object : DataForSavingAndLoading) -> bool:
-        root_directory = "Session"
+        root_directory = "sessions"
         answer: bool = True
         file_name: str = ""
         file_folder_path: str = ""
@@ -248,7 +248,7 @@ class _SavingAndLoadingManaging():
         
         # file name
         if type_name == SavingAndLoadingType.costumePlan:
-            file_name: str = "costumeplan"
+            file_name: str = "plan"
         elif type_name == SavingAndLoadingType.entitySimilarities:
             file_name: str = "entity_similarities"
         elif type_name == SavingAndLoadingType.costumeSimilarities:
@@ -284,7 +284,7 @@ class _SavingAndLoadingManaging():
 
     @staticmethod
     def loading( type_name: SavingAndLoadingType, file_folder: str) -> DataForSavingAndLoading:
-        root_directory = "Session"
+        root_directory = "sessions"
         file_name: str = ""
         file_folder_path: str = ""
         file_folder_path = root_directory + "/" + file_folder
@@ -300,7 +300,7 @@ class _SavingAndLoadingManaging():
 
         # file name
         if type_name == SavingAndLoadingType.costumePlan:
-            file_name: str = "costumeplan"
+            file_name: str = "plan"
         elif type_name == SavingAndLoadingType.entitySimilarities:
             file_name: str = "entity_similarities"
         elif type_name == SavingAndLoadingType.costumeSimilarities:

@@ -1,117 +1,163 @@
 {% extends "base.html" %}
 {% block title %}entitySimilarities{% endblock %}
 {% block content %}
+<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <form action = "/saveload_entitySimilarities" method = "POST">
-        <p><h6> Enter Session Name <tab id=t2>: 
-        <input type = 'text' name = 'session' value="{{session["saveload"]}}"/></p>
-        <p><input type = 'submit' name = 'saveload' value = 'Save entitySimilarities'/>
-        <input type = 'submit' name = 'saveload' value = 'Load entitySimilarities'/>
-        
-     </form>
+    <h3><span style="color:white;">entitySimilarities Object</span></h3>
 </p>
+<br>
+<br>
+<br>
+<br>
+<br>
 <p>
-    <h3> Initialize entitySimilarities</h3>
-    <br>
-    <form  action = "/entitySimilarities_initialize" method = "POST">
-        <label for="memory">Memory</label>
-        {% if memory %}
-            <input type="checkbox" id="memory" name="memory" checked></input>
-        {% else %}
-        <input type="checkbox" id="memory" name="memory" ></input>
-        {% endif %}
-        <br>
-        <label for="noic">Number of import Costumes:</label>
-        <input type="number" id="noic" name="noic" min="1" value={{numberCostumes}}>
-        <p>
-            <h5>
-                The following costume are for initialize:
-            </h5>
-                <table style="width:80%; border: 1px solid black">
-                    <tr style="border: 1px solid black">
-                        <th>Aggregator Type</th>
-                        <th>Transformer Type</th>
-                        <th>Attribute</th>
-                        <th>Element Comparer</th>
-                        <th>Attribute Comparer</th>
-                        <th>Empty Attribute Comparer</th>
+    <table style="width: 100%">
+        <tr>
+            <td style="width: 50%">
+                <h4><span style="color:white">Initialize entitySimilarities Object</span></h4>
+                <br>
+                <form  action = "/entitySimilarities_initialize" method = "POST">
+                    <label for="noic"><span style="color:white">Number of import Entities</span></label>
+                    &nbsp
+                    <input type="number" id="noic" name="noic" min="1" value={{numberCostumes}} style="width: 110px">
+                    &nbsp &nbsp &nbsp
+                    <label for="memory"><span style="color:white">Memory</span></label>
+                    &nbsp 
+                    {% if memory %}
+                        <input type="checkbox" id="memory" name="memory" checked></input>
+                    {% else %}
+                        <input type="checkbox" id="memory" name="memory" ></input>
+                    {% endif %}
+                    &nbsp &nbsp &nbsp <input type = 'submit' name = 'initializeSimilarities' value = 'initialize entitySimilarities Object'/>
+                    <br>
+                    <br>
+                        <table style="width: fit-content; border: 1px solid white">
+                            <tr style="border: 1px solid white">
+                                <th><span style="color:white">Aggregator Type</span></th>
+                                <th><span style="color:white">Transformer Type</span></th>
+                                <th><span style="color:white">Attribute</span></th>
+                                <th><span style="color:white">Element Comparer</span></th>
+                                <th><span style="color:white">Attribute Comparer</span></th>
+                                <th><span style="color:white">Empty Attribute Comparer</span></th>
+                            </tr>
+                            {% for component in session["strCostumePlan"] %}
+                                {% if component == session["strCostumePlan"][0] %}
+                                    <td rowspan="0" align=center style="border: 1px solid white"><span style="color:white">{{component}}</span></td>
+                                {% elif component == session["strCostumePlan"][1] %}
+                                    <td rowspan="0" align=center style="border: 1px solid white"><span style="color:white">{{component}}</span></td>
+                                {% else %}
+                                    <tr style="border: 1px solid white">
+                                        <td><span style="color: white">{{component[0]}}</span></td>
+                                        <td><span style="color: white">{{component[1]}}</span></td>
+                                        <td><span style="color: white">{{component[2]}}</span></td>
+                                        <td><span style="color: white">{{component[3]}}</span></td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                </form>
+            </td>
+            <td valign="top" align="middle" style="width: 45%" >
+            <div id="bereich" style="width: fit-content; padding: 10px ; height: fit-content ;background-color: #cc0033; border: 3px #cc0033;" >
+                <h4> Saving and Loading</h4>
+                <form action = "/saveload_entitySimilarities" method = "POST">
+                    <h6> Enter sessions Name <tab id=t2>: 
+                    <input type = 'text' name = 'session' value="{{session["saveload"]}}"/>
+                    <br>
+                    <br>
+                    <input type = 'submit' name = 'saveload' value = 'Save entitySimilarities'/>
+                    <input type = 'submit' name = 'saveload' value = 'Load entitySimilarities'/>
+                </form>
+                <br>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul class=flashes>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+            </div >
+            </td> 
+        </tr>
+    </table>
+</p>
+
+
+{% if initialized %}
+<hr style="width: 100%; 
+height: 2px; 
+margin: 0 auto;
+color:white;
+background: white">
+<p>
+    <h4><span style="color: white">The following entitySimilarities Object are initialized : </span></h4>
+    <table>
+        <tr>
+            <th style="width: 12%"><span style="color: white">Parameter</span></th>
+            <th style="width: 50%"><span style="color: white">Value</span></th>
+        </tr>
+        <tr>
+            <td><span style="color: white">Imported Entities</span></td>
+            <td><span style="color: white">{{numberCostumes}}</span></td>
+        </tr>
+        <tr>
+            <td><span style="color: white">Memory</span></td>
+            <td><span style="color: white">{{memory}}</span></td>
+        </tr>
+        <tr>
+            <td><span style="color: white">Entity Plan</span></td>
+            <td>
+                <table style="width:fit-content; border: 1px solid white">
+                    <tr style="border: 1px solid white">
+                        <th><span style="color:white">Aggregator Type</span></th>
+                        <th><span style="color:white">Transformer Type</span></th>
+                        <th><span style="color:white">Attribute</span></th>
+                        <th><span style="color:white">Element Comparer</span></th>
+                        <th><span style="color:white">Attribute Comparer</span></th>
+                        <th><span style="color:white">Empty Attribute Comparer</span></th>
                     </tr>
-                    {% for component in session["strCostumePlan"] %}
-                        {% if component == session["strCostumePlan"][0] %}
-                        <td rowspan="0" align=center style="border: 1px solid black">{{component}}</td>
-                        {% elif component == session["strCostumePlan"][1] %}
-                        <td rowspan="0" align=center style="border: 1px solid black">{{component}}</td>
+                    {% for component in strCostumePlan %}
+                        {% if component == strCostumePlan[0] %}
+                        <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                        {% elif component == strCostumePlan[1] %}
+                        <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
                         {% else %}
-                            <tr style="border: 1px solid gray">
-                                <td>{{component[0]}}</td>
-                                <td>{{component[1]}}</td>
-                                <td>{{component[2]}}</td>
-                                <td>{{component[3]}}</td>
+                            <tr style="border: 1px solid white">
+                                <td><span style="color: white">{{component[0]}}</span></td>
+                                <td><span style="color: white">{{component[1]}}</span></td>
+                                <td><span style="color: white">{{component[2]}}</span></td>
+                                <td><span style="color: white">{{component[3]}}</span></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
                 </table>
-        </p>
-        <br>
-        <br>
-        <input type = 'submit' name = 'initializeSimilarities' value = 'initialize entitySimilarities'/>
-    </form>
+            </td>
+        </tr>
+        <tr>
+            <td><span style="color: white">Entities in Memory</span></td>
+            <td><span style="color: white">{{EIN}}</span></td>
+        </tr>
+        <tr>
+            <td><br><span style="color: white">(Optional) Create Distance Matrix</span></td>
+            <td>
+                <br>
+                <form  action = "/entitySimilarities_create_similaritiesMatrix" method = "POST">
+                    <label for="NoCfSMMin"><span style="color: white">Min</span></label>
+                    <input type="number" id="NoCfSMin" name="NoCfSMMin" min="0" value={{min_value}} style="width: 70px">
+                    <label for="NoCfSMMax"><span style="color: white">Max</span></label>
+                    <input type="number" id="NoCfSMax" name="NoCfSMMax" min="0" value={{max_value}} style="width: 70px">
+                    <input type = 'submit' name = 'buildSimiliaritiesMatrix' value = 'build Matrix'/>
+                    {% if showplot %}
+                    <a href="/view_result_similarityMatrix"><input type="button" value="View similarity Matrix"></a>
+                    {% endif %}
+                </form>
+                
+            </td>
+        </tr>
+    </table>        
 </p>
-{% if initialized %}
-<p>
-    <h6> Initialized entitySimilarities</h6>
-    <br>
-    Costumes: {{numberCostumes}}  
-    <br>  
-    Memory: {{memory}}
-    <br> 
-    <h5>
-        Initialized costume :
-    </h5>
-        <table style="width:80%; border: 1px solid black">
-            <tr style="border: 1px solid black">
-                <th>Aggregator Type</th>
-                <th>Transformer Type</th>
-                <th>Attribute</th>
-                <th>Element Comparer</th>
-                <th>Attribute Comparer</th>
-                <th>Empty Attribute Comparer</th>
-            </tr>
-            {% for component in strCostumePlan %}
-                {% if component == strCostumePlan[0] %}
-                <td rowspan="0" align=center style="border: 1px solid black">{{component}}</td>
-                {% elif component == strCostumePlan[1] %}
-                <td rowspan="0" align=center style="border: 1px solid black">{{component}}</td>
-                {% else %}
-                    <tr style="border: 1px solid gray">
-                        <td>{{component[0]}}</td>
-                        <td>{{component[1]}}</td>
-                        <td>{{component[2]}}</td>
-                        <td>{{component[3]}}</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        </table>
-</p>
-<p>
-    <form  action = "/entitySimilarities_create_similaritiesMatrix" method = "POST">
-        <h6> Number of Costumes for Similarities Matrix: </h6>
-        <label for="NoCfSMMin">Min</label>
-        <input type="number" id="NoCfSMin" name="NoCfSMMin" min="0" value={{min_value}}>
-        <label for="NoCfSMMax">Max</label>
-        <input type="number" id="NoCfSMax" name="NoCfSMMax" min="0" value={{max_value}}>
-        <br>
-        <input type = 'submit' name = 'buildSimiliaritiesMatrix' value = 'buildSimilaitiesMatrix'/>
-    </form>
-</p>
-{% if showplot %}
-<p>
-    <br> 
-    Last Sequenz id : {{last_sequenz_id}}
-    <br>
-    <img src="/static/similarities.png" alt="image" style="width:1300px">  
-</p>    
-{% endif %}
 {% endif %}
 
 {% endblock %}

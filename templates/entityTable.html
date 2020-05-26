@@ -1,21 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Entity Table{% endblock %}
 {% block content %}
+<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h5>
-        The following costume are choosen:
-    </h5>
-        <table style=" border: 1px solid black">
+    <h3><span style="color:white;">Entity Table</span></h3>
+</p>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+            <li style="color: white"><span style="color: white">{{ message }}</span></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endwith %}
+{% if entitySimiBool %}
+<p>
+    <form  action = "/instance_table_costume_plan" method = "POST">
+        <input type="text" id="sequenzId" name="sequenzId" value="[1,2,3,4]">
+        <input type = 'submit' name = 'Start' value = 'Table Entities of List'/>
+    </form>
+</p>
+{% endif %}
+
+
+
+{% if tableListBool %}
+<p>
+        <table style=" border: 3px solid white">
             {% for component in table %}
-                <tr style="border: 1px solid black">
+                <tr style="border: 3px solid white">
                     {% for comp in component%}    
                         {% if component == table[0] %}
-                            <th>{{comp}}</th>
+                            <td align=center width=60><span style="color:white;"><b>{{comp}}</b></span></td>
                         {% else %}
                             {% if comp == component[1] or comp == component[2] or comp == component[3] %}
-                                <td><a href={{comp}}> Link</a></td>
+                                <td align=center><a href={{comp}} style="color: yellow;"> Link</a></td>
                             {% else %}
-                                <td>{{comp}}</td>
+                                <td align=center><span style="color:white;">{{comp}}</span></td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -23,6 +45,6 @@
             {% endfor %}
         </table>
 </p>
-
+{% endif %}
 
 {% endblock %}
