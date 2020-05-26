@@ -890,7 +890,7 @@ def result():
             params = app.result
         )
     else:
-        flash('No Results are calculated!')
+        flash('No Results are calculated! Redirection to calculation!')
         return calculating()
 
 @app.route("/view_result_<value>")
