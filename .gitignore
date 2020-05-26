@@ -10,3 +10,6 @@ plots/*
 sessions/*
 test.py
 debug.log
+clustering.png
+scaling.png
+similarities.png
