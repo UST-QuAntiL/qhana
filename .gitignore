@@ -2,11 +2,11 @@
 *.ini
 .vscode/*
 taxonomies/*
+static/taxonomies/*
 log/*
 plots/*
-static/*
 *.pyc
 *.plk
-sessions
+sessions/*
 test.py
 debug.log
