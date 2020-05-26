@@ -178,7 +178,7 @@ def zip_taxonomies():
         attachment_filename='taxonomies.zip'
     )
 
-# routes for costume plan
+# routes for entity plan
 @app.route("/costumeplan")
 def costumeplan():
     attributes = []
@@ -416,7 +416,7 @@ def entitySimilarities():
     initialized : bool = False
     memory : bool = False
     showplot: bool = False
-    number_costumes = 2147483646
+    number_costumes =100   #2147483646
     strCostumePlan = ""
     last_sequenz_id = []
     entities_in_memory: str = ""
