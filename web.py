@@ -143,33 +143,25 @@ def components():
         clusterings = clusterings
     )
 
-
 @app.route("/view_taxonomy_<taxonomyValueString>")
 def view_taxonomy(taxonomyValueString):
-    db = Database()
-    db.open()
-
     taxonomyType = TaxonomieType(taxonomyValueString)
     taxonomyName = TaxonomieType.get_name(taxonomyType)
-    taxonomy = Taxonomie.create_from_db(taxonomyType, db)
-    taxonomy.save_plot(directory="static")
+    taxonomy = Taxonomie.create_from_db(taxonomyType)
+    taxonomy.save_plot(directory="./static/taxonomies/")
 
-    svg_file_name = taxonomyName + ".svg"
+    svg_file_name = "taxonomies/" + taxonomyName + ".svg"
 
     return "<img src=" + url_for("static", filename=svg_file_name) + " object-fit: contain' >" 
 
-
 @app.route("/zip_taxonomies")
 def zip_taxonomies():
-    db = Database()
-    db.open()
-
     for taxonomyType in TaxonomieType:
-        tax = Taxonomie.create_from_db(taxonomyType, db)
-        tax.save_json("taxonomies")
-        tax.save_plot("taxonomies")
+        tax = Taxonomie.create_from_db(taxonomyType)
+        tax.save_json("./static/taxonomies/")
+        tax.save_plot("./static/taxonomies/")
 
-    base_path = pathlib.Path('./taxonomies/')
+    base_path = pathlib.Path('./static/taxonomies/')
     data = io.BytesIO()
     with zipfile.ZipFile(data, 'w', zipfile.ZIP_DEFLATED) as z:
         for f_name in base_path.iterdir():
@@ -181,7 +173,6 @@ def zip_taxonomies():
         as_attachment=True,
         attachment_filename='taxonomies.zip'
     )
-
 
 # routes for costume plan
 @app.route("/costumeplan")
@@ -240,7 +231,6 @@ def costumeplan():
 def split_list(a_list):
     half = len(a_list)//2
     return a_list[:half], a_list[half:]
-
 
 @app.route('/saveload_costume_plan', methods = ['POST', 'GET'])
 def saveload_costume_plan():
@@ -336,7 +326,6 @@ def managing_costume_plan_set_attribute(attribute: str):
     session["strCostumePlan"] = costumePlanToStr(costumePlan2)
 
     return costumeplan()
-
 
 @app.route("/instance_costume_plan/<attribute>/<value>")
 def managing_costume_plan_attribute(attribute: str , value : str):
@@ -741,7 +730,6 @@ def set_clustering():
 
     return clustering()
 
-
 @app.route("/saveload_clustering" , methods = ['POST', 'GET'])
 def saveload_clustering():
     if request.method == 'POST':
@@ -996,7 +984,6 @@ def table_list():
             entitySimiBool = entitySimi_bool
         )
 
-
 @app.route("/instance_table_costume_plan" , methods = ['POST', 'GET'])
 def instance_table_costume_plan():
 
@@ -1039,9 +1026,6 @@ def instance_table_costume_plan():
 
     return redirect(url_for('table_list'))
 
-
-
-
 if __name__ == '__main__':
     port = 5001
     url = "http://127.0.0.1:{0}".format(port)
@@ -1053,4 +1037,3 @@ if __name__ == '__main__':
 
     Logger.normal("Instance directory is " + app.instance_path)
     app.run(port=port, debug=True)
-    
