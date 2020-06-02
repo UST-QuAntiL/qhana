@@ -506,6 +506,7 @@ def entitySimilarities_create_similaritiesMatrix():
         ax1 = plt.subplot(G[0, 0])
         pfc.PlotsForCluster.similarity_plot(dfp_instance, ax1)
         plt.savefig('static/similarities.png', dpi=300, bbox_inches='tight')
+        plt.close()
     return entitySimilarities()
 
 # scaling page
