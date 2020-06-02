@@ -20,6 +20,8 @@ import pickle
 import backend.savingAndLoading as sal
 from backend.entitySimilarities import EntitySimilarities
 import backend.dataForPlots as dfp
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import backend.plotsForCluster as pfc
@@ -506,7 +508,7 @@ def entitySimilarities_create_similaritiesMatrix():
         ax1 = plt.subplot(G[0, 0])
         pfc.PlotsForCluster.similarity_plot(dfp_instance, ax1)
         plt.savefig('static/similarities.png', dpi=300, bbox_inches='tight')
-        plt.close()
+        plt.close(1)
     return entitySimilarities()
 
 # scaling page
@@ -853,18 +855,21 @@ def start_calculating():
         ax1 = plt.subplot(G[0, 0])
         pfc.PlotsForCluster.similarity_plot(dfp_instance, ax1)
         plt.savefig('static/similarities.png', dpi=300, bbox_inches='tight')
+        plt.close(1)
 
         plt.figure(1)
         G = gridspec.GridSpec(1, 1)
         ax1 = plt.subplot(G[0, 0])
         pfc.PlotsForCluster.scaling_2d_plot(dfp_instance, ax1)
         plt.savefig('static/scaling.png', dpi=300, bbox_inches='tight')
+        plt.close(1)
 
         plt.figure(1)
         G = gridspec.GridSpec(1, 1)
         ax1 = plt.subplot(G[0, 0])
         pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax1)
         plt.savefig('static/clustering.png', dpi=300, bbox_inches='tight')
+        plt.close(1)
 
     except Exception as error:
         flash(" an Error occurs in creating Plots. Please try again. Error: " + str(error))
