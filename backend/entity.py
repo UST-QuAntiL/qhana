@@ -131,6 +131,12 @@ class Entity:
         return
 
     """
+    Gets the value of the given attribute.
+    """
+    def get_value(self, attribute: Attribute):
+        return self.values[attribute]
+
+    """
     Removes an attribute from the attributes list.
     """
     def remove_attribute(self, attribute: Attribute) -> None:

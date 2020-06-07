@@ -1,5 +1,6 @@
 from typing import List
 from typing import Tuple
+import numpy as np
 from backend.entity import Entity, EntityFactory
 from backend.attribute import Attribute
 from backend.attributeComparer import AttributeComparerType, AttributeComparerFactory
@@ -32,10 +33,27 @@ class EntityService:
 
         self.entitiyComparer = None
 
+        # format (attribute, {alue1, value2, ...})
+        self.filterRules = {}
+
+        # all entities without filter
+        self.allEntities = []
+
+        # stores the filtered entities
         self.entities = []
+
+        # store all the loaded domains, i.e. caching
+        self.domains = {}
 
         return
     
+    """
+    Sets the seed for random return of entities.
+    """
+    def set_seed(self, value: int) -> None:
+        np.random.seed(value)
+        return
+
     """
     Adds an attribute with the corresponding
     element and attribute comparer. If element
@@ -72,6 +90,18 @@ class EntityService:
         return
 
     """
+    Adds a filter rule to the list. A filter rule is tuple
+    attribute and value and needs to be found in the dataset
+    in order to work with it.
+    """
+    def add_filter_rule(self, attribute: Attribute, value: any) -> None:
+        if attribute not in self.filterRules:
+            self.filterRules[attribute] = {value}
+        else:
+            self.filterRules[attribute].add(value)
+        return
+
+    """
     Sets the aggregator that will be used to aggregate
     the attribute values.
     """
@@ -92,7 +122,7 @@ class EntityService:
     The default for amount is int max which returns all founded entities.
     """
     def create_entities(self, database: Database, amount: int = 2147483646) -> List[Entity]:
-        self.entities = EntityFactory.create(self.attributes.keys(), database, amount)
+        self.allEntities = EntityFactory.create(self.attributes.keys(), database, amount)
         return
 
     """
@@ -120,10 +150,46 @@ class EntityService:
         return
 
     """
-    Gets the entities based on the choosen attributes.
+    Get all entities without doing filtering
+    """
+    def get_all_entities(self) -> List[Entity]:
+        return self.allEntities
+
+    """
+    Gets the entities based on the choosen attributes and the filter.
+    If there already exists filtered entities, those will be returned.
     """
     def get_entities(self) -> List[Entity]:
+        if len(self.entities) > 0:
+            return self.entities
+
+        entities = self.allEntities
+
+        for attribute in self.filterRules:
+            for value in self.filterRules[attribute]:
+                entities = list(filter(
+                    lambda e: value in e.get_value(attribute),
+                    entities))
+
+        self.entities = np.random.permutation(entities)
+
         return self.entities
+
+    """
+    Returns a set of all values that are in the loaded dataset
+    for the given attribute
+    """
+    def get_domain(self, attribute: Attribute) -> List[any]:
+        if attribute in self.domains:
+            return self.domains[attribute]
+
+        domain = set()
+        for entity in self.allEntities:
+            for value in entity.get_value(attribute):
+                domain.add(value)
+        
+        self.domains[attribute] = domain
+        return domain
 
     """
     Calculates the similarity of two given entity IDs
