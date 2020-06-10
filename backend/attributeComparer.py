@@ -22,7 +22,7 @@ class AttributeComparerType(enum.Enum):
         if attributeComparerType == AttributeComparerType.symMaxMean:
             name += "SymMaxMean"
         elif attributeComparerType == AttributeComparerType.singleElement:
-            name += "singleElement"
+            name += "SingleElement"
         else:
             Logger.error("No name for attribute comparer \"" + str(attributeComparerType) + "\" specified")
             raise ValueError("No name for attribute comparer \"" + str(attributeComparerType) + "\" specified")

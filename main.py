@@ -514,22 +514,71 @@ def test(command_args):
     
     # create the entities out of the database
     # 10 entities for example
-    amount = 1000000
+    # here we create ALL entities, no filter
+    amount = 1000
     service.create_entities(db, amount)
 
     # create the components, i.e. attribute comparer
     # element comparer ...
     # here, the objects are created
     service.create_components()
-    
+
+    # get a listof possible values in order
+    # to let the user choose values for
+    # filtering
+    # NOTE: this needs to be done
+    # after we vcalled create_entities()
+    # as we load the values out of the loeaded
+    # entities
+    values_for_ortsbegebenheit = service.get_domain(Attribute.ortsbegebenheit)
+    values_for_charaktereigenschaft = service.get_domain(Attribute.charaktereigenschaft)
+
+    # print the values
+    print("Possible values for Ortsbegebenheit:")
+    print(values_for_ortsbegebenheit)
+    print()
+    print("Possible values for Charaktereigenschaft:")
+    print(values_for_charaktereigenschaft)
+    print()
+
+    # add filter rule
+    # every filter rule can be interpreted as
+    # a logical AND operation, i.e.
+    # ortsbegebenheit == "blabla" AND charaktereigenschaft == "blublu"
+
+    ortsbegebenheit_filter_element = next(iter(values_for_ortsbegebenheit))
+    print("Filter with Ortsbegebenheit = " + str(ortsbegebenheit_filter_element))
+    print()
+
+    charaktereigenschaft_filter_element = next(iter(values_for_charaktereigenschaft))
+    print("Filter with Charaktereigenschaft = " + str(charaktereigenschaft_filter_element))
+    print()
+
+    #service.add_filter_rule(Attribute.ortsbegebenheit, ortsbegebenheit_filter_element)
+    #service.add_filter_rule(Attribute.charaktereigenschaft, charaktereigenschaft_filter_element)
+
+    # set seed before call get_entities()
+    # therefore, we permutate the returned list
+    service.set_seed(42)
+
     # get the list of entities if needed
     # this is not necessarily the case since
     # we can just compare entities using
     # their ids
+    # however, we will here just get the filtered
+    # entities
     entities = service.get_entities()
+
+    len_entities = len(entities)
+
+    for entity in entities:
+        print(entity)
+        print()
 
     # create timer
     check: Timer = Timer()
+
+    print("Start elementwise comparsion with " + str(len_entities) + " entities")
 
     # starttimer
     check.start()
@@ -539,11 +588,11 @@ def test(command_args):
     # the number, i.e. the number in the array
     # they have been loaded out of the database.
     count = 0
-    for i in range(0, amount):
-        for j in range(0, amount):
+    for i in range(0, len_entities):
+        for j in range(0, len_entities):
             count += 1
-            if count % (amount * amount * 0.1) == 0:
-                print(str(int(count/(amount * amount) * 100)) + " % compared from " + str(amount * amount) + " comparsions")
+            if count % (len_entities * len_entities * 0.1) == 0:
+                print(str(int(count/(len_entities * len_entities) * 100)) + " % compared from " + str(len_entities * len_entities) + " comparsions")
             try:
                 #sim = service.calculate_distance(i, j)
                 sim = service.entitiyComparer.calculate_distance(entities[i], entities[j])
