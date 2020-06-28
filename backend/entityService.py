@@ -171,7 +171,9 @@ class EntityService:
                     lambda e: value in e.get_value(attribute),
                     entities))
 
-        self.entities = np.random.permutation(entities)
+        # teporarily disabled permutation
+        #self.entities = np.random.permutation(entities)
+        self.entities = entities
 
         return self.entities
 
