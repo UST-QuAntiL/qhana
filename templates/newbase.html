@@ -12,13 +12,13 @@ body {
 
 .navbar {
   overflow: hidden;
-  background-color: rgb(235, 235, 235); 
+  background-color: rgb(109, 108, 108); 
 }
 
 .navbar a {
   float: left;
   font-size: 16px;
-  color: black;
+  color: white;
   text-align: center;
   vertical-align: middle;
   padding: 14px 16px;
@@ -35,7 +35,7 @@ body {
   vertical-align: middle; 
   border: none;
   outline: none;
-  color: black;
+  color: white;
   padding: 14px 16px;
   background-color: inherit;
   font-family: inherit;
@@ -43,26 +43,26 @@ body {
 }
 
 .navbar a:hover, .subnav:hover .subnavbtn {
-  background-color: rgb(218, 218, 218);
+  background-color: red;
 }
 
 .subnav-content {
   display: none;
   position: absolute;
   left: 1;
-  background-color: rgb(235, 235, 235);
-  width: 35%;
+  background-color: red;
+  width: 30%;
   z-index: 1;
 }
 
 .subnav-content a {
   float: left;
-  color: black;
+  color: white;
   text-decoration: none;
 }
 
 .subnav-content a:hover {
-  background-color: rgb(218, 218, 218);
+  background-color: #eee;
   color: black;
 }
 
@@ -76,12 +76,6 @@ body {
 <div class="navbar">
   <a href="/"><img src="/static/logos/PlanQKimage.png" style="width:150px; vertical-align: middle;"></a>
   <a href="/">Home</a>
-  <div class="subnav">
-    <button class="subnavbtn">Database Informations<i class="fa fa-caret-down"></i></button>
-    <div class="subnav-content">
-        <a>{{session["dbConnectionString"]}}</a> 
-    </div>
-  </div>
   <a href="/attributes">Attributes</a>
   <a href="/taxonomies">Taxonomies</a>
   <a href="/components">Components</a>
@@ -97,6 +91,12 @@ body {
   <a href="/calculating">Calculating</a>
   <a href="/result">Result</a>
   <a href="/table_list">Entity Table</a>
+  <div class="subnav">
+    <button class="subnavbtn">Database Informations<i class="fa fa-caret-down"></i></button>
+    <div class="subnav-content">
+        <a>{{session["dbConnectionString"]}}</a> 
+    </div>
+  </div>
   <a href="/components"></a>
   <a href="/components"></a>
   <a href="/components"></a>
