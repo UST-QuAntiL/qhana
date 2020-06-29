@@ -6,7 +6,7 @@ import numpy as np
 from typing import List
 import backend.scaling as scal
 import backend.clustering as clu
-import backend.similarities as sim
+#import backend.similarities as sim
 import backend.entitySimilarities as esim
 
 class DataForSavingAndLoading(metaclass=ABCMeta):
@@ -35,7 +35,7 @@ class DataForEntitySimilarities(DataForSavingAndLoading):
     # getter methodes
     def get_object(self) -> esim.EntitySimilarities:
         return self.__similarities_object
-
+"""
 class DataForCostumeSimilarities(DataForSavingAndLoading):
     def __init__(
         self,
@@ -46,7 +46,7 @@ class DataForCostumeSimilarities(DataForSavingAndLoading):
     # getter methodes
     def get_object(self) -> sim.Similarities:
         return self.__similarities_object
-
+"""
 class DataForScaling(DataForSavingAndLoading):
     def __init__(
         self,

@@ -2,7 +2,8 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
 import enum
-from backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForCostumeSimilarities, DataForScaling, DataForClustering, DataForEntitySimilarities, DataForCostumePlan
+#from backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForCostumeSimilarities, DataForScaling, DataForClustering, DataForEntitySimilarities, DataForCostumePlan
+from backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForScaling, DataForClustering, DataForEntitySimilarities, DataForCostumePlan
 from backend.logger import Logger, LogLevel
 import numpy as np
 from typing import List
@@ -11,13 +12,13 @@ import pickle
 import sys as sys
 import backend.scaling as scal
 import backend.clustering as clu
-import backend.similarities as sim
+#import backend.similarities as sim
 import backend.entitySimilarities as esim
 
 class SavingAndLoadingType(enum.Enum):
     costumePlan         = 1
     entitySimilarities  = 2
-    costumeSimilarities = 3
+    #costumeSimilarities = 3
     scaling             = 4
     clustering          = 5
     plots               = 6
@@ -43,8 +44,8 @@ class SavingAndLoadingFactory:
             return SAF_Costume_Plan()
         if type == SavingAndLoadingType.entitySimilarities:
             return SAF_Entity_Similarities()
-        if type == SavingAndLoadingType.costumeSimilarities:
-            return SAF_Costume_Similarities()
+        #if type == SavingAndLoadingType.costumeSimilarities:
+        #    return SAF_Costume_Similarities()
         if type == SavingAndLoadingType.scaling:
             return SAF_Scaling()
         if type == SavingAndLoadingType.clustering:
@@ -123,7 +124,7 @@ class SAF_Entity_Similarities(SavingAndLoading):
         except Exception as error:
             Logger.warning("Loading failed. The returned object is empty now. Warning:" + str(error))
             return DataForEntitySimilarities()
-
+"""
 class SAF_Costume_Similarities(SavingAndLoading):
     def __init__(self):
         self.__type_name: SavingAndLoadingType = SavingAndLoadingType.costumeSimilarities
@@ -158,7 +159,7 @@ class SAF_Costume_Similarities(SavingAndLoading):
         except Exception as error:
             Logger.warning("Loading failed. The returned object is empty now. Warning:" + str(error))
             return DataForCostumeSimilarities()
-
+"""
 class SAF_Scaling(SavingAndLoading):
     def __init__(self):
         self.__type_name: SavingAndLoadingType = SavingAndLoadingType.scaling
