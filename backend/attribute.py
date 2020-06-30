@@ -20,10 +20,10 @@ class Attribute(enum.Enum):
     dominanteFunktion = "dominanteFunktion"
     dominanterZustand = "dominanterZustand"
     dominanteCharaktereigenschaft = "dominanteCharaktereigenschaft"
-    #stereotyp = "stereotyp"
+    stereotyp = "stereotyp"
     geschlecht = "geschlecht"
     dominanterAlterseindruck = "dominanterAlterseindruck"
-    #genre = "genre"
+    genre = "genre"
     rollenberuf = "rollenberuf"
     dominantesAlter = "dominantesAlter"
     rollenrelevanz = "rollenrelevanz"
@@ -38,12 +38,12 @@ class Attribute(enum.Enum):
     alterseindruck = "alterseindruck"
     alter = "alter"
     basiselement = "basiselement"
-    #design = "design"
-    #form = "form"
+    design = "design"
+    form = "form"
     trageweise = "trageweise"
     zustand = "zustand"
     funktion = "funktion"
-    #material = "material"
+    material = "material"
     materialeindruck = "materialeindruck"
     farbe = "farbe"
     farbeindruck = "farbeindruck"
@@ -145,14 +145,14 @@ class Attribute(enum.Enum):
             return "Dominant Condition"
         elif attribute == Attribute.dominanteCharaktereigenschaft:
             return "Dominant Character Trait"
-        #elif attribute == Attribute.stereotyp:
-        #    return "Stereotyp"
+        elif attribute == Attribute.stereotyp:
+            return "Stereotype"
         elif attribute == Attribute.geschlecht:
             return "Gender"
         elif attribute == Attribute.dominanterAlterseindruck:
             return "Dominant Age Impression"
-        #elif attribute == Attribute.genre:
-        #    return "Genre"
+        elif attribute == Attribute.genre:
+            return "Genre"
         elif attribute == Attribute.rollenberuf:
             return "Profession"
         elif attribute == Attribute.dominantesAlter:
@@ -181,18 +181,18 @@ class Attribute(enum.Enum):
             return "Age"
         elif attribute == Attribute.basiselement:
             return "Base Element"
-        #elif attribute == Attribute.design:
-        #    return "Design"
-        #elif attribute == Attribute.form:
-        #    return "Form"
+        elif attribute == Attribute.design:
+            return "Design"
+        elif attribute == Attribute.form:
+            return "Form"
         elif attribute == Attribute.trageweise:
             return "Way of Wearing"
         elif attribute == Attribute.zustand:
             return "Condition"
         elif attribute == Attribute.funktion:
             return "Function"
-        #elif attribute == Attribute.material:
-        #    return "Material"
+        elif attribute == Attribute.material:
+            return "Material"
         elif attribute == Attribute.materialeindruck:
             return "Material Impression"
         elif attribute == Attribute.farbe:
@@ -225,14 +225,14 @@ class Attribute(enum.Enum):
             return TaxonomieType.zustand
         elif attribute == Attribute.dominanteCharaktereigenschaft:
             return TaxonomieType.typus
-        #elif attribute == Attribute.stereotyp:
-        #    return TaxonomieType.stereotyp
+        elif attribute == Attribute.stereotyp:
+            return TaxonomieType.stereotyp
         elif attribute == Attribute.geschlecht:
             return TaxonomieType.geschlecht
         elif attribute == Attribute.dominanterAlterseindruck:
             return TaxonomieType.alterseindruck
-        #elif attribute == Attribute.genre:
-        #    return TaxonomieType.genre
+        elif attribute == Attribute.genre:
+            return TaxonomieType.genre
         elif attribute == Attribute.rollenberuf:
             return TaxonomieType.rollenberuf
         elif attribute == Attribute.dominantesAlter:
@@ -261,18 +261,18 @@ class Attribute(enum.Enum):
             return None
         elif attribute == Attribute.basiselement:
             return TaxonomieType.basiselement
-        #elif attribute == Attribute.design:
-        #    return TaxonomieType.design
-        #elif attribute == Attribute.form:
-        #    return TaxonomieType.form
+        elif attribute == Attribute.design:
+            return TaxonomieType.design
+        elif attribute == Attribute.form:
+            return TaxonomieType.form
         elif attribute == Attribute.trageweise:
             return TaxonomieType.trageweise
         elif attribute == Attribute.zustand:
             return TaxonomieType.zustand
         elif attribute == Attribute.funktion:
             return TaxonomieType.funktion
-        #elif attribute == Attribute.material:
-        #    return TaxonomieType.material
+        elif attribute == Attribute.material:
+            return TaxonomieType.material
         elif attribute == Attribute.materialeindruck:
             return TaxonomieType.materialeindruck
         elif attribute == Attribute.farbe:

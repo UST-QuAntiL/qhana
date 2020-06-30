@@ -325,8 +325,6 @@ class EntityFactory:
                 entity.add_value(Attribute.dominanteCharaktereigenschaft, dominanteCharaktereigenschaft)
 
             # load stereotypes if needed
-            ######################### now without stereotyp
-            """
             if Attribute.stereotyp in attributes:
                 query_stereotype = "SELECT Stereotyp FROM RolleStereotyp WHERE RollenID = %s AND FilmID = %s"
                 cursor.execute(query_stereotype, (row_costume[1], row_costume[2]))
@@ -347,7 +345,7 @@ class EntityFactory:
 
                 entity.add_attribute(Attribute.stereotyp)
                 entity.add_value(Attribute.stereotyp, stereotyp)
-            """
+
             # load rollenberuf, geschlecht, dominanterAlterseindruck 
             # or dominantesAlter if needed
             if  Attribute.rollenberuf in attributes or \
@@ -445,8 +443,6 @@ class EntityFactory:
                             entity.add_value(Attribute.rollenrelevanz, list(rollenrelevanz))
 
             # load genre if needed
-            ################now without genre
-            """
             if Attribute.genre in attributes:
                 query_genre = "SELECT Genre FROM FilmGenre WHERE FilmID = %s"
                 cursor.execute(query_genre, (row_costume[2], ))
@@ -466,7 +462,7 @@ class EntityFactory:
 
                 entity.add_attribute(Attribute.genre)
                 entity.add_value(Attribute.genre, genre)
-            """
+
             # load spielzeit if needed
             if Attribute.spielzeit in attributes:
                 query_spielzeit = "SELECT Spielzeit FROM KostuemSpielzeit " \
@@ -696,8 +692,6 @@ class EntityFactory:
             # load basiselement if needed
             # this also means that we are now treat
             # each datapoint as a basiselement
-            ####################### now without basiselement design funktion
-            """
             if  Attribute.basiselement in attributes or \
                 Attribute.design in attributes or \
                 Attribute.form in attributes or \
@@ -708,15 +702,6 @@ class EntityFactory:
                 Attribute.materialeindruck in attributes or \
                 Attribute.farbe in attributes or \
                 Attribute.farbeindruck in attributes:
-            """
-            if  Attribute.basiselement in attributes or \
-                Attribute.trageweise in attributes or \
-                Attribute.zustand in attributes or \
-                Attribute.funktion in attributes or \
-                Attribute.materialeindruck in attributes or \
-                Attribute.farbe in attributes or \
-                Attribute.farbeindruck in attributes:
-
 
                 be_basiselement = True
                 query_trait = "SELECT BasiselementID FROM KostuemBasiselement "
@@ -776,8 +761,6 @@ class EntityFactory:
 
 
                     # load design if needed
-                    ################ know without design and form 
-                    """
                     if Attribute.design in attributes:
                         query_trait = "SELECT Designname FROM BasiselementDesign "
                         query_trait += "WHERE BasiselementID = %s"
@@ -832,7 +815,7 @@ class EntityFactory:
 
                         entity_basis.add_attribute(Attribute.form)
                         entity_basis.add_value(Attribute.form, list(forms))
-                    """
+
                     # load trageweise if needed
                     if Attribute.trageweise in attributes:
                         query_trait = "SELECT Trageweisename FROM BasiselementTrageweise "
@@ -918,8 +901,6 @@ class EntityFactory:
                         entity_basis.add_value(Attribute.funktion, list(funktionen))
 
                     # load materialName and materialEindruck if needed
-                    #########know without material 
-                    """
                     if  Attribute.material in attributes or \
                         Attribute.materialeindruck in attributes:
                         query_trait = "SELECT Materialname, Materialeindruck FROM BasiselementMaterial "
@@ -956,7 +937,7 @@ class EntityFactory:
                         if Attribute.materialeindruck in attributes:
                             entity_basis.add_attribute(Attribute.materialeindruck)
                             entity_basis.add_value(Attribute.materialeindruck, list(materialEindrucke))
-                    """
+
                     # load farbName and farbEindruck if needed
                     if  Attribute.farbe in attributes or \
                         Attribute.farbeindruck in attributes:
@@ -1030,18 +1011,17 @@ class Costume(Entity):
     Initialize a costume object with the predefined attributes from the
     simplified model.
     """
-    ######### know without dominater zustand dominater alterseindruck genre stereotyp
     def __init__(self, id) -> None:
         super().__init__("Kostüm", id)
 
         # add all the attributes
         self.add_attribute(Attribute.dominanteFarbe)
         self.add_attribute(Attribute.dominanteCharaktereigenschaft)
-        #self.add_attribute(Attribute.dominanterZustand)
-        #self.add_attribute(Attribute.stereotyp)
+        self.add_attribute(Attribute.dominanterZustand)
+        self.add_attribute(Attribute.stereotyp)
         self.add_attribute(Attribute.geschlecht)
-        #self.add_attribute(Attribute.dominanterAlterseindruck)
-        #self.add_attribute(Attribute.genre)
+        self.add_attribute(Attribute.dominanterAlterseindruck)
+        self.add_attribute(Attribute.genre)
 
         return
 
@@ -1068,23 +1048,22 @@ class CostumeFactory:
         costume = Costume(id)
 
         # add all the values
-        ############ know without 
         costume.add_value(Attribute.dominanteFarbe, dominanteFarbe)
         costume.add_value(Attribute.dominanteCharaktereigenschaft, dominanteCharaktereigenschaft)
         costume.add_value(Attribute.dominanterZustand, dominanterZustand)
-        ######costume.add_value(Attribute.stereotyp, stereotyp)
+        costume.add_value(Attribute.stereotyp, stereotyp)
         costume.add_value(Attribute.geschlecht, geschlecht)
         costume.add_value(Attribute.dominanterAlterseindruck, dominanterAlterseindruck)
-        ########costume.add_value(Attribute.genre, genre)
+        costume.add_value(Attribute.genre, genre)
 
         # add all the bases, i.e. taxonomies
-        #####costume.add_base(Attribute.dominanteFarbe, Attribute.get_base(Attribute.dominanteFarbe, database))
-        #####costume.add_base(Attribute.dominanteCharaktereigenschaft, Attribute.get_base(Attribute.dominanteCharaktereigenschaft, database))
-        #####costume.add_base(Attribute.dominanterZustand, Attribute.get_base(Attribute.dominanterZustand, database))
-        #####costume.add_base(Attribute.stereotyp, Attribute.get_base(Attribute.stereotyp, database))
-        #####costume.add_base(Attribute.geschlecht, Attribute.get_base(Attribute.geschlecht, database))
-        #####costume.add_base(Attribute.dominanterAlterseindruck, Attribute.get_base(Attribute.dominanterAlterseindruck, database))
-        #####costume.add_base(Attribute.genre, Attribute.get_base(Attribute.genre, database))
+        costume.add_base(Attribute.dominanteFarbe, Attribute.get_base(Attribute.dominanteFarbe, database))
+        costume.add_base(Attribute.dominanteCharaktereigenschaft, Attribute.get_base(Attribute.dominanteCharaktereigenschaft, database))
+        costume.add_base(Attribute.dominanterZustand, Attribute.get_base(Attribute.dominanterZustand, database))
+        costume.add_base(Attribute.stereotyp, Attribute.get_base(Attribute.stereotyp, database))
+        costume.add_base(Attribute.geschlecht, Attribute.get_base(Attribute.geschlecht, database))
+        costume.add_base(Attribute.dominanterAlterseindruck, Attribute.get_base(Attribute.dominanterAlterseindruck, database))
+        costume.add_base(Attribute.genre, Attribute.get_base(Attribute.genre, database))
 
         return costume
 
