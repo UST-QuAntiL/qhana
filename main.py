@@ -511,17 +511,40 @@ def test(command_args):
     # load the enums for attribute comparer
     # element comparer, transformer and aggregator, ...
     service.add_plan(COSTUME_PLAN)
+
+    # Start stopping time
+    check: Timer = Timer()
+    check.start()
     
     # create the entities out of the database
     # 10 entities for example
     # here we create ALL entities, no filter
-    amount = 1000
+    amount = 10000
     service.create_entities(db, amount)
+
+    entities = service.get_entities()
 
     # create the components, i.e. attribute comparer
     # element comparer ...
     # here, the objects are created
     service.create_components()
+
+    #checkCache: Timer = Timer()
+    #checkCache.start()
+
+    #service.create_caches()
+    #checkCache.stop()
+
+    # create similarity matrix
+    checkCache: Timer = Timer()
+    for i in range(0, len(entities)):
+        for j in range(0, len(entities)):
+            #print(str(service.calculate_similarity(i, j)) + " ")
+            service.calculate_similarity(i, j)
+        print(str((i + 1) * amount) + " / " + str(amount * amount))
+    check.stop()
+
+    return
 
     # get a listof possible values in order
     # to let the user choose values for

@@ -156,7 +156,8 @@ class EntityComparer:
                 if emptyAttributeAction == EmptyAttributeAction.ignore:
                     continue
                 elif emptyAttributeAction == EmptyAttributeAction.evaluateAsZero:
-                    return 0.0
+                    aggregationValues.append(0.0)
+                    continue
                 else:
                     Logger.warning("Unknown value for EmptyAttributeAction. This attribute will be ignored.")
                     continue
@@ -170,7 +171,8 @@ class EntityComparer:
                 if emptyAttributeAction == EmptyAttributeAction.ignore:
                     continue
                 elif emptyAttributeAction == EmptyAttributeAction.evaluateAsZero:
-                    return 0.0
+                    aggregationValues.append(0.0)
+                    continue
                 else:
                     Logger.warning("Unknown value for EmptyAttributeAction. This attribute will be ignored.")
                     continue
@@ -182,12 +184,27 @@ class EntityComparer:
                 )
             else:
                 # compare the attributes
-                temp = attributeComparer.compare(
-                    firstAttribute,
-                    secondAttribute
-                )
-                self.__add_similarity_to_cache(firstAttribute, secondAttribute, temp)
-                aggregationValues.append(temp)
+                try:
+                    temp = attributeComparer.compare(
+                        firstAttribute,
+                        secondAttribute
+                    )
+                    self.__add_similarity_to_cache(firstAttribute, secondAttribute, temp)
+                    aggregationValues.append(temp)
+                except:
+                    errMessage = "Exception in comparison. "
+                    if emptyAttributeAction == EmptyAttributeAction.ignore:
+                        errMessage = errMessage + " The attribute will be ignored."
+                        Logger.warning(errMessage)
+                        continue
+                    elif emptyAttributeAction == EmptyAttributeAction.evaluateAsZero:
+                        errMessage = errMessage + " The attribute will be evaluated as zero."
+                        Logger.warning(errMessage)
+                        aggregationValues.append(0.0)
+                        continue
+                    else:
+                        Logger.warning("Unknown value for EmptyAttributeAction. This attribute will be ignored.")
+                        continue
 
 
         # check if there are attributes from the second entity
@@ -205,7 +222,8 @@ class EntityComparer:
                 if emptyAttributeAction == EmptyAttributeAction.ignore:
                     continue
                 elif emptyAttributeAction == EmptyAttributeAction.evaluateAsZero:
-                    return 0.0
+                    aggregationValues.append(0.0)
+                    continue
                 else:
                     Logger.warning("Unknown value for EmptyAttributeAction. This attribute will be ignored.")
                     continue

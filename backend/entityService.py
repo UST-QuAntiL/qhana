@@ -9,6 +9,9 @@ from backend.aggregator import AggregatorFactory, AggregatorType
 from backend.transformer import TransformerFactory, TransformerType
 from backend.database import Database
 from backend.entityComparer import EntityComparer, EmptyAttributeAction
+import os
+import shutil
+from backend.logger import Logger, LogLevel
 
 """
 This class is a searvice for the easy construction 
@@ -150,6 +153,26 @@ class EntityService:
         return
 
     """
+    Forces all the elementComparer to build their caches, i.e. they make a pairwise
+    comparsion of all elements in the taxonomy.
+    """
+    def create_caches(self) -> None:
+        Logger.debug("Start creating caches")
+        for attribute in self.entitiyComparer.elementComparer.keys():
+            Logger.debug("Start caching " + Attribute.get_name(attribute))
+            elementComparer = self.entitiyComparer.elementComparer[attribute]
+            elementComparer.create_cache(Attribute.get_base(attribute))
+        return
+
+    """
+    Deletes all the caches for the elementComparer
+    """
+    def delete_caches(self) -> None:
+        if os.path.exists("cache") and os.path.isdir("cache"):
+            shutil.rmtree("cache")
+        return
+
+    """
     Get all entities without doing filtering
     """
     def get_all_entities(self) -> List[Entity]:
@@ -200,6 +223,7 @@ class EntityService:
         # get the two entities out of the list
         entity1 = next((entity for entity in self.entities if entity.id == id1), None)
         entity2 = next((entity for entity in self.entities if entity.id == id2), None)
+
         # compare their values
         return self.entitiyComparer.calculate_similarity(entity1, entity2)
 
