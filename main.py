@@ -298,7 +298,7 @@ def calc(node_pairs, tax):
 
     return sims
 
-def test(command_args):
+def test2(command_args):
     db = Database()
     db.open()
     """
@@ -632,12 +632,58 @@ def test(command_args):
 
     return
 
+def test(command_args):
+    db = Database()
+    db.open()
+
+    COSTUME_PLAN = [
+        AggregatorType.mean,
+        TransformerType.linearInverse,
+    ]
+
+    for attribute in Attribute:
+        if  attribute == Attribute.dominantesAlter or \
+            attribute == Attribute.kostuemZeit or \
+            attribute == Attribute.alter or \
+            attribute == Attribute.trageweise:
+            continue
+        COSTUME_PLAN.append(
+            (
+                attribute, 
+                ElementComparerType.wuPalmer, 
+                AttributeComparerType.singleElement, 
+                EmptyAttributeAction.ignore
+            )
+        )
+
+    # create the service
+    service = EntityService()
+
+    # add the plan: this will just
+    # load the enums for attribute comparer
+    # element comparer, transformer and aggregator, ...
+    service.add_plan(COSTUME_PLAN)
+
+    # Start stopping time
+    check: Timer = Timer()
+    check.start()
+    
+    # create the entities out of the database
+    # 10 entities for example
+    # here we create ALL entities, no filter
+    amount = 10000
+    service.create_5_subset(db)
+
+    entities = service.get_entities()
+
+    for i in range(0, len(entities)):
+        Logger.error(str(entities[i]))
+
 def print_costumes(costumes: [Costume]) -> None:
     for i in range(1, len(costumes)):
         print(str(i) + ": " + str(costumes[i]))
 
 def old_main() -> None:
-
 
     COSTUME_PLAN = [
         AggregatorType.mean,

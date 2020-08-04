@@ -10,6 +10,7 @@ import copy
 
 MUSE_URL = "http://129.69.214.108/"
 
+
 """
 This class represents a entity such as a costume or a basic element.
 """
@@ -166,12 +167,15 @@ class EntityFactory:
     """
     Creates a entity based on the given list of attributes.
     The default for amount is max int, all entities that are found will be returned.
+    A filter for the keys can be specified which is a set with the format
+    { (KostuemID, RollenID, FilmID) , ... }
     """
     @staticmethod
     def create(
         attributes: List[Attribute],
         database: Database,
-        amount: int = 2147483646
+        amount: int = 2147483646,
+        keys = None
         ) -> List[Entity]:
 
         entities = []
@@ -184,6 +188,21 @@ class EntityFactory:
             + "Ortsbegebenheit, DominanteFarbe, " \
             + "StereotypRelevant, DominanteFunktion, " \
             + "DominanterZustand FROM Kostuem"
+
+        if keys is not None:
+            keysString = "("
+            for i in range(0,len(keys)):
+                keysString = keysString + "(" \
+                    + str(keys[i][0]) + "," \
+                    + str(keys[i][1]) + "," \
+                    + str(keys[i][2]) + "),"
+            
+            keysString = keysString[:-1] + ")"
+
+            query_costume = query_costume \
+                + " WHERE (KostuemID, RollenID, FilmID) in " \
+                + keysString
+
         cursor.execute(query_costume)
         rows_costume = cursor.fetchall()
 

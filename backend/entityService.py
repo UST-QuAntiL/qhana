@@ -13,6 +13,15 @@ import os
 import shutil
 from backend.logger import Logger, LogLevel
 
+Subset5PositiveFileName = "./subsets/5/PositiveSubset5.csv"
+Subset5NegativeFileName = "./subsets/5/NegativeSubset5.csv"
+Subset10PositiveFileName = "./subsets/10/PositiveSubset10.csv"
+Subset10NegativeFileName = "./subsets/10/NegativeSubset10.csv"
+Subset25PositiveFileName = "./subsets/25/PositiveSubset25.csv"
+Subset25NegativeFileName = "./subsets/25/NegativeSubset25.csv"
+Subset40PositiveFileName = "./subsets/40/PositiveSubset40.csv"
+Subset40NegativeFileName = "./subsets/40/NegativeSubset40.csv"
+
 """
 This class is a searvice for the easy construction 
 and use of entities and their comparer.
@@ -127,6 +136,37 @@ class EntityService:
     def create_entities(self, database: Database, amount: int = 2147483646) -> List[Entity]:
         self.allEntities = EntityFactory.create(self.attributes.keys(), database, amount)
         return
+
+    def create_subset(self, database: Database, positiveCsvFile: str, negativeCsvFile: str):
+        kostuemIDs = []
+        rollenIDs = []
+        filmIDs = []
+
+        with open(positiveCsvFile, 'r') as f:
+            for row in f:
+                kostuemId = row.split(',')[1]
+                if kostuemId.isdigit():
+                    kostuemIDs.append(row.split(',')[1])
+                    rollenIDs.append(row.split(',')[2])
+                    filmIDs.append(row.split(',')[3])
+
+        with open(negativeCsvFile, 'r') as f:
+            for row in f:
+                kostuemId = row.split(',')[1]
+                if kostuemId.isdigit():
+                    kostuemIDs.append(row.split(',')[1])
+                    rollenIDs.append(row.split(',')[2])
+                    filmIDs.append(row.split(',')[3])
+
+        keys = []
+        for i in range(0,len(kostuemIDs)):
+            keys.append((kostuemIDs[i], rollenIDs[i], filmIDs[i]))
+
+        self.allEntities = EntityFactory.create(self.attributes.keys(), database, len(kostuemIDs), keys)
+
+    def create_5_subset(self, database: Database) -> List[Entity]:
+        self.create_subset(database, Subset5PositiveFileName, Subset5NegativeFileName)
+        
 
     """
     Creates the components, i.e. aggregator, transformer, attribute comparer and

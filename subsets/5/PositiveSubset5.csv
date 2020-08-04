@@ -1,0 +1,4 @@
+Frequency,KostuemID,RollenID,FilmID,DominanteFarbe,DominanterZustand,Genre,DominanteCharaktereigenschaft,DominanterAlterseindruck,Geschlecht
+1,1,4,46,Hellgrau,sauber,"Highschool Komödie",aktiv,40ern,männlich
+1,1,5,48,Hellblau,sauber,"Highschool Komödie",aktiv,40ern,männlich
+1,2,10,45,Hellbraun,sauber,"Highschool Komödie",gut,50ern,weiblich
