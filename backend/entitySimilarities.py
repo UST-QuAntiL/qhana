@@ -30,7 +30,8 @@ class EntitySimilarities():
                             )],
         bool_memory: bool = False,
         entity_number: int = 2147483646,
-        subsetEnum : Subset = None
+        subsetEnum: Subset = None,
+        useRandom: bool = False
     ) -> None:
         self.__costume_plan: List = costume_plan
         self.__invalid_entity_index: List[int] = []
@@ -44,10 +45,10 @@ class EntitySimilarities():
 
         if subsetEnum == None:
             self.__service.create_entities(db, entity_number)
-            self.__entity_number: int = len(self.__service.get_entities())
+            self.__entity_number: int = len(self.__service.get_entities(useRandom))
         else:
             self.__service.create_subset(subsetEnum, db)
-            self.__entity_number: int = len(self.__service.get_entities())
+            self.__entity_number: int = len(self.__service.get_entities(useRandom))
 
         self.__service.create_components()
 

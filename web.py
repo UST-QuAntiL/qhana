@@ -470,6 +470,8 @@ def initialize_entitySimilarities():
         selected_subset = request.form["SubsetSelect"]
         if selected_subset == "Custom":
             app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes)
+        elif selected_subset == "Random":
+            app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes,useRandom=True)
         else:
             subsetEnum = Subset.get_subset(selected_subset)
             app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes, subsetEnum)
