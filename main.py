@@ -37,6 +37,7 @@ import backend.savingAndLoading as sal
 from backend.entitySimilarities import EntitySimilarities
 import concurrent.futures
 from multiprocessing import Pool
+from backend.entityService import Subset
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -672,7 +673,7 @@ def test(command_args):
     # 10 entities for example
     # here we create ALL entities, no filter
     amount = 10000
-    service.create_5_subset(db)
+    service.create_subset(Subset.subset10, db)
 
     entities = service.get_entities()
 

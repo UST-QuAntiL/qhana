@@ -29,6 +29,7 @@ import numpy as np
 from backend.scaling import ScalingType, ScalingFactory , Scaling , MultidimensionalScaling
 from backend.clustering import ClusteringType, ClusteringFactory, Clustering, Optics
 import numpy as np
+from backend.entityService import Subset
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -454,7 +455,8 @@ def entitySimilarities():
         min_value = min_value,
         max_value = max_value,
         showplot = showplot,
-        EIN = entities_in_memory
+        EIN = entities_in_memory,
+        subsets = [Subset.get_name(subset) for subset in Subset]
     )
 
 @app.route("/entitySimilarities_initialize" , methods = ['POST', 'GET'])
@@ -465,7 +467,12 @@ def initialize_entitySimilarities():
             memory = True
         number_costumes = int(request.form["noic"])
         costumePlan = pickle.loads(session["costumePlan"])
-        app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes)
+        selected_subset = request.form["SubsetSelect"]
+        if selected_subset == "Custom":
+            app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes)
+        else:
+            subsetEnum = Subset.get_subset(selected_subset)
+            app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes, subsetEnum)
         return entitySimilarities()
 
 @app.route('/saveload_entitySimilarities', methods = ['POST', 'GET'])

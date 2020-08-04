@@ -11,6 +11,7 @@ from backend.logger import Logger, LogLevel
 import numpy as np
 from typing import List
 import random as rd
+from backend.entityService import Subset
 
 # class creates and manage similarity matrizes 
 class EntitySimilarities():
@@ -28,7 +29,8 @@ class EntitySimilarities():
                                 EmptyAttributeAction.ignore
                             )],
         bool_memory: bool = False,
-        entity_number: int = 2147483646
+        entity_number: int = 2147483646,
+        subsetEnum : Subset = None
     ) -> None:
         self.__costume_plan: List = costume_plan
         self.__invalid_entity_index: List[int] = []
@@ -39,8 +41,14 @@ class EntitySimilarities():
         db.open()
         self.__service: EntityService = EntityService()
         self.__service.add_plan(self.__costume_plan)
-        self.__service.create_entities(db, entity_number)
-        self.__entity_number: int = len(self.__service.get_entities())
+
+        if subsetEnum == None:
+            self.__service.create_entities(db, entity_number)
+            self.__entity_number: int = len(self.__service.get_entities())
+        else:
+            self.__service.create_subset(subsetEnum, db)
+            self.__entity_number: int = len(self.__service.get_entities())
+
         self.__service.create_components()
 
         if self.__bool_memory:

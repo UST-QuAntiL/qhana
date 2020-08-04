@@ -12,6 +12,7 @@ from backend.entityComparer import EntityComparer, EmptyAttributeAction
 import os
 import shutil
 from backend.logger import Logger, LogLevel
+import enum
 
 Subset5PositiveFileName = "./subsets/5/PositiveSubset5.csv"
 Subset5NegativeFileName = "./subsets/5/NegativeSubset5.csv"
@@ -21,6 +22,42 @@ Subset25PositiveFileName = "./subsets/25/PositiveSubset25.csv"
 Subset25NegativeFileName = "./subsets/25/NegativeSubset25.csv"
 Subset40PositiveFileName = "./subsets/40/PositiveSubset40.csv"
 Subset40NegativeFileName = "./subsets/40/NegativeSubset40.csv"
+
+class Subset(enum.Enum):
+    subset5 = "Subset5",
+    subset10 = "Subset10",
+    subset25 = "Subset25",
+    subset40 = "Subset40"
+
+    @staticmethod
+    def get_name(subset) -> str:
+        if subset == Subset.subset5:
+            return "Subset5"
+        elif subset == Subset.subset10:
+            return "Subset10"
+        elif subset == Subset.subset25:
+            return "Subset25"
+        elif subset == Subset.subset40:
+            return "Subset40"
+        else:
+            Logger.error("No name for subset \"" + str(subset) + "\" specified")
+            raise ValueError("No name for subset \"" + str(subset) + "\" specified")
+        return
+
+    @staticmethod
+    def get_subset(subsetString) -> str:
+        if subsetString == "Subset5":
+            return Subset.subset5
+        elif subsetString == "Subset10":
+            return Subset.subset10
+        elif subsetString == "Subset25":
+            return Subset.subset25
+        elif subsetString == "Subset40":
+            return Subset.subset40
+        else:
+            Logger.error("No subset for name \"" + str(subsetString) + "\" specified")
+            raise ValueError("No subset for name \"" + str(subsetString) + "\" specified")
+        return
 
 """
 This class is a searvice for the easy construction 
@@ -137,7 +174,7 @@ class EntityService:
         self.allEntities = EntityFactory.create(self.attributes.keys(), database, amount)
         return
 
-    def create_subset(self, database: Database, positiveCsvFile: str, negativeCsvFile: str):
+    def create_subset_from_file(self, database: Database, positiveCsvFile: str, negativeCsvFile: str):
         kostuemIDs = []
         rollenIDs = []
         filmIDs = []
@@ -164,9 +201,18 @@ class EntityService:
 
         self.allEntities = EntityFactory.create(self.attributes.keys(), database, len(kostuemIDs), keys)
 
-    def create_5_subset(self, database: Database) -> List[Entity]:
-        self.create_subset(database, Subset5PositiveFileName, Subset5NegativeFileName)
-        
+    def create_subset(self, subsetEnum: Subset, database: Database) -> List[Entity]:
+        if subsetEnum == Subset.subset5:
+            self.create_subset_from_file(database, Subset5PositiveFileName, Subset5NegativeFileName)
+        elif subsetEnum == Subset.subset10:
+            self.create_subset_from_file(database, Subset10PositiveFileName, Subset10NegativeFileName)
+        elif subsetEnum == Subset.subset25:
+            self.create_subset_from_file(database, Subset25PositiveFileName, Subset25NegativeFileName)
+        elif subsetEnum == Subset.subset40:
+            self.create_subset_from_file(database, Subset40PositiveFileName, Subset40NegativeFileName)
+        else:
+            Logger.error("You took a wrong value for subset.")
+
 
     """
     Creates the components, i.e. aggregator, transformer, attribute comparer and

@@ -17,6 +17,13 @@
                 <h4><span style="color:white">Initialize entitySimilarities Object</span></h4>
                 <br>
                 <form  action = "/entitySimilarities_initialize" method = "POST">
+                    <label for="subset"><span style="color:white">Subset:</span></label>
+                    <select name="SubsetSelect" id="SubsetSelect">
+                        <option value="Custom">Custom</option>
+                        {% for subset in subsets %}
+                        <option value="{{subset}}">{{subset}}</option>
+                        {% endfor %}
+                    </select>
                     <label for="noic"><span style="color:white">Number of import Entities</span></label>
                     &nbsp
                     <input type="number" id="noic" name="noic" min="1" value={{numberCostumes}} style="width: 110px">
@@ -30,6 +37,7 @@
                     {% endif %}
                     &nbsp &nbsp &nbsp <input type = 'submit' name = 'initializeSimilarities' value = 'initialize entitySimilarities Object'/>
                     <br>
+
                     <br>
                         <table style="width: fit-content; border: 1px solid white">
                             <tr style="border: 1px solid white">
@@ -57,6 +65,7 @@
                         </table>
                 </form>
             </td>
+
             <td valign="top" align="middle" style="width: 45%" >
             <div id="bereich" style="width: fit-content; padding: 10px ; height: fit-content ;background-color: #00f9ff; border: 3px #00f9ff;" >
                 <h4> Saving and Loading</h4>
