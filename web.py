@@ -842,7 +842,7 @@ def start_calculating():
 
     try:
         labels: np.matrix
-        labels = app.clustering.create_cluster(pos)
+        labels = app.clustering.create_cluster(pos,similarities)
         params.append(("labels" , "Label Matrix" , "description" , labels , "header"))
     except Exception as error:
         flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))

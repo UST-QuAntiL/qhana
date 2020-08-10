@@ -8,18 +8,30 @@ from sklearn.cluster import OPTICS
 from backend.entity import Costume
 from typing import List
 
+from qiskit import Aer
+from qiskit.circuit.library import TwoLocal
+from qiskit.optimization.applications.ising import max_cut
+from qiskit.aqua.algorithms import VQE
+from qiskit.aqua.components.optimizers import SPSA
+from qiskit.aqua import QuantumInstance
+from qiskit.optimization.applications.ising.common import sample_most_likely
+
+
 
 """
 Enums for Clustertyps
 """
 class ClusteringType(enum.Enum):
-    optics = 0  # OPTICS =:Ordering Points To Identify the Clustering Structure 
+    optics = 0  # OPTICS =:Ordering Points To Identify the Clustering Structure
+    vqeMaxCut = 1 # MaxCut Quantenalgorithmus based on VQE 
 
     @staticmethod
     def get_name(clusteringTyp) -> str:
         name = ""
         if clusteringTyp == ClusteringType.optics :
             name = "optics"
+        elif clusteringTyp == ClusteringType.vqeMaxCut :
+            name = "vqeMaxCut"
         else:
             Logger.error("No name for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No name for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -35,6 +47,8 @@ class ClusteringType(enum.Enum):
             description = ("Ordering points to identify the clustering structure (OPTICS)" 
                          + " is an algorithm for finding density-based clusters"
                          + " in spatial data")
+        elif clusteringTyp == ClusteringType.vqeMaxCut:
+            description = ("MaxCut Quantenalgorithmus based on VQE")
         else:
             Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No description for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -46,7 +60,7 @@ class Clustering(metaclass=ABCMeta):
     Interface for Scaling Object
     """
     @abstractmethod
-    def create_cluster(self, position_matrix : np.matrix ) -> np.matrix:
+    def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
         pass
     
     @abstractmethod
@@ -70,6 +84,8 @@ class ClusteringFactory:
     def create(type: ClusteringType) -> Clustering:
         if type == ClusteringType.optics:
             return Optics()
+        elif type == ClusteringType.vqeMaxCut:
+            return VQEMaxCut()
         else:
             Logger.error("Unknown type of clustering. The application will quit know.")
             raise Exception("Unknown type of clustering.")
@@ -377,7 +393,7 @@ class Optics(Clustering):
                                     n_jobs                  = self.__n_jobs
                                 )
 
-    def create_cluster(self, position_matrix : np.matrix ) -> np.matrix:
+    def create_cluster(self, position_matrix : np.matrix, similarity_matrix : np.matrix ) -> np.matrix:
         try:
             self.__cluster_instance = self.__create_optics_cluster_instance()
         except Exception as error:
@@ -663,6 +679,117 @@ class Optics(Clustering):
             elif param[0] == "leaf_size":
                 self.set_leaf_size(param[3])
 
+class VQEMaxCut(Clustering):
+    def __init__(self,
+                 number_of_clusters = 2,
+                 max_trials: int = 300,
+                 reps: int = 5,
+                 entanglement: str = 'linear'):
+        self.__number_of_clusters = number_of_clusters
+        self.__max_trials = max_trials
+        self.__reps = reps
+        self.__entanglement = entanglement
+        
+    def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
+        qubitOp, offset = max_cut.get_operator(similarity_matrix)
+        seed = 10598
+        backend = Aer.get_backend('statevector_simulator')
+        quantum_instance = QuantumInstance(backend, seed_simulator=seed, seed_transpiler=seed)
+
+        spsa = SPSA(max_trials=self.__max_trials)
+        ry = TwoLocal(qubitOp.num_qubits, 'ry', 'cz', reps=self.__reps, entanglement=self.__entanglement)
+        vqe = VQE(qubitOp, ry, spsa, quantum_instance=quantum_instance)
+
+        # run VQE
+        result = vqe.run(quantum_instance)
+
+        # print results
+        x = sample_most_likely(result.eigenstate)
+        print('energy:', result.eigenvalue.real)
+        print('time:', result.optimizer_time)
+        print('max-cut objective:', result.eigenvalue.real + offset)
+        print('solution:', max_cut.get_graph_solution(x))
+        print('solution objective:', max_cut.max_cut_value(x, similarity_matrix))
+        solution = max_cut.get_graph_solution(x)
+        return solution.astype(np.int) 
+
+    # getter and setter methodes
+    def get_number_of_clusters(self) -> int:
+        return self.__number_of_clusters
+    def get_max_trials(self) -> int:
+        return self.__max_trials
+    def get_reps(self) -> int:
+        return self.__reps
+    def get_entanglement(self) -> str:
+        return self.__entanglement
+
+    def set_number_of_clusters(self, number_of_clusters : int = 2) -> None:
+        if isinstance(number_of_clusters, int) and number_of_clusters > 0:
+            self.__number_of_clusters = number_of_clusters
+    def set_max_trials(self, max_trials : int = 300) -> None:
+        if isinstance(max_trials, int) and max_trials > 0:
+            self.__max_trials = max_trials
+    def set_reps(self, reps = 5 ) -> int:
+        if isinstance(reps, int) and reps > 0:
+            self.__reps = reps
+    def set_entanglement(self, entanglement : str = 'linear') -> str:
+        self.__entanglement = entanglement
+
+    #getter and setter params
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        clusteringTypeName = "VQE MaxCut"
+        params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
+
+        parameter_number_of_clusters = self.get_number_of_clusters()
+        description_number_of_clusters = "int > 0 (default=2)"\
+                            +"2**x Clusters would be generated"
+        params.append(("numberClusters", "Number of Clusters" ,description_number_of_clusters, parameter_number_of_clusters, "number", 1 , 1 ))
+        
+        parameter_max_trials = self.get_max_trials()
+        description_max_trials = "int > 0 (default 300) "\
+                            +"For Simultaneous Perturbation Stochastic Approximation (SPSA) optimizer:"\
+                            +"Maximum number of iterations to perform."
+        params.append(("maxTrials", "max Trials" ,description_max_trials, parameter_max_trials,"number", 1 , 1 ))
+        
+        parameter_reps = self.get_reps()
+        description_reps = "int > 0 (default 5) "\
+                            +"For The two-local circuit:"\
+                            +"Specifies how often a block consisting of a rotation layer and entanglement layer is repeated."
+        params.append(("reps" , "Reps" ,description_reps, parameter_reps, "number" , 1,1 ))
+
+        parameter_entanglement = self.get_entanglement()
+        description_entanglement = "str default('linear') "\
+                            +"A set of default entanglement strategies is provided:"\
+                            +"'full' entanglement is each qubit is entangled with all the others."\
+                            +"'linear' entanglement is qubit i entangled with qubit i+1, for all i∈{0,1,...,n−2}, where n is the total number of qubits."\
+                            +"'circular' entanglement is linear entanglement but with an additional entanglement of the first and last qubit before the linear part."\
+                            +"'sca' (shifted-circular-alternating) entanglement is a generalized and modified version of the proposed circuit 14 in Sim et al.. "\
+                            +"It consists of circular entanglement where the ‘long’ entanglement connecting the first with the last qubit is shifted by one each block."\
+                            +"Furthermore the role of control and target qubits are swapped every block (therefore alternating)."
+
+        params.append(("entanglement", "Entanglement" ,description_entanglement, parameter_entanglement , "select" , ('full','linear','circlular', 'sca')))
+        return params
+        
+    def set_param_list(self, params: list = []) -> np.matrix:
+        for param in params:
+            if param[0] == "numberClusters":
+                self.set_number_of_clusters(param[3])
+            elif param[0] == "maxTrials":
+                self.set_max_trials(param[3])
+            elif param[0] == "reps":
+                self.set_reps(param[3])
+            elif param[0] == "entanglement":
+                self.set_entanglement(param[3])
+
+    
+    def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
+        pass
 
                 
             

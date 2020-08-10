@@ -729,12 +729,6 @@ def old_main() -> None:
             Attribute.genre, None, None, None
         ),
         (
-            Attribute.kostuemZeit,
-            ElementComparerType.timeTanh,
-            AttributeComparerType.singleElement,
-            EmptyAttributeAction.ignore
-        ),
-        (
             Attribute.rollenrelevanz,
             ElementComparerType.wuPalmer,
             AttributeComparerType.symMaxMean,
@@ -743,83 +737,22 @@ def old_main() -> None:
     ]
     
 
-    file_folder_1 = "Versuch_1"
-
-    saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumePlan)
-    saf_cp.set(file_folder_1,COSTUME_PLAN)
-    saf_cp.saving()
-
-    del COSTUME_PLAN
-
-    test = saf_cp.loading()
-    COSTUME_PLAN = test.get_object()
-    #print(str(COSTUME_PLAN))
-
-
-    
-    simi = EntitySimilarities(COSTUME_PLAN,True,20)
-    simi.create_matrix_limited(0,15)
-    file_folder_1 = "Versuch_1"
-
-    saf_simi = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.entitySimilarities)
-    saf_simi.set(file_folder_1,simi)
-    saf_simi.saving()
-
-    del simi
-
-    test = saf_simi.loading()
-    simi = test.get_object()
-    check = Timer()
-    check.start()
-    similarities = simi.create_matrix_limited(4,18)
-    check.stop()
-
-
-
-    quit()
     # Establish connection to db
     db = Database()
     db.open()
 
-    costumes = CostumeFactory.create(db, 41)
-    #costumeComparer = CostumeComparer()
-
-    #print("Hier 1")
-    #first = len(costumes)-1
-    #second = 17
-    #print("Hier 2")
-    #comparedResult = costumeComparer.compare_distance(costumes[first], costumes[second])
-    #print(costumes[first])
-    #print(costumes[second])
-    #print("Compared result: " + str(round(comparedResult, 2)))
-
+    
     # built timer object
     check: Timer = Timer()    
 
     # built a similarity matrix
-    simi = Similarities.only_costumes(costumes,True)
+    simi = EntitySimilarities(COSTUME_PLAN,True,41,Subset.subset25)
     check.start()
-    simi.create_matrix_limited(0,40)
+    similarities = simi.create_matrix_limited(0,5)
     check.stop()
-    #Logger.normal("similarities")
-    #Logger.normal(str(similarities))
-    #costumes_simi: List[Costume] = simi.get_list_costumes()
-    #for i in simi.get_last_sequenz():
-    #    Logger.normal("index="+str(i)+ " : " +str(costumes_simi[i]))
-    file_folder_1 = "Versuch_1"
-
-    saf_simi = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumeSimilarities)
-    saf_simi.set(file_folder_1,simi)
-    saf_simi.saving()
-
-    del simi
-
-    test = saf_simi.loading()
-    simi = test.get_object()
-    check.start()
-    similarities = simi.create_matrix_limited(0,40)
-    check.stop()
-
+    print(similarities)
+    
+    
     # Multidimensional scaling
     #Object
     mds = scal.ScalingFactory.create(scal.ScalingType.mds)
@@ -827,75 +760,21 @@ def old_main() -> None:
     mds.set_eps(1e-9)
     mds.set_dissimilarity("precomputed")
     mds.set_dimensions(2)
-    
-    #mds.d2_plot(simi.get_last_sequenz(),simi.get_list_costumes())
 
-    saf = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.scaling)
-    saf.set(file_folder_1,mds)
-    saf.saving()
-
-    del mds
-
-    test = saf.loading()
-    mds = test.get_object()
     pos = mds.scaling(similarities)
     stress = mds.stress_level()
     Logger.normal("Stress Level should be between 0 and 0.15")
     Logger.normal("Stress: " + str(stress))
 
     # clustering with optics
-    new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
-    labels = new_cluster.create_cluster(pos)
+    new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.vqeMaxCut)
+    labels = new_cluster.create_cluster(pos, similarities)
+    quit()
+    #new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
+    #labels = new_cluster.create_cluster(pos,similarities)
 
-    saf_clu = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.clustering)
-    saf_clu.set(file_folder_1,new_cluster)
-    saf_clu.saving()
-
-    del new_cluster
-
-    test = saf_clu.loading()
-    new_cluster = test.get_object()
-    labels = new_cluster.create_cluster(pos)
-
-    
-    """
-        Logger.error("--------Tests-------sollten noch getestet werden ---------------")
-        new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
-    
-        new_cluster.set_min_samples()
-        new_cluster.set_max_eps()
-        new_cluster.set_metric()
-        new_cluster.set_p()
-        new_cluster.set_metric_params()
-        new_cluster.set_cluster_method()
-        new_cluster.set_eps()
-        new_cluster.set_xi()
-        new_cluster.set_predecessor_correction()
-        new_cluster.set_min_cluster_size()
-        new_cluster.set_algorithm()
-        new_cluster.set_leaf_size()
-        new_cluster.set_n_jobs()
-
-        Logger.error("Comparing with getter methodes")
-        print(new_cluster.get_min_samples() == new_cluster.get_cluster_instance().min_samples)
-        print(new_cluster.get_max_eps()== new_cluster.get_cluster_instance().max_eps)
-        print(new_cluster.get_metric()== new_cluster.get_cluster_instance().metric)
-        print(new_cluster.get_p()== new_cluster.get_cluster_instance().p)
-        print(new_cluster.get_metric_params()== new_cluster.get_cluster_instance().metric_params)
-        print(new_cluster.get_cluster_method()== new_cluster.get_cluster_instance().cluster_method)
-        print(new_cluster.get_eps()== new_cluster.get_cluster_instance().eps)
-        print(new_cluster.get_xi()== new_cluster.get_cluster_instance().xi)
-        print(new_cluster.get_predecessor_correction()== new_cluster.get_cluster_instance().predecessor_correction)
-        print(new_cluster.get_min_cluster_size()== new_cluster.get_cluster_instance().min_cluster_size)
-        print(new_cluster.get_algorithm()== new_cluster.get_cluster_instance().algorithm)
-        print(new_cluster.get_leaf_size()== new_cluster.get_cluster_instance().leaf_size)
-        print(new_cluster.get_n_jobs()== new_cluster.get_cluster_instance().n_jobs)
-
-        print(new_cluster.get_cluster_instance().min_samples)
-        quit()
-    """
     # dfp_instance
-    dfp_instance = dfp.DataForPlots(similarities, simi.get_last_sequenz(),simi.get_list_costumes(),pos, labels )
+    dfp_instance = dfp.DataForPlots(similarities, simi.get_last_sequenz(),None,pos, labels )
 
     # plot things 
     plt.figure(1)
@@ -913,10 +792,10 @@ def old_main() -> None:
     ax1 = plt.subplot(G[0, 0])
     pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax1)
 
-    plt.figure(4)
-    G = gridspec.GridSpec(1, 1)
-    ax1 = plt.subplot(G[0, 0])
-    pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax1)
+    #plt.figure(4)
+    #G = gridspec.GridSpec(1, 1)
+    #ax1 = plt.subplot(G[0, 0])
+    #pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax1)
 
 
     plt.figure(figsize=(10, 10))
@@ -929,7 +808,7 @@ def old_main() -> None:
     
     pfc.PlotsForCluster.scaling_2d_plot(dfp_instance, ax2)
     pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax3)
-    pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax4)
+    #pfc.PlotsForCluster.costume_table_plot(dfp_instance, ax4)
     pfc.PlotsForCluster.similarity_plot(dfp_instance, ax1)
     plt.tight_layout()
     
