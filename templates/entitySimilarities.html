@@ -20,6 +20,7 @@
                     <label for="subset"><span style="color:white">Subset:</span></label>
                     <select name="SubsetSelect" id="SubsetSelect">
                         <option value="Custom">Custom</option>
+                        <option value="Random">Random</option>
                         {% for subset in subsets %}
                         <option value="{{subset}}">{{subset}}</option>
                         {% endfor %}

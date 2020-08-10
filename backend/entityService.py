@@ -268,7 +268,7 @@ class EntityService:
     Gets the entities based on the choosen attributes and the filter.
     If there already exists filtered entities, those will be returned.
     """
-    def get_entities(self) -> List[Entity]:
+    def get_entities(self, useRandom: bool = False) -> List[Entity]:
         if len(self.entities) > 0:
             return self.entities
 
@@ -281,8 +281,10 @@ class EntityService:
                     entities))
 
         # teporarily disabled permutation
-        #self.entities = np.random.permutation(entities)
-        self.entities = entities
+        if useRandom:
+            self.entities = np.random.permutation(entities)
+        else:
+            self.entities = entities
 
         return self.entities
 
