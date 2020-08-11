@@ -14,3 +14,6 @@ dependencies:
   - pandas
   - flask
   - pygraphviz
+  - pip
+  - pip:
+    - qiskit
