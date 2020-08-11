@@ -34,8 +34,8 @@ class ClassicNaiveMaxCutSolver(MaxCutSolver):
         probsize = len(powerset)
         count = 0
 
-        Logger.normal("Start solving maxcut using classical naive solver")
-        Logger.normal("Problem size = " + str(probsize))
+        Logger.debug("Start solving maxcut using classical naive solver")
+        Logger.debug("Problem size (i.e. edges) = " + str(probsize))
 
         for subset in powerset:
             count = count + 1
