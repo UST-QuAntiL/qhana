@@ -778,7 +778,7 @@ def old_main() -> None:
     # built a similarity matrix
     simi = EntitySimilarities(COSTUME_PLAN,True,41,Subset.subset25)
     check.start()
-    similarities = simi.create_matrix_limited(0,5)
+    similarities = simi.create_matrix_limited(0,10)
     check.stop()
     print(similarities)
     
@@ -799,7 +799,7 @@ def old_main() -> None:
     # clustering with optics
     new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.vqeMaxCut)
     labels = new_cluster.create_cluster(pos, similarities)
-    quit()
+    #quit()
     #new_cluster = clu.ClusteringFactory.create(clu.ClusteringType.optics)
     #labels = new_cluster.create_cluster(pos,similarities)
 

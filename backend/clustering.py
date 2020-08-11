@@ -691,6 +691,85 @@ class VQEMaxCut(Clustering):
         self.__entanglement = entanglement
         
     def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
+        if self.__number_of_clusters == 1:
+            return self.__vqeAlgorithmus(similarity_matrix)
+        else:
+            # rekursiv Algorithmus for more than two clusters
+            label = np.ones(similarity_matrix.shape[0])
+            label.astype(np.int)
+            label_all = np.zeros(similarity_matrix.shape[0])
+            label_all.astype(np.int)
+            label = self.__rekursivAlgorithmus(self.__number_of_clusters, similarity_matrix, label , label_all , 1)
+            #print("Done")
+            return label.astype(np.int)
+
+    def __rekursivAlgorithmus(self, iteration : int, similarity_matrix: np.matrix , label: np.matrix , label_all: np.matrix , category: int) -> np.matrix:
+        # rekursiv Algorithmus for more than two clusters
+        if iteration == 0:
+            return label
+        else:
+            if len(label) == 1 or len(label) == 0:
+                return label
+            new_label = self.__vqeAlgorithmus(similarity_matrix)
+        
+            z = -1
+            check_label = np.ones(len(label))
+            check_label.astype(np.int)
+            for i in range(len(label)):
+                check_label[i] = label[i]
+            for i in range(len(label)):
+                if check_label[i] == category:
+                    z = z+1
+                    label_all[i] = label_all[i] + new_label[z]*pow(2,iteration-1)
+                    label[i] = new_label[z]
+            Logger.normal("label after "+str(iteration) + " iteration :" + str(label_all))
+
+            # ones: rekursion only with ones labels in new label
+            ones = self.__split_Matrix(similarity_matrix,new_label,1)
+            self.__rekursivAlgorithmus(iteration-1, ones, label , label_all , 1)
+            
+            # change label for the zero cluster
+            z = -1
+            for i in range(len(label)):
+                if check_label[i] == 1:
+                    z = z+1
+                    if new_label[z] == 0:
+                        label[i] = 1
+                    else: 
+                        label[i] = 0
+                else : 
+                    label[i] = 0
+            
+            #zeros: rekursion only with zero labels in new label
+            zeros = self.__split_Matrix(similarity_matrix,new_label,0)
+
+            self.__rekursivAlgorithmus(iteration-1, zeros, label , label_all , 1)   
+            return label_all
+
+    def __split_Matrix(self, similarity_matrix : np.matrix , label : np.matrix , category : int) -> np.matrix:
+        # split the similarity matrix in one smaller matrix. These matrix contains only similarities with the right label
+        npl = 0
+        for i in range(len(label)):
+            if label[i] == category:
+                npl = npl+1
+
+        NSM = np.zeros((npl,npl))
+        s = -1
+        t = -1
+        for i in range(len(label)):
+            if label[i] == category:
+                s += 1
+                t = -1
+                for j in range(len(label)):
+                    if label[j] == category:
+                        t += 1
+                        NSM[s,t] = similarity_matrix[i,j]
+        return NSM
+
+    def __vqeAlgorithmus(self, similarity_matrix: np.matrix) -> np.matrix:
+        if similarity_matrix.any() == np.zeros((similarity_matrix.shape)).any():
+            label = np.zeros(similarity_matrix.shape[0])
+            return label.astype(np.int)
         qubitOp, offset = max_cut.get_operator(similarity_matrix)
         seed = 10598
         backend = Aer.get_backend('statevector_simulator')
