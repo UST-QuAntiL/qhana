@@ -38,6 +38,8 @@ from backend.entitySimilarities import EntitySimilarities
 import concurrent.futures
 from multiprocessing import Pool
 from backend.entityService import Subset
+from backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
+import networkx as nx
 
 # Used for creating the namespaces from parsing
 def parse_args(parser, commands):
@@ -299,7 +301,7 @@ def calc(node_pairs, tax):
 
     return sims
 
-def test2(command_args):
+def test3(command_args):
     db = Database()
     db.open()
     """
@@ -633,7 +635,7 @@ def test2(command_args):
 
     return
 
-def test(command_args):
+def test2(command_args):
     db = Database()
     db.open()
 
@@ -679,6 +681,34 @@ def test(command_args):
 
     for i in range(0, len(entities)):
         Logger.error(str(entities[i]))
+
+def test(command_args):
+    graph = nx.complete_graph(10)
+    for (u, v) in graph.edges():
+        graph.add_edge(u, v, weight = 1.0)
+
+    solver = ClassicNaiveMaxCutSolver(graph)
+    (cutValue, cutEdges) = solver.solve()
+    Logger.normal("CutVlaue = " + str(cutValue))
+    Logger.normal("CutEdges = " + str(cutEdges))
+
+    pos = nx.spring_layout(graph)
+    nx.draw(graph, pos)
+    labels = nx.get_edge_attributes(graph, 'weight')
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels = labels)
+    plt.savefig("GraphFullyConnected.png", format="PNG")
+    plt.clf()
+
+    for (u, v) in cutEdges:
+        graph.remove_edge(u, v)
+
+    nx.draw(graph, pos)
+    labels = nx.get_edge_attributes(graph, 'weight')
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels = labels)
+    plt.savefig("GraphMaxCut.png", format="PNG")   
+    plt.clf()
+
+    return
 
 def print_costumes(costumes: [Costume]) -> None:
     for i in range(1, len(costumes)):
