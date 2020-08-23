@@ -243,11 +243,11 @@ def split_list(a_list):
 def saveload_costume_plan():
     if request.method == 'POST':
         COSTUME_PLAN = pickle.loads(session["costumePlan"])
-        if request.form['saveload'] == "Save Entity Plan":
+        if request.form['saveload'] == "Save CDS":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumePlan)
             saf_cp.set(request.form['session'],COSTUME_PLAN)
             saf_cp.saving()
-        elif request.form['saveload'] == "Load Entity Plan":
+        elif request.form['saveload'] == "Load CDS":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumePlan)
             saf_cp.set(request.form['session'],COSTUME_PLAN)
             test = saf_cp.loading()
@@ -480,11 +480,11 @@ def initialize_entitySimilarities():
 @app.route('/saveload_entitySimilarities', methods = ['POST', 'GET'])
 def saveload_entitySimilarities():
     if request.method == 'POST':
-        if request.form['saveload'] == "Save entitySimilarities":
+        if request.form['saveload'] == "Save Similarities":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.entitySimilarities)
             saf_cp.set(request.form['session'],app.entitySimilarities)
             saf_cp.saving()
-        elif request.form['saveload'] == "Load entitySimilarities":
+        elif request.form['saveload'] == "Load Similarities":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.entitySimilarities)
             saf_cp.set(request.form['session'],app.entitySimilarities)
             test = saf_cp.loading()
@@ -626,11 +626,11 @@ def set_scaling():
 @app.route("/saveload_scaling" , methods = ['POST', 'GET'])
 def saveload_scaling():
     if request.method == 'POST':
-        if request.form['saveload'] == "Save scaling":
+        if request.form['saveload'] == "Save Embedding":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.scaling)
             saf_cp.set(request.form['session'],app.scaling)
             saf_cp.saving()
-        elif request.form['saveload'] == "Load scaling":
+        elif request.form['saveload'] == "Load Embedding":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.scaling)
             saf_cp.set(request.form['session'],app.scaling)
             test = saf_cp.loading()
@@ -757,11 +757,11 @@ def set_clustering():
 @app.route("/saveload_clustering" , methods = ['POST', 'GET'])
 def saveload_clustering():
     if request.method == 'POST':
-        if request.form['saveload'] == "Save clustering":
+        if request.form['saveload'] == "Save Clustering":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.clustering)
             saf_cp.set(request.form['session'],app.clustering)
             saf_cp.saving()
-        elif request.form['saveload'] == "Load clustering":
+        elif request.form['saveload'] == "Load Clustering":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.clustering)
             saf_cp.set(request.form['session'],app.clustering)
             test = saf_cp.loading()
