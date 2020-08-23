@@ -3,7 +3,7 @@
 {% block content %}
 <body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Clustering Object</span></h3>
+    <h3><span style="color:white;">Clustering</span></h3>
 </p>
 <br>
 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.OPTICS.html" target="_blank" rel="noopener noreferrer" style="color: white;">Reference</a>
@@ -14,7 +14,7 @@
     <table style="width: 100%">
         <tr>
             <td style="width: 50%" valign="top">
-                <h4><span style="color: white">Initialize Clustering Object</span></h4>
+                <h4><span style="color: white">Initialize Clustering</span></h4>
                 <form action = "/initialize_clustering" method = "POST">
                     <h6><span style="color: white">Enter Clustering Type</span>&nbsp
                         <select id="clustering" name="clustering">
@@ -23,7 +23,7 @@
                             {% endfor %}
                         </select>
                     &nbsp &nbsp &nbsp
-                    <input type = 'submit' name = 'loadClusteringType' value = 'initialize clustering type'/>
+                    <input type = 'submit' name = 'loadClusteringType' value = 'initialize'/>
                 </form>
             </td>
             <td valign="top" align="middle" style="width: 45%" >
@@ -34,8 +34,8 @@
                         <input type = 'text' name = 'session' value="{{session["saveload"]}}"/>
                         <br>
                         <br>
-                        <input type = 'submit' name = 'saveload' value = 'Save clustering'/>
-                        <input type = 'submit' name = 'saveload' value = 'Load clustering'/>
+                        <input type = 'submit' name = 'saveload' value = 'Save Clustering'/>
+                        <input type = 'submit' name = 'saveload' value = 'Load Clustering'/>
                     </form>
                     <br>
                     {% with messages = get_flashed_messages() %}
@@ -67,7 +67,7 @@ background: white">
 <p>
     
     <form action = "/set_clustering" method = "POST">
-        <h4><span style="color: white">Initialized Clustering Object</span></h4>
+        <h4><span style="color: white">Initialized Clustering</span></h4>
         <br>
         <input type = 'submit' name = 'setClusteringParameters' value = 'set clustering parameter'/>
         <br>

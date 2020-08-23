@@ -3,7 +3,7 @@
 {% block content %}
 <body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">entitySimilarities Object</span></h3>
+    <h3><span style="color:white;">Similarities</span></h3>
 </p>
 <br>
 <br>
@@ -14,7 +14,7 @@
     <table style="width: 100%">
         <tr>
             <td style="width: 50%">
-                <h4><span style="color:white">Initialize entitySimilarities Object</span></h4>
+                <h4><span style="color:white">Initialize Similarities</span></h4>
                 <br>
                 <form  action = "/entitySimilarities_initialize" method = "POST">
                     <label for="subset"><span style="color:white">Subset:</span></label>
@@ -36,7 +36,7 @@
                     {% else %}
                         <input type="checkbox" id="memory" name="memory" ></input>
                     {% endif %}
-                    &nbsp &nbsp &nbsp <input type = 'submit' name = 'initializeSimilarities' value = 'initialize entitySimilarities Object'/>
+                    &nbsp &nbsp &nbsp <input type = 'submit' name = 'initializeSimilarities' value = 'initialize'/>
                     <br>
 
                     <br>
@@ -75,8 +75,8 @@
                     <input type = 'text' name = 'session' value="{{session["saveload"]}}"/>
                     <br>
                     <br>
-                    <input type = 'submit' name = 'saveload' value = 'Save entitySimilarities'/>
-                    <input type = 'submit' name = 'saveload' value = 'Load entitySimilarities'/>
+                    <input type = 'submit' name = 'saveload' value = 'Save Similarities'/>
+                    <input type = 'submit' name = 'saveload' value = 'Load Similarities'/>
                 </form>
                 <br>
                 {% with messages = get_flashed_messages() %}
