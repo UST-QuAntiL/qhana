@@ -967,7 +967,6 @@ class ClassicNaiveMaxCut(Clustering):
         for i in range(0, probSize):
             for j in range(0, probSize):
                 if i != j:
-                    Logger.normal("Add edge " + str(i) + " " + str(j))
                     graph.add_edge(i, j, weight = similarity_matrix[i][j])
         
         return graph
