@@ -15,6 +15,7 @@ from qiskit.aqua.algorithms import VQE
 from qiskit.aqua.components.optimizers import SPSA
 from qiskit.aqua import QuantumInstance
 from qiskit.optimization.applications.ising.common import sample_most_likely
+from qiskit import IBMQ
 
 import networkx as nx
 from backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
@@ -688,16 +689,27 @@ class Optics(Clustering):
             elif param[0] == "leaf_size":
                 self.set_leaf_size(param[3])
 
+class QuantumBackends(enum.Enum):
+    aer_statevector_simulator = "aer_statevector_simulator"
+    ibmq_qasm_simulator = "ibmq_qasm_simulator"
+    ibmq_16_melbourne = "ibmq_16_melbourne"
+    ibmq_london = "ibmq_london"
+
+
 class VQEMaxCut(Clustering):
     def __init__(self,
-                 number_of_clusters = 2,
-                 max_trials: int = 300,
-                 reps: int = 5,
-                 entanglement: str = 'linear'):
+                 number_of_clusters = 1,
+                 max_trials: int = 1,
+                 reps: int = 1,
+                 entanglement: str = 'linear',
+                 backend = QuantumBackends.aer_statevector_simulator,
+                 ibmq_token = ""):
         self.__number_of_clusters = number_of_clusters
         self.__max_trials = max_trials
         self.__reps = reps
         self.__entanglement = entanglement
+        self.__backend = backend
+        self.__ibmq_token = ibmq_token
         
     def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
         if self.__number_of_clusters == 1:
@@ -781,7 +793,19 @@ class VQEMaxCut(Clustering):
             return label.astype(np.int)
         qubitOp, offset = max_cut.get_operator(similarity_matrix)
         seed = 10598
-        backend = Aer.get_backend('statevector_simulator')
+
+        backend = None
+
+        if self.__backend.name.startswith("aer"):
+            # Use local AER backend
+            backend = Aer.get_backend("statevector_simulator")
+        elif self.__backend.name.startswith("ibmq"):
+            # Use IBMQ backend
+            provider = IBMQ.enable_account(self.__ibmq_token)
+            backend = provider.get_backend(self.__backend.value)
+        else:
+            Logger.error("Unknown quantum backend specified!")
+
         quantum_instance = QuantumInstance(backend, seed_simulator=seed, seed_transpiler=seed)
 
         spsa = SPSA(max_trials=self.__max_trials)
@@ -810,18 +834,26 @@ class VQEMaxCut(Clustering):
         return self.__reps
     def get_entanglement(self) -> str:
         return self.__entanglement
+    def get_backend(self) -> str:
+        return self.__backend
+    def get_ibmq_token(self) -> str:
+        return self.__ibmq_token
 
-    def set_number_of_clusters(self, number_of_clusters : int = 2) -> None:
+    def set_number_of_clusters(self, number_of_clusters : int = 1) -> None:
         if isinstance(number_of_clusters, int) and number_of_clusters > 0:
             self.__number_of_clusters = number_of_clusters
-    def set_max_trials(self, max_trials : int = 300) -> None:
+    def set_max_trials(self, max_trials : int = 1) -> None:
         if isinstance(max_trials, int) and max_trials > 0:
             self.__max_trials = max_trials
-    def set_reps(self, reps = 5 ) -> int:
+    def set_reps(self, reps = 1 ) -> int:
         if isinstance(reps, int) and reps > 0:
             self.__reps = reps
     def set_entanglement(self, entanglement : str = 'linear') -> str:
         self.__entanglement = entanglement
+    def set_backend(self, backend: str = QuantumBackends.aer_statevector_simulator) -> None:
+        self.__backend = backend
+    def set_ibmq_token(self, ibmq_token: str = "") -> None:
+        self.__ibmq_token = ibmq_token
 
     #getter and setter params
     def get_param_list(self) -> list:
@@ -835,18 +867,18 @@ class VQEMaxCut(Clustering):
         params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
 
         parameter_number_of_clusters = self.get_number_of_clusters()
-        description_number_of_clusters = "int > 0 (default=2)"\
+        description_number_of_clusters = "int > 0 (default=1)"\
                             +"2**x Clusters would be generated"
         params.append(("numberClusters", "Number of Clusters" ,description_number_of_clusters, parameter_number_of_clusters, "number", 1 , 1 ))
         
         parameter_max_trials = self.get_max_trials()
-        description_max_trials = "int > 0 (default 300) "\
+        description_max_trials = "int > 0 (default 1) "\
                             +"For Simultaneous Perturbation Stochastic Approximation (SPSA) optimizer:"\
                             +"Maximum number of iterations to perform."
         params.append(("maxTrials", "max Trials" ,description_max_trials, parameter_max_trials,"number", 1 , 1 ))
         
         parameter_reps = self.get_reps()
-        description_reps = "int > 0 (default 5) "\
+        description_reps = "int > 0 (default 1) "\
                             +"For The two-local circuit:"\
                             +"Specifies how often a block consisting of a rotation layer and entanglement layer is repeated."
         params.append(("reps" , "Reps" ,description_reps, parameter_reps, "number" , 1,1 ))
@@ -862,6 +894,16 @@ class VQEMaxCut(Clustering):
                             +"Furthermore the role of control and target qubits are swapped every block (therefore alternating)."
 
         params.append(("entanglement", "Entanglement" ,description_entanglement, parameter_entanglement , "select" , ('full','linear','circlular', 'sca')))
+
+        parameter_backend = self.get_backend().value
+        description_backend = "Enum default(aer_statevector_simulator) "\
+            + " A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
+        params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
+
+        parameter_ibmq_token = self.get_ibmq_token()
+        description_ibmq_token = "str default(\"\") "\
+            + " The token of an account accessing the IBMQ online service."
+        params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -874,13 +916,16 @@ class VQEMaxCut(Clustering):
                 self.set_reps(param[3])
             elif param[0] == "entanglement":
                 self.set_entanglement(param[3])
+            elif param[0] == "quantumBackend":
+                self.set_backend(QuantumBackends[param[3]])
+            elif param[0] == "ibmqToken":
+                self.set_ibmq_token(param[3])
 
-    
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
 
 class ClassicNaiveMaxCut(Clustering):
-    def __init__(self, number_of_clusters = 2):
+    def __init__(self, number_of_clusters = 1):
         self.__number_of_clusters = number_of_clusters
         return
         

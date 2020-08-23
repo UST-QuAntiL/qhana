@@ -710,15 +710,23 @@ def set_clustering():
                         param = tuple(var)
                         params2[index] = param
                         #print(None)
-                    elif isinstance (eval(request.form[param[0]]), float):
+                    else:
                         index = params.index(param)
                         var = list(param)
-                        var[3] = float(request.form[param[0]])
+                        var[3] = request.form[param[0]]
                         param = tuple(var)
                         params2[index] = param
-                        #print(float(request.form[param[0]]))
-                    else:
-                        print("no right type found : " + request.form[param[0]])
+                        #print(np.inf)
+                    # How do we proceed if we really have a string?
+                    #elif isinstance (eval(request.form[param[0]]), float):
+                    #    index = params.index(param)
+                    #    var = list(param)
+                    #    var[3] = float(request.form[param[0]])
+                    #    param = tuple(var)
+                    #    params2[index] = param
+                    #    #print(float(request.form[param[0]]))
+                    #else:
+                    #    print("no right type found : " + request.form[param[0]])
                 elif param[4] == "select":
                     index = params.index(param)
                     var = list(param)
