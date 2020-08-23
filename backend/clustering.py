@@ -54,7 +54,7 @@ class ClusteringType(enum.Enum):
                          + " in spatial data")
         elif clusteringTyp == ClusteringType.vqeMaxCut:
             description = ("MaxCut Quantenalgorithmus based on VQE")
-        elif clusteringTyp == ClusteringType.vqeMaxCut:
+        elif clusteringTyp == ClusteringType.classicNaiveMaxCut:
             description = ("Classical naive implemented MaxCut algorithm")
         else:
             Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
