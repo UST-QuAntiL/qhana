@@ -3,7 +3,7 @@
 {% block content %}
 <body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Scaling Object</span></h3>
+    <h3><span style="color:white;">Embedding</span></h3>
 </p>
 <br>
 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html" target="_blank" rel="noopener noreferrer" style="color: white;">Reference</a>
@@ -14,16 +14,16 @@
     <table style="width: 100%">
         <tr>
             <td style="width: 50%" valign="top">
-                <h4><span style="color: white">Initialize Scaling Object</span></h4>
+                <h4><span style="color: white">Initialize Embedding</span></h4>
                 <form action = "/initialize_scaling" method = "POST">
-                    <h6><span style="color: white">Enter Scaling Type</span>&nbsp
+                    <h6><span style="color: white">Enter Embedding Type</span>&nbsp
                     <select id="scaling" name="scaling">
                         {% for scaling in scalings %}   
                             <option value={{scaling[1]}}>{{scaling[0]}}</option>
                         {% endfor %}
                     </select>
                     &nbsp &nbsp &nbsp
-                    <input type = 'submit' name = 'loadScalingType' value = 'initialize scaling type'/>
+                    <input type = 'submit' name = 'loadScalingType' value = 'initialize'/>
                 </form>
             </td>
             <td valign="top" align="middle" style="width: 45%" >
@@ -65,9 +65,9 @@ background: white">
 <p>
     
     <form action = "/set_scaling" method = "POST">
-        <h4><span style="color: white">Initialized Scaling Object</span></h4>
+        <h4><span style="color: white">Initialized Embedding</span></h4>
         <br>
-        <input type = 'submit' name = 'setScalingParameters' value = 'set scaling parameter'/>
+        <input type = 'submit' name = 'setScalingParameters' value = 'set parameters'/>
         <br>
         <br>
         <table style="width:90%; border: 1px solid white">
