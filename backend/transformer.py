@@ -11,7 +11,7 @@ Defines an enum to list up all available transformer
 class TransformerType(enum.Enum):
     linearInverse = "linearInverse"
     exponentialInverse = "exponentialInverse"
-    gaussianInverese = "gaussianInverese"
+    gaussianInverse = "gaussianInverse"
     polynomialInverse = "polynomialInverse"
     squareInverse = "squareInverse"
 
@@ -22,8 +22,8 @@ class TransformerType(enum.Enum):
             name = "LinearInverse"
         elif transformerType == TransformerType.exponentialInverse:
             name = "ExponentialInverse"
-        elif transformerType == TransformerType.gaussianInverese:
-            name = "GaussianInverese"
+        elif transformerType == TransformerType.gaussianInverse:
+            name = "GaussianInverse"
         elif transformerType == TransformerType.polynomialInverse:
             name = "PolynomialInverse"
         elif transformerType == TransformerType.squareInverse:
@@ -42,7 +42,7 @@ class TransformerType(enum.Enum):
         elif transformerType == TransformerType.exponentialInverse:
             description += "Transforms similarities into distances using " \
                 + "the exponential inverse function dist(sim) = exp(- sim)"
-        elif transformerType == TransformerType.gaussianInverese:
+        elif transformerType == TransformerType.gaussianInverse:
             description += "Transforms similarities into distances using " \
                 + "the gaussian inverse function dist(sim) = exp(- sim^2)"
         elif transformerType == TransformerType.polynomialInverse:
@@ -81,7 +81,7 @@ class TransformerFactory:
             return LinearInverseTransformer()
         elif type == TransformerType.exponentialInverse:
             return ExponentialInverseTransformer()
-        elif type == TransformerType.gaussianInverese:
+        elif type == TransformerType.gaussianInverse:
             return GaussianInverseTransformer()
         elif type == TransformerType.polynomialInverse:
             return PolynomialInverseTransformer()
@@ -124,28 +124,22 @@ class GaussianInverseTransformer(Transformer):
 Represents the polynomial inverse transformer
 """
 class PolynomialInverseTransformer(Transformer):
-    """
-    Defines the parameters of the polynomial inverse transformer
-    """
-    alpha = 1.0
-    beta = 1.0
     """ 
     Returns the 1 / (1 + (s/alpha)^beta) as distance with s beeing the similarity
     """
     def transform(self, similarity: float) -> float:
+        alpha = 1.0
+        beta = 1.0
         return 1.0 / (1.0 + pow(similarity / alpha, beta))
 
 """
 Represents the square inverse transformer
 """
 class SquareInverseTransformer(Transformer):
-    """
-    Defines the parameters of the square inverse transformer
-    """
-    maxSimilarity = 1.0
     """ 
     Returns the sqrt(s(i,i) + s(j,j) - 2s(i,j)) = sqrt(2 (1 - s)) as distance with s beeing the similarity
     and 1 as the maxSimilarity.
     """
     def transform(self, similarity: float) -> float:
+        maxSimilarity = 1.0
         return math.sqrt(2 * maxSimilarity - 2 * similarity)

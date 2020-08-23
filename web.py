@@ -281,12 +281,12 @@ def managing_costume_plan_agre_transf(value):
 
 def initialize_costumeplan():
     costumePlan = []
-    costumePlan.append(AggregatorType.max)
-    costumePlan.append(TransformerType.gaussianInverese)
+    costumePlan.append(AggregatorType.mean)
+    costumePlan.append(TransformerType.squareInverse)
     costumePlan.append((
             Attribute.dominanteFarbe,
             ElementComparerType.wuPalmer,
-            AttributeComparerType.singleElement,
+            AttributeComparerType.symMaxMean,
             EmptyAttributeAction.ignore
         ))
 
