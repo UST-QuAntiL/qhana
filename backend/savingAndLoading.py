@@ -252,8 +252,8 @@ class _SavingAndLoadingManaging():
             file_name: str = "plan"
         elif type_name == SavingAndLoadingType.entitySimilarities:
             file_name: str = "entity_similarities"
-        elif type_name == SavingAndLoadingType.costumeSimilarities:
-            file_name: str = "costume_similarities"
+        #elif type_name == SavingAndLoadingType.costumeSimilarities:
+        #    file_name: str = "costume_similarities"
         elif type_name == SavingAndLoadingType.scaling:
             file_name: str = "scaling"
         elif type_name == SavingAndLoadingType.clustering:
