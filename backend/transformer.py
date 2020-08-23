@@ -13,6 +13,7 @@ class TransformerType(enum.Enum):
     exponentialInverse = "exponentialInverse"
     gaussianInverese = "gaussianInverese"
     polynomialInverse = "polynomialInverse"
+    squareInverse = "squareInverse"
 
     @staticmethod
     def get_name(transformerType) -> str:
@@ -25,6 +26,8 @@ class TransformerType(enum.Enum):
             name = "GaussianInverese"
         elif transformerType == TransformerType.polynomialInverse:
             name = "PolynomialInverse"
+        elif transformerType == TransformerType.squareInverse:
+            name = "SquareInverse"
         else:
             Logger.error("No name for transformer \"" + str(transformerType) + "\" specified")
             raise ValueError("No name for transformer \"" + str(transformerType) + "\" specified")
@@ -45,6 +48,10 @@ class TransformerType(enum.Enum):
         elif transformerType == TransformerType.polynomialInverse:
             description += "Transforms similarities into distances using " \
                 + "the polynomial inverse function dist(sim) = 1 / (1 + (sim/alpha)^beta)"
+        elif transformerType == TransformerType.squareInverse:
+            description += "Transforms similarities into distances using " \
+                + "the square inverse function dist(sim) = sqrt(2 * maxSim - 2 * s) " \
+                + "with maxSim beeing 1.0."
         else:
             Logger.error("No description for transformer \"" + str(transformerType) + "\" specified")
             raise ValueError("No description for transformer \"" + str(transformerType) + "\" specified")
@@ -78,6 +85,8 @@ class TransformerFactory:
             return GaussianInverseTransformer()
         elif type == TransformerType.polynomialInverse:
             return PolynomialInverseTransformer()
+        elif type == TransformerType.squareInverse:
+            return SquareInverseTransformer()
         else:
             raise Exception("Unknown type of transformer")
 
@@ -125,3 +134,18 @@ class PolynomialInverseTransformer(Transformer):
     """
     def transform(self, similarity: float) -> float:
         return 1.0 / (1.0 + pow(similarity / alpha, beta))
+
+"""
+Represents the square inverse transformer
+"""
+class SquareInverseTransformer(Transformer):
+    """
+    Defines the parameters of the square inverse transformer
+    """
+    maxSimilarity = 1.0
+    """ 
+    Returns the sqrt(s(i,i) + s(j,j) - 2s(i,j)) = sqrt(2 (1 - s)) as distance with s beeing the similarity
+    and 1 as the maxSimilarity.
+    """
+    def transform(self, similarity: float) -> float:
+        return math.sqrt(2 * maxSimilarity - 2 * similarity)
