@@ -25,7 +25,7 @@ class EntitySimilarities():
                             (
                                 Attribute.dominanteFarbe,
                                 ElementComparerType.wuPalmer,
-                                AttributeComparerType.singleElement,
+                                AttributeComparerType.symMaxMean,
                                 EmptyAttributeAction.ignore
                             )],
         bool_memory: bool = False,

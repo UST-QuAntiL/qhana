@@ -11,7 +11,6 @@ Defines an enum to list up all available attribute comparer.
 """
 class AttributeComparerType(enum.Enum):
     symMaxMean = "symMaxMean"
-    singleElement = "singleElement"
 
     """
     Returns the name of a given AttributeComparerType.
@@ -21,8 +20,6 @@ class AttributeComparerType(enum.Enum):
         name = ""
         if attributeComparerType == AttributeComparerType.symMaxMean:
             name += "SymMaxMean"
-        elif attributeComparerType == AttributeComparerType.singleElement:
-            name += "SingleElement"
         else:
             Logger.error("No name for attribute comparer \"" + str(attributeComparerType) + "\" specified")
             raise ValueError("No name for attribute comparer \"" + str(attributeComparerType) + "\" specified")
@@ -38,10 +35,6 @@ class AttributeComparerType(enum.Enum):
             description += "Compares two attributes, i.e. sets of elements accordingly to " \
                 + "setsim(A,B) = 1/2 * (1/|A| sum_{a in A} max_{b in B} sim(a,b) " \
                 + "+ 1/|B| sum_{b in B} max_{a in A} sim(b,a)) with sim() being " \
-                + " the element comparer."
-        elif attributeComparerType == AttributeComparerType.singleElement:
-            description += "Compares two attributes which only consists of a single element. " \
-                + "Therefore we apply setsim(A,B) = sim(A[0],B[0]) with sim() being " \
                 + " the element comparer."
         else:
             Logger.error("No description for attribute comparer \"" + str(attributeComparerType) + "\" specified")
@@ -111,8 +104,6 @@ class AttributeComparerFactory:
         ) -> AttributeComparer:
         if attributeComparerType == AttributeComparerType.symMaxMean:
             return SymMaxMean(elementComparer, Attribute.get_base(attribute))
-        elif attributeComparerType == AttributeComparerType.singleElement:
-            return SingleElement(elementComparer, Attribute.get_base(attribute))
         else:
             raise Exception("Unknown type of attribute comparer")
 
@@ -185,30 +176,3 @@ class SymMaxMean(AttributeComparer):
 
         # Combine both sums
         return 0.5 * (sum1 + sum2)
-
-"""
-Represents the attriute comparer with attributes that are just one element. 
-Therefore, just the element_comparer will be used.
-"""
-class SingleElement(AttributeComparer):
-    """
-    Initializes the SingleElement attribute comparer.
-    """
-    def __init__(self, elementComparer: ElementComparer, base: Any) -> None:
-        super().__init__()
-        self.elementComparer: ElementComparer = elementComparer
-        self.base: Any = base
-        return
-
-    """
-    Compares two attributes, i.e. sets of elements, where each set has just one element:
-    setsim(A,B) = sim(a,b).
-    """
-    def compare(self, first: [Any], second: [Any]) -> float:
-        # check if value is already in cache
-        if self.is_similarity_in_cache(first[0], second[0]):
-            temp = self.get_similarity_from_cache(first[0], second[0])
-        else:
-            temp = self.elementComparer.compare(first[0], second[0], self.base)
-            self.add_similarity_to_cache(first[0], second[0], temp)
-        return temp
