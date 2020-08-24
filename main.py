@@ -39,6 +39,7 @@ import concurrent.futures
 from multiprocessing import Pool
 from backend.entityService import Subset
 from backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
+from backend.sdpMaxCutSolver import SdpMaxCutSolver
 import networkx as nx
 
 # Used for creating the namespaces from parsing
@@ -687,7 +688,7 @@ def test(command_args):
     for (u, v) in graph.edges():
         graph.add_edge(u, v, weight = 1.0)
 
-    solver = ClassicNaiveMaxCutSolver(graph)
+    solver = SdpMaxCutSolver(graph)
     (cutValue, cutEdges) = solver.solve()
     Logger.normal("CutVlaue = " + str(cutValue))
     Logger.normal("CutEdges = " + str(cutEdges))
