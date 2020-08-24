@@ -62,7 +62,7 @@ class ClusteringType(enum.Enum):
         elif clusteringTyp == ClusteringType.classicNaiveMaxCut:
             description = ("Classical naive implemented MaxCut algorithm")
         elif clusteringTyp == ClusteringType.sdpMaxCut:
-            description = ("Semidefinite Programming solver for MaxCut")
+            description = ("Semidefinite Programming solver for MaxCut (Reference: https://github.com/pandrey-fr/maxcut)")
         else:
             Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No description for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -1265,7 +1265,7 @@ class SdpMaxCut(Clustering):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        clusteringTypeName = "Semidefinite Programming MaxCut"
+        clusteringTypeName = "Semidefinite Programming MaxCut (Reference: https://github.com/pandrey-fr/maxcut)"
         params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
 
         parameter_number_of_clusters = self.get_number_of_clusters()
