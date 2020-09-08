@@ -12,7 +12,7 @@ body {
 
 .navbar {
   overflow: hidden;
-  background-color: rgb(235, 235, 235); 
+  background-color: white; 
 }
 
 .navbar a {
@@ -50,7 +50,7 @@ body {
   display: none;
   position: absolute;
   left: 1;
-  background-color: rgb(235, 235, 235);
+  background-color: white;
   width: 35%;
   z-index: 1;
 }
@@ -76,12 +76,14 @@ body {
 <div class="navbar">
   <a href="/"><img src="/static/logos/PlanQKimage.png" style="width:150px; vertical-align: middle;"></a>
   <a href="/">Home</a>
+  <!--
   <div class="subnav">
     <button class="subnavbtn">Database Informations<i class="fa fa-caret-down"></i></button>
     <div class="subnav-content">
         <a>{{session["dbConnectionString"]}}</a> 
     </div>
   </div>
+  -->
   <a href="/attributes">Attributes</a>
   <a href="/taxonomies">Taxonomies</a>
   <a href="/components">Components</a>
@@ -94,6 +96,8 @@ body {
         <a href="/clustering">Clustering</a>
     </div>
   </div>
+  <a href="/clustering">Clustering</a>
+  <a href="/clustering">Classification</a>
   <a href="/calculating">Calculating</a>
   <a href="/result">Result</a>
   <a href="/table_list">Entity Table</a>
