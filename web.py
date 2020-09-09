@@ -30,6 +30,7 @@ from backend.scaling import ScalingType, ScalingFactory , Scaling , Multidimensi
 from backend.clustering import ClusteringType, ClusteringFactory, Clustering, Optics
 import numpy as np
 from backend.entityService import Subset
+from sklearn.decomposition import PCA
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -837,12 +838,16 @@ def start_calculating():
         pos: np.matrix 
         pos = app.scaling.scaling(similarities)
         stress = app.scaling.stress_level()
+        ###################TZest#############
+        pca = PCA(n_components=2)
+        pos2d = pca.fit_transform(pos)
         
-        pos2d: np.matrix 
-        dim: int = app.scaling.get_dimensions()
-        app.scaling.set_dimensions(2)
-        pos2d = app.scaling.scaling(similarities)
-        app.scaling.set_dimensions(dim)
+        #####################################
+        #pos2d: np.matrix 
+        #dim: int = app.scaling.get_dimensions()
+        #app.scaling.set_dimensions(2)
+        #pos2d = app.scaling.scaling(similarities)
+        #app.scaling.set_dimensions(dim)
         params.append(("positionMatrixND" , "Position Matrix n-Dimensional" , "description" , pos , "header"))
         params.append(("positionMatrix2D" , "Position Matrix 2-Dimensional" , "description" , pos2d , "header"))
         params.append(("stressLevel" , "Stress Level" , "description" , stress , "header"))

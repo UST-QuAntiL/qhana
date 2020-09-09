@@ -133,7 +133,8 @@ class MultidimensionalScaling(Scaling):
         eps: float = 1e-3,
         random_state: np.random.RandomState =  np.random.RandomState(seed=3),
         dissimilarity: str = "euclidean",
-        n_jobs: int = 1
+        n_jobs: int = 1,
+        static_bool = False
     ) -> None :
         self.__stress: float = 0
         self.__bool_create_mds: bool = False
@@ -146,6 +147,7 @@ class MultidimensionalScaling(Scaling):
         self.__random_state: np.random.RandomState = random_state
         self.__dissimilarity: str = dissimilarity
         self.__n_jobs: int = 1
+        self.__static_bool: bool = static_bool
         try:
             self.__mds: manifold._mds.MDS = manifold.MDS(   n_components    = self.__dimensions,
                                                             n_init          = self.__repeatSMACOF,
@@ -171,6 +173,8 @@ class MultidimensionalScaling(Scaling):
         return self.__n_jobs
     def get_eps(self) -> float:
         return self.__eps
+    def get_static_bool(self) -> bool:
+        return self.__static_bool
 
     # setter methodes
     def set_dimensions(self, dimensions: int = 2 ) -> None:
@@ -185,9 +189,22 @@ class MultidimensionalScaling(Scaling):
         self.__n_job = n_jobs
     def set_eps(self, eps: float = 1e-3) -> None:
         self.__eps = eps
+    def set_static_bool(self, static_bool : bool = False) -> None:
+        self.__static_bool = static_bool
   
     # methodes from interface
     def scaling(self, similarity_matrix: np.matrix ) -> np.matrix:
+        if self.__static_bool == True:
+            if self.__bool_create_mds == True:
+                savedrounded_similarity_matrix = self.__similarity_matrix.round(4)
+                check_similarity_matrix = similarity_matrix.round(4)
+                print(savedrounded_similarity_matrix)
+                print(check_similarity_matrix)
+                print(check_similarity_matrix == savedrounded_similarity_matrix)
+                if np.all(savedrounded_similarity_matrix == check_similarity_matrix):
+                    Logger.error("###################### check true ")
+                    return self.__position_matrix
+        Logger.error("###################### check false")
         try:
             self.__mds = manifold.MDS(  n_components    = self.__dimensions,
                                         n_init          = self.__repeatSMACOF,
@@ -252,6 +269,10 @@ class MultidimensionalScaling(Scaling):
         description_eps = ("(float, optional, default: 1e-3) "
                           +"Relative tolerance with respect to stress at which to declare convergence.")
         params.append(("eps","Epsilon",description_eps, parameter_eps, "number" ,0,0.000000001 ))
+        parameter_static_bool = self.get_static_bool()
+        description_static_bool = "bool, optional (default=False) "\
+                            +"If the parameter is True the Object do not calculate new Euclidean Coordinates for the same similarity matrix."
+        params.append(("static_bool", "Static Eulidean Coordinates" ,description_static_bool, parameter_static_bool, "checkbox"))
         return params
 
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -271,6 +292,8 @@ class MultidimensionalScaling(Scaling):
                 self.set_dissimilarity(param[3])
             elif param[0] == "eps":
                 self.set_eps(param[3])
+            elif param[0] == "static_bool":
+                self.set_static_bool(param[3])
             
 
 """
