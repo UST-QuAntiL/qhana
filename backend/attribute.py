@@ -196,11 +196,11 @@ class Attribute(enum.Enum):
         elif attribute == Attribute.materialeindruck:
             return "Material Impression"
         elif attribute == Attribute.farbe:
-            return "Colour"
+            return "Color"
         elif attribute == Attribute.farbeindruck:
-            return "Colour Impression"
+            return "Color Impression"
         elif attribute == Attribute.farbkonzept:
-            return "Colour Concept"
+            return "Color Concept"
         else:
             Logger.error("No name for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No name for attribute \"" + str(attribute) + "\" specified")

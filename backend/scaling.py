@@ -34,9 +34,9 @@ class ScalingType(enum.Enum):
     def get_description(scalingType) -> str:
         description = ""
         if scalingType == ScalingType.mds:
-            description = ("Multidimensioal scaling (MDS) is a means of visualizing"
+            description = ("Multidimensional scaling (MDS) is a means of visualizing"
                     + "the level of similarity of individual cases of dataset." 
-                    + "MDS is used to translate 'information about the pairwise" 
+                    + " MDS is used to translate 'information about the pairwise" 
                     + "distances among a set of n objects or individuals" 
                     + "into a configuration of n points mapped into an abstract Cartesian space.")
         else:
