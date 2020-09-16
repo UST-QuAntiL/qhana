@@ -74,8 +74,8 @@ body {
 <body>
 
 <div class="navbar">
-  <a href="/"><img src="/static/logos/PlanQKimage.png" style="width:150px; vertical-align: middle;"></a>
-  <a href="/">Home</a>
+  <a href="/"><img src="/static/logos/PlanQKimage.png" style="width:200px; vertical-align: middle;"></a>
+  <!--<a href="/">Home</a>-->
   <!--
   <div class="subnav">
     <button class="subnavbtn">Database Informations<i class="fa fa-caret-down"></i></button>
@@ -84,13 +84,28 @@ body {
     </div>
   </div>
   -->
-  <a href="/attributes">Attributes</a>
-  <a href="/taxonomies">Taxonomies</a>
-  <a href="/components">Components</a>
+  <div class="subnav">
+    <button class="subnavbtn">Documentation<i class="fa fa-caret-down"></i></button>
+    <div class="subnav-content">
+        <a href="/attributes">Attributes</a>
+        <a href="/taxonomies">Taxonomies</a>
+        <a href="/components">Components</a>
+    </div>
+  </div>
+  
   <div class="subnav">
     <button class="subnavbtn">Data Preparation<i class="fa fa-caret-down"></i></button>
     <div class="subnav-content">
-        <a href="/costumeplan">Costume Distance Space</a>
+        
+      <div class="subnav">
+        <button class="subnavbtn">Documentation<i class="fa fa-caret-down"></i></button>
+        <div class="subnav-content">
+            <a href="/attributes">Attributes</a>
+        </div>
+      </div>
+      
+      
+      <a href="/costumeplan">Costume Distance Space</a>
         <a href="/entitySimilarities">Similarities</a>
         <!--<a href="/scaling">Embedding</a>-->
         <!--<a href="/clustering">Clustering</a>-->
@@ -99,22 +114,24 @@ body {
   <div class="subnav">
     <button class="subnavbtn">Dimension Reduction<i class="fa fa-caret-down"></i></button>
     <div class="subnav-content">
-        <a href="/">Auto Encoder</a>
+        <a href="/">Autoencoder</a>
         <a href="/scaling">Embedding</a>
         <!--<a href="/clustering">Clustering</a>-->
     </div>
   </div>
   <a href="/clustering">Clustering</a>
   <a href="/clustering">Classification</a>
-  <a href="/calculating">Calculating</a>
-  <a href="/result">Result</a>
-  <a href="/table_list">Entity Table</a>
-  <a href="/components"></a>
-  <a href="/components"></a>
-  <a href="/components"></a>
-  <a href="/components"></a>
-  <a href="/components"></a>
-  <a href="/components"></a>
+  
+  <div class="subnav">
+    <button class="subnavbtn">Overview<i class="fa fa-caret-down"></i></button>
+    <div class="subnav-content">
+      <a href="/calculating">Calculating</a>
+      <a href="/result">Result</a>
+      <a href="/table_list">Entity Table</a>
+    </div>
+  </div>
+  
+  
 
 </div>
 <div class="row">

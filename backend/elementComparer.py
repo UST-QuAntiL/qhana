@@ -42,7 +42,7 @@ class ElementComparerType(enum.Enum):
     def get_description(elementComparerType) -> str:
         description = ""
         if elementComparerType == ElementComparerType.wuPalmer:
-            description += "Compares two elements based on a taxonomie " \
+            description += "Compares two elements based on a taxonomy " \
                 + "using the wu palmer similarity measure."
         elif elementComparerType == ElementComparerType.timeTanh:
             description += "Compares two timecodes using the tanh function: " \
