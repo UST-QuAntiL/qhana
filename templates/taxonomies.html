@@ -3,7 +3,7 @@
 {% block content %}
 <body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Taxonomie</span></h3>
+    <h3><span style="color:white;">Taxonomies</span></h3>
 </p>
 <p><span style="color:white;">
 The Taxonomies listed below are currently implemented and can be used for machine learning tasks.</span>
@@ -15,13 +15,13 @@ All Taxonomies can be downloaded here:</span>
 
 <table style="width:50%">
     <tr>
-        <th><span style="color:white;">Taxonomie</span></th>
+        <th><span style="color:white;">Taxonomy</span></th>
         <th><span style="color:white;">Action</span></th>
     </tr>
     {% for taxonomy in taxonomies %}
         <tr>
             <td><span style="color:white;">{{taxonomy[1]}}</span></td>
-            <td><a href="/view_taxonomy_{{taxonomy[0]}}"><input type="button" value="View"></a></td>
+            <td><a href="/view_taxonomy_{{taxonomy[0]}}" target="blank"><input type="button" value="View"></a></td>
         </tr>
     {% endfor %}
   </table>

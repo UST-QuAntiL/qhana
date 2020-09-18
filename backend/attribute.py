@@ -136,7 +136,7 @@ class Attribute(enum.Enum):
         if attribute == Attribute.ortsbegebenheit:
             return "Location"
         elif attribute == Attribute.dominanteFarbe:
-            return "Dominant Colour"
+            return "Dominant Color"
         elif attribute == Attribute.stereotypRelevant:
             return "Stereotyp Relevant"
         elif attribute == Attribute.dominanteFunktion:
