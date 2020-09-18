@@ -39,7 +39,7 @@ class ClusteringType(enum.Enum):
         if clusteringTyp == ClusteringType.optics :
             name = "optics"
         elif clusteringTyp == ClusteringType.vqeMaxCut :
-            name = "vqeMaxCut"
+            name = "qaoaMaxCut"
         elif clusteringTyp == ClusteringType.classicNaiveMaxCut:
             name = "classicNaiveMaxCut"
         elif clusteringTyp == ClusteringType.sdpMaxCut:
@@ -62,13 +62,13 @@ class ClusteringType(enum.Enum):
                          + " is an algorithm for finding density-based clusters"
                          + " in spatial data")
         elif clusteringTyp == ClusteringType.vqeMaxCut:
-            description = ("MaxCut Quantum Algorithm based on VQE")
+            description = ("MaxCut Quantum Algorithm based on QAOA")
         elif clusteringTyp == ClusteringType.classicNaiveMaxCut:
             description = ("Classical naive implemented MaxCut algorithm")
         elif clusteringTyp == ClusteringType.sdpMaxCut:
-            description = ("Semidefinite Programming solver for MaxCut (Reference: https://github.com/pandrey-fr/maxcut)")
+            description = ("Semidefinite Programming solver for MaxCut")
         elif clusteringTyp == ClusteringType.bmMaxCut:
-            description = ("Bureir-Monteiro solver for MaxCut (Reference: https://github.com/pandrey-fr/maxcut)")
+            description = ("Bureir-Monteiro solver for MaxCut")
         else:
             Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No description for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -878,7 +878,7 @@ class VQEMaxCut(Clustering):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        clusteringTypeName = "VQE MaxCut"
+        clusteringTypeName = "QAOA MaxCut"
         params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
 
         parameter_number_of_clusters = self.get_number_of_clusters()
