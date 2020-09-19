@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% block title %}scaling{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Embedding</span></h3>
+    <h3><span>Embedding</span></h3>
 </p>
 <br>
-<span style="color:white;">
+<span>
 <h5>References:</h5>
 - Multidimensional scaling (MDS): 
 <br>
-&nbsp;&nbsp; Implementation: <a href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html" target="_blank" rel="noopener noreferrer" style="color: white;"><u>Sklearn online documentation</u></a>
+&nbsp;&nbsp; Implementation: <a href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html" target="_blank" rel="noopener noreferrer" style="color: black;"><u>Sklearn online documentation</u></a>
 <br>
 &nbsp;&nbsp; Theory: K. Backhaus, B. Erichson, W. Plinke and R. Weiber, "Multivariate Analysemethoden.<br>
 &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; Eine anwendungsorientierte Einführung", 11th Edition, 2006.
@@ -22,9 +21,9 @@
     <table style="width: 100%">
         <tr>
             <td style="width: 50%" valign="top">
-                <h4><span style="color: white">Initialize Embedding</span></h4>
+                <h4><span>Initialize Embedding</span></h4>
                 <form action = "/initialize_scaling" method = "POST">
-                    <h6><span style="color: white">Enter Embedding Type</span>&nbsp
+                    <h6><span>Enter Embedding Type</span>&nbsp
                     <select id="scaling" name="scaling">
                         {% for scaling in scalings %}   
                             <option value={{scaling[1]}}>{{scaling[0]}}</option>
@@ -35,7 +34,7 @@
                 </form>
             </td>
             <td valign="top" align="middle" style="width: 45%" >
-                <div id="bereich" style="width: fit-content; padding: 10px ; height: fit-content ;background-color: white; border: 3px white;" >
+                <div id="bereich" style="color:white; width: fit-content; padding: 10px ; height: fit-content ;background-color: #404040; border: 3px white;" >
                     <h4> Saving and Loading</h4>
                     <form action = "/saveload_scaling" method = "POST">
                         <h6> Enter sessions Name <tab id=t2>: 
@@ -73,44 +72,44 @@ background: white">
 <p>
     
     <form action = "/set_scaling" method = "POST">
-        <h4><span style="color: white">Initialized Embedding</span></h4>
+        <h4><span>Initialized Embedding</span></h4>
         <br>
         <input type = 'submit' name = 'setScalingParameters' value = 'set parameters'/>
         <br>
         <br>
-        <table style="width:90%; border: 1px solid white">
-            <tr style="border: 1px solid white">
-                <th style="border: 1px solid white"><span style="color: white">Parameter</span></th>
-                <th style="border: 1px solid white"><span style="color: white">Input</span></th>
-                <th style="border: 1px solid white"><span style="color: white">Description</span></th>
+        <table style="width:90%; border: 1px solid">
+            <tr style="border: 1px solid">
+                <th style="border: 1px solid"><span>Parameter</span></th>
+                <th style="border: 1px solid"><span>Input</span></th>
+                <th style="border: 1px solid ite"><span>Description</span></th>
                 <!--<th style="border: 1px solid black">Debug</th>-->
             </tr>
         {% for param in params%}
             {% if param[4] == "header"%}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle"><span style="color: white">{{param[3]}}</span></td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle"><span>{{param[3]}}</span></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "number" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} min={{param[5]}} step={{param[6]}} value={{param[3]}}></td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} min={{param[5]}} step={{param[6]}} value={{param[3]}}></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "text" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} value={{param[3]}}></td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} value={{param[3]}}></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "select" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle">
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle">
                         <select id={{param[0]}} name={{param[0]}}>
                             {%for option in param[5] %}
                                 {%if option == param[3]%} 
@@ -121,17 +120,17 @@ background: white">
                             {% endfor %}
                         </select>
                     </td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                 <!--<td style="border: 1px solid black">{{param}}</td>-->
             {% elif param[4] == "checkbox" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
                     {% if param[3] %}
-                        <td style="border: 1px solid white" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
+                        <td style="border: 1px solid" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
                     {% else %}
-                        <td style="border: 1px solid white" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} ></input></td>
+                        <td style="border: 1px solid" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} ></input></td>
                     {% endif %}
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% endif %}

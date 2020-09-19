@@ -240,6 +240,10 @@ def split_list(a_list):
     half = len(a_list)//2
     return a_list[:half], a_list[half:]
 
+@app.route("/distspace")
+def distspace():
+    return render_template("distspace.html")
+
 @app.route('/saveload_costume_plan', methods = ['POST', 'GET'])
 def saveload_costume_plan():
     if request.method == 'POST':

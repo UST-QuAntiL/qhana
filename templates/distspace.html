@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Distance Space Computation{% endblock %}
+{% block content %}
+<p>
+    <h3><span>Distance Space Computation</span></h3>
+</p>
+
+<label>Distance Space:</label>
+
+<select name="distspaces" id="distspaces">
+  <option value="Costumes">Costumes</option>
+</select>
+<br>
+<button onclick="location.href='/costumeplan'" type="button">Definition</button>
+<button onclick="location.href='/entitySimilarities'" type="button">Similarities</button>
+<br>
+<br>
+
+
+
+{% endblock %}

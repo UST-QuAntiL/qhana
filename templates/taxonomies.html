@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Taxonomies{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Taxonomies</span></h3>
+    <h3><span>Taxonomies</span></h3>
 </p>
-<p><span style="color:white;">
+<p><span>
 The Taxonomies listed below are currently implemented and can be used for machine learning tasks.</span>
-<br /><span style="color:white;">
+<br /><span>
 All Taxonomies can be downloaded here:</span>
 <br />
 <a href="/zip_taxonomies"><input type="button" value="Export All"></a>
@@ -15,12 +14,12 @@ All Taxonomies can be downloaded here:</span>
 
 <table style="width:50%">
     <tr>
-        <th><span style="color:white;">Taxonomy</span></th>
-        <th><span style="color:white;">Action</span></th>
+        <th><span>Taxonomy</span></th>
+        <th><span>Action</span></th>
     </tr>
     {% for taxonomy in taxonomies %}
         <tr>
-            <td><span style="color:white;">{{taxonomy[1]}}</span></td>
+            <td><span>{{taxonomy[1]}}</span></td>
             <td><a href="/view_taxonomy_{{taxonomy[0]}}" target="blank"><input type="button" value="View"></a></td>
         </tr>
     {% endfor %}

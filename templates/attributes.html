@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Attributes{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Attributes</span></h3>
+    <h3><span>Attributes</span></h3>
 </p>
-<p><span style="color:white;">
+<p><span>
 The Attributes listed below are currently implemented and can be used for machine learning tasks.
 <br />
 Additionally, the corresponding base is shown.
@@ -16,13 +15,13 @@ If this is not the case, "-" will be displayed instead.
 
 <table style="width:50%">
     <tr>
-        <th><span style="color:white;">Attribute</span></th>
-        <th><span style="color:white;">Base</span></th>
+        <th><span>Attribute</span></th>
+        <th><span>Base</span></th>
     </tr>
     {% for attribute in attributes %}
         <tr>
-            <td><span style="color:white;">{{attribute[0]}}</span></td>
-            <td><span style="color:white;">{{attribute[1]}}</span></td>
+            <td><span>{{attribute[0]}}</span></td>
+            <td><span>{{attribute[1]}}</span></td>
         </tr>
     {% endfor %}
   </table>

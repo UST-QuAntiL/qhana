@@ -1,15 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Entity Table{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Entity Table</span></h3>
+    <h3><span>Entity Table</span></h3>
 </p>
 {% with messages = get_flashed_messages() %}
     {% if messages %}
         <ul class=flashes>
         {% for message in messages %}
-            <li style="color: white"><span style="color: white">{{ message }}</span></li>
+            <li><span>{{ message }}</span></li>
         {% endfor %}
     </ul>
     {% endif %}
@@ -27,17 +26,17 @@
 
 {% if tableListBool %}
 <p>
-        <table style=" border: 3px solid white">
+        <table style=" border: 3px solid">
             {% for component in table %}
-                <tr style="border: 3px solid white">
+                <tr style="border: 3px solid">
                     {% for comp in component%}    
                         {% if component == table[0] %}
-                            <td align=center width=60><span style="color:white;"><b>{{comp}}</b></span></td>
+                            <td align=center width=60><span><b>{{comp}}</b></span></td>
                         {% else %}
                             {% if comp == component[1] or comp == component[2] or comp == component[3] %}
                                 <td align=center><a href={{comp}} target="_blank" rel="noopener noreferrer" style="color: yellow;">Link</a></td>
                             {% else %}
-                                <td align=center><span style="color:white;">{{comp}}</span></td>
+                                <td align=center><span>{{comp}}</span></td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}

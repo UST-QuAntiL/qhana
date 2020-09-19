@@ -1,107 +1,106 @@
 {% extends "base.html" %}
 {% block title %}Components{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Components</span></h3>
+    <h3><span>Components</span></h3>
 </p>
-<h5><span style="color:white;">
+<h5><span>
 The following aggregator are currently available:</span>
 </h5>
-<table style="width:50%; border: 3px solid white">
-    <tr style="border: 3px solid white">
-        <th><span style="color:white;">Name</span></th>
-        <th><span style="color:white;">Description</span></th>
+<table style="width:50%; border: 3px solid">
+    <tr style="border: 3px solid">
+        <th><span>Name</span></th>
+        <th><span>Description</span></th>
     </tr>
     {% for aggregator in aggregators %}
-        <tr style="border: 1px solid white">
-            <td><span style="color:white;">{{aggregator[0]}}</span></td>
-            <td><span style="color:white;">{{aggregator[1]}}</span></td>
+        <tr style="border: 1px solid">
+            <td><span>{{aggregator[0]}}</span></td>
+            <td><span>{{aggregator[1]}}</span></td>
         </tr>
     {% endfor %}
 </table>
 <br />
 <br />
-<h5><span style="color:white;">
+<h5><span>
 The following transformer are currently available:</span>
 </h5>
-<table style="width:50%; border: 3px solid white">
-    <tr style="border: 3px solid white">
-        <th><span style="color:white;">Name</span></th>
-        <th><span style="color:white;">Description</span></th>
+<table style="width:50%; border: 3px solid">
+    <tr style="border: 3px solid">
+        <th><span>Name</span></th>
+        <th><span>Description</span></th>
     </tr>
     {% for transformer in transformers %}
-        <tr style="border: 1px solid white">
-            <td><span style="color:white;">{{transformer[0]}}</span></td>
-            <td><span style="color:white;">{{transformer[1]}}</span></td>
+        <tr style="border: 1px solid">
+            <td><span>{{transformer[0]}}</span></td>
+            <td><span>{{transformer[1]}}</span></td>
         </tr>
     {% endfor %}
 </table>
 <br />
 <br />
-<h5><span style="color:white;">
+<h5><span>
 The following attribute comparer are currently available:</span>
 </h5>
-<table style="width:50%; border: 3px solid white">
-    <tr style="border: 3px solid white">
-        <th><span style="color:white;">Name</span></th>
-        <th><span style="color:white;">Description</span></th>
+<table style="width:50%; border: 3px solid">
+    <tr style="border: 3px solid">
+        <th><span>Name</span></th>
+        <th><span>Description</span></th>
     </tr>
     {% for attributeComparer in attributeComparers %}
-        <tr style="border: 1px solid white">
-            <td><span style="color:white;">{{attributeComparer[0]}}</span></td>
-            <td><span style="color:white;">{{attributeComparer[1]}}</span></td>
+        <tr style="border: 1px solid">
+            <td><span>{{attributeComparer[0]}}</span></td>
+            <td><span>{{attributeComparer[1]}}</span></td>
         </tr>
     {% endfor %}
 </table>
 <br />
 <br />
-<h5><span style="color:white;">
+<h5><span>
 The following element comparer are currently available:</span>
 </h5>
-<table style="width:50%; border: 3px solid white">
-    <tr style="border: 3px solid white">
-        <th><span style="color:white;">Name</span></th>
-        <th><span style="color:white;">Description</span></th>
+<table style="width:50%; border: 3px solid">
+    <tr style="border: 3px solid">
+        <th><span>Name</span></th>
+        <th><span>Description</span></th>
     </tr>
     {% for elementComparer in elementComparers %}
-        <tr style="border: 1px solid white">
-            <td><span style="color:white;">{{elementComparer[0]}}</span></td>
-            <td><span style="color:white;">{{elementComparer[1]}}</span></td>
+        <tr style="border: 1px solid">
+            <td><span>{{elementComparer[0]}}</span></td>
+            <td><span>{{elementComparer[1]}}</span></td>
         </tr>
     {% endfor %}
 </table>
 <br />
 <br />
-<h5><span style="color:white;">
+<h5><span>
 The following scalingTypes are currently available:</span>
 </h5>
-<table style="width:50%; border: 3px solid white">
-    <tr style="border: 3px solid white">
-        <th><span style="color:white;">Name</span></th>
-        <th><span style="color:white;">Description</span></th>
+<table style="width:50%; border: 3px solid">
+    <tr style="border: 3px solid">
+        <th><span>Name</span></th>
+        <th><span>Description</span></th>
     </tr>
     {% for scaling in scalings %}
-        <tr style="border: 1px solid white">
-            <td><span style="color:white;">{{scaling[0]}}</span></td>
-            <td><span style="color:white;">{{scaling[1]}}</span></td>
+        <tr style="border: 1px solid">
+            <td><span>{{scaling[0]}}</span></td>
+            <td><span>{{scaling[1]}}</span></td>
         </tr>
     {% endfor %}
 </table>
 <br />
 <br />
-<h5><span style="color:white;">
+<h5><span>
 The following clusteringTypes are currently available:</span>
 </h5>
-<table style="width:50%; border: 3px solid white">
-    <tr style="border: 3px solid white">
-        <th><span style="color:white;">Name</span></th>
-        <th><span style="color:white;">Description</span></th>
+<table style="width:50%; border: 3px solid">
+    <tr style="border: 3px solid">
+        <th><span>Name</span></th>
+        <th><span>Description</span></th>
     </tr>
     {% for clustering in clusterings %}
-        <tr style="border: 1px solid white">
-            <td><span style="color:white;">{{clustering[0]}}</span></td>
-            <td><span style="color:white;">{{clustering[1]}}</span></td>
+        <tr style="border: 1px solid">
+            <td><span>{{clustering[0]}}</span></td>
+            <td><span>{{clustering[1]}}</span></td>
         </tr>
     {% endfor %}
 </table>

@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 {% block title %}calculating{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Overview Parameters for Calculation</span></h3>
+    <h3><span>Overview Parameters for Calculation</span></h3>
 </p>
 <br>
 <br>
@@ -14,11 +13,11 @@
 <form  action = "/start_calculating" method = "POST">
     {% for simiParam in simiParams %}
         {% if simiParam[0] == "entityNumber" %}
-            <label for="min"><span style="color: white">Min</span></label>
+            <label for="min"><span>Min</span></label>
             &nbsp 
             <input style="width: 70px" type="number" id="min" name="min" min=0 value=0>
             &nbsp &nbsp 
-            <label for="max"><span style="color: white">Max</span></label>
+            <label for="max"><span>Max</span></label>
             &nbsp 
             <input style="width: 70px" type="number" id="max" name="max" min="0" value={{simiParam[3]-1}}>
             &nbsp &nbsp &nbsp &nbsp &nbsp
@@ -30,7 +29,7 @@
     {% if messages %}
         <ul class=flashes>
         {% for message in messages %}
-            <li style="color: white"><span style="color: white">{{ message }}</span></li>
+            <li><span>{{ message }}</span></li>
         {% endfor %}
     </ul>
     {% endif %}
@@ -39,29 +38,29 @@
 <br>
 <br>
 <p>
-    <h5><span style="color: white">
+    <h5><span>
         The following entity plan are choosen: </span>
     </h5>
-    <table style="width:80%; border: 3px solid white">
-        <tr style="border: 3px solid white">
-            <th><span style="color: white">Aggregator Type</span></th>
-            <th><span style="color: white">Transformer Type</span></th>
-            <th><span style="color: white">Attribute</span></th>
-            <th><span style="color: white">Element Comparer</span></th>
-            <th><span style="color: white">Attribute Comparer</span></th>
-            <th><span style="color: white">Empty Attribute Action</span></th>
+    <table style="width:80%; border: 3px solid">
+        <tr style="border: 3px solid">
+            <th><span>Aggregator Type</span></th>
+            <th><span>Transformer Type</span></th>
+            <th><span>Attribute</span></th>
+            <th><span>Element Comparer</span></th>
+            <th><span>Attribute Comparer</span></th>
+            <th><span>Empty Attribute Action</span></th>
         </tr>
             {% for component in strCostumePlan %}
                 {% if component == strCostumePlan[0] %}
-                    <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                    <td rowspan="0" align=center style="border: 3px solid"><span>{{component}}</span></td>
                 {% elif component == strCostumePlan[1] %}
-                    <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                    <td rowspan="0" align=center style="border: 3px solid"><span>{{component}}</span></td>
                 {% else %}
-                <tr style="border: 1px solid white">
-                    <td><span style="color: white">{{component[0]}}</span></td>
-                    <td><span style="color: white">{{component[1]}}</span></td>
-                    <td><span style="color: white">{{component[2]}}</span></td>
-                    <td><span style="color: white">{{component[3]}}</span></td>
+                <tr style="border: 3px solid">
+                    <td><span>{{component[0]}}</span></td>
+                    <td><span>{{component[1]}}</span></td>
+                    <td><span>{{component[2]}}</span></td>
+                    <td><span>{{component[3]}}</span></td>
                 </tr>
                 {% endif %}
             {% endfor %}
@@ -70,23 +69,23 @@
 <br>
 <br>
 <p>
-    <h5><span style="color: white">
+    <h5><span>
     The following Entity Similarities Object are choosen: </span>
     </h5>
-        <table style="width:80%; border: 3px solid white">
-            <tr style="border: 3px solid white">
-                <th width=20%><span style="color: white">Parameter</span></th>
-                <th width=10%><span style="color: white">Value</span></th>
-                <th width=50%><span style="color: white">Description</span></th>
-                <!--<th><span style="color: white">Debug</span></th>-->
+        <table style="width:80%; border: 3px solid">
+            <tr style="border: 3px solid">
+                <th width=20%><span>Parameter</span></th>
+                <th width=10%><span>Value</span></th>
+                <th width=50%><span>Description</span></th>
+                <!--<th><span>Debug</span></th>-->
             </tr>
         {% for simiParam in simiParams%}
             {% if simiParam[0] == "name" or simiParam[0] == "entityNumber" or simiParam[0] == "EIM" or simiParam[0] == "EIM" or simiParam[0] == "memoryBool" or simiParam[0] == "errorentitySimilarities" %}
                 <tr>
-                    <td><span style="color: white">{{simiParam[1]}}</span></td>
-                    <td><span style="color: white">{{simiParam[3]}}</span></td>
-                    <td><span style="color: white">{{simiParam[2]}}</span></td>
-                    <!--<td><span style="color: white">{{simiParam}}</span></td>-->
+                    <td><span>{{simiParam[1]}}</span></td>
+                    <td><span>{{simiParam[3]}}</span></td>
+                    <td><span>{{simiParam[2]}}</span></td>
+                    <!--<td><span>{{simiParam}}</span></td>-->
                 </tr>
             {% endif %}
         {% endfor %}
@@ -96,22 +95,22 @@
 <br>
 <br>
 <p>
-    <h5><span style="color: white">
+    <h5><span>
     The following Scaling Object are choosen:</span>
     </h5>
-        <table style="width:80%; border: 3px solid white">
-            <tr style="border: 3px solid white">
-                <th width=20%><span style="color: white">Parameter</span></th>
-                <th width=10%><span style="color: white">Value</span></th>
-                <th width=50%><span style="color: white">Description</span></th>
-                <!--<th><span style="color: white">Debug</span></th>-->
+        <table style="width:80%; border: 3px solid">
+            <tr style="border: 3px solid">
+                <th width=20%><span>Parameter</span></th>
+                <th width=10%><span>Value</span></th>
+                <th width=50%><span>Description</span></th>
+                <!--<th><span>Debug</span></th>-->
             </tr>
         {% for scalingParam in scalingParams%}
-                <tr style="border: 1px solid white">
-                    <td><span style="color: white">{{scalingParam[1]}}</span></td>
-                    <td><span style="color: white">{{scalingParam[3]}}</span></td>
-                    <td><span style="color: white">{{scalingParam[2]}}</span></td>
-                    <!--<td><span style="color: white">{{scalingParam}}</span></td>-->
+                <tr style="border: 1px solid">
+                    <td><span>{{scalingParam[1]}}</span></td>
+                    <td><span>{{scalingParam[3]}}</span></td>
+                    <td><span>{{scalingParam[2]}}</span></td>
+                    <!--<td><span>{{scalingParam}}</span></td>-->
                 </tr>
         {% endfor %}
         </table>
@@ -120,22 +119,22 @@
 <br>
 <br>
 <p>
-    <h5><span style="color: white">
+    <h5><span>
     The following Clustering Object are choosen:</span>
     </h5>
-        <table style="width:80%; border: 3px solid white">
-            <tr style="border: 3px solid white">
-                <th width=20%><span style="color: white" >Parameter</span></th>
-                <th width=10%><span style="color: white" >Value</span></th>
-                <th width=50%><span style="color: white" >Description</span></th>
-                <!--<th><span style="color: white">Debug</span></th>-->
+        <table style="width:80%; border: 3px solid">
+            <tr style="border: 3px solid">
+                <th width=20%><span >Parameter</span></th>
+                <th width=10%><span >Value</span></th>
+                <th width=50%><span >Description</span></th>
+                <!--<th><span>Debug</span></th>-->
             </tr>
         {% for clusteringParam in clusteringParams%}
-                <tr style="border: 1px solid white">
-                    <td><span style="color: white">{{clusteringParam[1]}}</span></td>
-                    <td><span style="color: white">{{clusteringParam[3]}}</span></td>
-                    <td><span style="color: white">{{clusteringParam[2]}}</span></td>
-                    <!--<td><span style="color: white">{{clusteringParam}}</span></td>-->
+                <tr style="border: 1px solid">
+                    <td><span>{{clusteringParam[1]}}</span></td>
+                    <td><span>{{clusteringParam[3]}}</span></td>
+                    <td><span>{{clusteringParam[2]}}</span></td>
+                    <!--<td><span>{{clusteringParam}}</span></td>-->
                 </tr>
         {% endfor %}
         </table>

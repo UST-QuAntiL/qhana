@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% block title %}clustering{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Clustering</span></h3>
+    <h3><span>Clustering</span></h3>
 </p>
-<span style="color:white;">
+<span>
 <br>
 <h5>References:</h5>
 - Ordering points to identify the clustering structure (OPTICS):
 <br>
-&nbsp;&nbsp; Implementation: <a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.OPTICS.html" target="_blank" rel="noopener noreferrer" style="color: white;"><u>Sklearn online documentation</u></a>
+&nbsp;&nbsp; Implementation: <a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.OPTICS.html" target="_blank" rel="noopener noreferrer" style="color: black;"><u>Sklearn online documentation</u></a>
 <br>
 &nbsp;&nbsp; Theory: Ankerst, Mihael & Breunig, Markus & Kriegel, Hans-Peter & Sander, Joerg, "OPTICS: Ordering Points to Identify
 <br>
@@ -19,26 +18,26 @@
 <br>
 - Quantum Approximate Optimization Algorithm for solving MaxCut (QaoaMaxCut):
 <br>
-&nbsp;&nbsp; Implementation: <a href="https://qiskit.org/documentation/locale/de_DE/tutorials/optimization/6_examples_max_cut_and_tsp.html" target="_blank" rel="noopener noreferrer" style="color: white;"><u>Qiskit online documentation</u></a>
+&nbsp;&nbsp; Implementation: <a href="https://qiskit.org/documentation/locale/de_DE/tutorials/optimization/6_examples_max_cut_and_tsp.html" target="_blank" rel="noopener noreferrer" style="color: black;"><u>Qiskit online documentation</u></a>
 <br>
-&nbsp;&nbsp; Theory: Edward Farhi, Jeffrey Goldstone and Sam Gutmann, "A Quantum Approximate Optimization Algorithm", 2014. <a href="https://arxiv.org/pdf/1411.4028.pdf" target="_blank" rel="noopener noreferrer" style="color: white;"><u>arXiv</u></a>
+&nbsp;&nbsp; Theory: Edward Farhi, Jeffrey Goldstone and Sam Gutmann, "A Quantum Approximate Optimization Algorithm", 2014. <a href="https://arxiv.org/pdf/1411.4028.pdf" target="_blank" rel="noopener noreferrer" style="color: black;"><u>arXiv</u></a>
 <br>
 <br>
 - Semi-Definite Programming formulation of MaxCut (SdpMaxCut) and Bureir-Monteiro solver for MaxCut (BmMaxCut):
 <br>
-&nbsp;&nbsp; Implementation: <a href="https://github.com/pandrey-fr/maxcut" target="_blank" rel="noopener noreferrer" style="color: white;"><u>Github repository</u></a>
+&nbsp;&nbsp; Implementation: <a href="https://github.com/pandrey-fr/maxcut" target="_blank" rel="noopener noreferrer" style="color: black;"><u>Github repository</u></a>
 <br>
 &nbsp;&nbsp; N. Boumal, V. Voroninski and A. Bandeira (2016). The non-convex Burer-Monteiro approach works on smooth semidefinite programs. In proceedings NIPS 2016.
-<a href="https://arxiv.org/pdf/1606.04970.pdf" target="_blank" rel="noopener noreferrer" style="color: white;"><u>arXiv</u></a>
+<a href="https://arxiv.org/pdf/1606.04970.pdf" target="_blank" rel="noopener noreferrer" style="color: black;"><u>arXiv</u></a>
 <br>
 &nbsp;&nbsp; N. Boumal (2016). A Riemannian low-rank method for optimization oversemidefinite matrices with block-diagonal constraints. arXiv preprint.
-<a href="https://arxiv.org/pdf/1506.00575.pdf" target="_blank" rel="noopener noreferrer" style="color: white;"><u>arXiv</u></a>
+<a href="https://arxiv.org/pdf/1506.00575.pdf" target="_blank" rel="noopener noreferrer" style="color: black;"><u>arXiv</u></a>
 <br>
 &nbsp;&nbsp; N. Boumal, B. Mishra, P.-A. Absil and R. Sepulchre (2014). Manopt, a Matlab toolbox for optimization on manifolds. Journal of Machine Learning Research.
-<a href="https://jmlr.org/papers/volume15/boumal14a/boumal14a.pdf" target="_blank" rel="noopener noreferrer" style="color: white;"><u>PDF</u></a>
+<a href="https://jmlr.org/papers/volume15/boumal14a/boumal14a.pdf" target="_blank" rel="noopener noreferrer" style="color: black;"><u>PDF</u></a>
 <br>
 &nbsp;&nbsp; P.-A. Absil, R. Mahony, and R. Sepulchre (2008). Optimization Algorithms on Matrix Manifolds. Princeton University Press.
-<a href="https://press.princeton.edu/absil" target="_blank" rel="noopener noreferrer" style="color: white;"><u>Online Text</u></a>
+<a href="https://press.princeton.edu/absil" target="_blank" rel="noopener noreferrer" style="color: black;"><u>Online Text</u></a>
 </span>
 <br>
 <br>
@@ -46,9 +45,9 @@
     <table style="width: 100%">
         <tr>
             <td style="width: 50%" valign="top">
-                <h4><span style="color: white">Initialize Clustering</span></h4>
+                <h4><span>Initialize Clustering</span></h4>
                 <form action = "/initialize_clustering" method = "POST">
-                    <h6><span style="color: white">Enter Clustering Type</span>&nbsp
+                    <h6><span>Enter Clustering Type</span>&nbsp
                         <select id="clustering" name="clustering">
                             {% for clustering in clusterings %}   
                                 <option value={{clustering[1]}}>{{clustering[0]}}</option>
@@ -59,7 +58,7 @@
                 </form>
             </td>
             <td valign="top" align="middle" style="width: 45%" >
-                <div id="bereich" style="width: fit-content; padding: 10px ; height: fit-content ;background-color: white; border: 3px white;" >
+                <div id="bereich" style="color:white; width: fit-content; padding: 10px ; height: fit-content ;background-color: #404040; border: 3px white;" >
                     <h4> Saving and Loading</h4>
                     <form action = "/saveload_clustering" method = "POST">
                         <h6> Enter sessions Name <tab id=t2>: 
@@ -99,44 +98,44 @@ background: white">
 <p>
     
     <form action = "/set_clustering" method = "POST">
-        <h4><span style="color: white">Initialized Clustering</span></h4>
+        <h4><span>Initialized Clustering</span></h4>
         <br>
         <input type = 'submit' name = 'setClusteringParameters' value = 'set parameters'/>
         <br>
         <br>
-        <table style="width:90%; border: 1px solid white">
-            <tr style="border: 1px solid white">
-                <th style="border: 1px solid white"><span style="color: white">Parameter</span></th>
-                <th style="border: 1px solid white"><span style="color: white">Input</span></th>
-                <th style="border: 1px solid white"><span style="color: white">Description</span></th>
+        <table style="width:90%; border: 1px solid">
+            <tr style="border: 1px solid">
+                <th style="border: 1px solid"><span>Parameter</span></th>
+                <th style="border: 1px solid"><span>Input</span></th>
+                <th style="border: 1px solid"><span>Description</span></th>
                 <!--<th style="border: 1px solid black">Debug</th>-->
             </tr>
         {% for param in params%}
             {% if param[4] == "header"%}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle"><span style="color: white">{{param[3]}}</span></td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle"><span>{{param[3]}}</span></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "number" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} min={{param[5]}} step={{param[6]}} value={{param[3]}}></td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} min={{param[5]}} step={{param[6]}} value={{param[3]}}></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "text" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} value={{param[3]}}></td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle"><input style="width: 70px" type={{param[4]}} id={{param[0]}} name={{param[0]}} value={{param[3]}}></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% elif param[4] == "select" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white"><span style="color: white">{{param[1]}}</span></td>
-                    <td style="border: 1px solid white" align="middle">
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid"><span>{{param[1]}}</span></td>
+                    <td style="border: 1px solid" align="middle">
                         <select id={{param[0]}} name={{param[0]}}>
                             {%for option in param[5] %}
                                 {%if option == param[3]%} 
@@ -147,17 +146,17 @@ background: white">
                             {% endfor %}
                         </select>
                     </td>
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                 <!--<td style="border: 1px solid black">{{param}}</td>-->
             {% elif param[4] == "checkbox" %}
-                <tr style="border: 1px solid white">
-                    <td style="border: 1px solid white" ><span style="color: white">{{param[1]}}</span></td>
+                <tr style="border: 1px solid">
+                    <td style="border: 1px solid" ><span>{{param[1]}}</span></td>
                     {% if param[3] %}
-                        <td style="border: 1px solid white" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
+                        <td style="border: 1px solid" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}} checked></input></td>
                     {% else %}
-                        <td style="border: 1px solid white" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}}></input></td>
+                        <td style="border: 1px solid" align="middle"><input type={{param[4]}} id={{param[0]}} name={{param[0]}}></input></td>
                     {% endif %}
-                    <td style="border: 1px solid white"><span style="color: white">{{param[2]}}</span></td>
+                    <td style="border: 1px solid"><span>{{param[2]}}</span></td>
                     <!--<td style="border: 1px solid black">{{param}}</td>-->
                 </tr>
             {% endif %}

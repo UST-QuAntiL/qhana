@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Costume Plan{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg">
 <p>
     
 </p>
@@ -9,34 +8,34 @@
 <table style="width: 100%">
         <tr>
             <td style="width: 50%">
-            <h2 font color="blue"> <span style="color:white;">Costume Distance Space</span> </h2>
-            <table style="width:fit-content;border: 1px solid white">
-                <tr style="border: 1px solid white">
-                    <th><span style="color: white">Aggregator Type</span></th>
-                    <th><span style="color: white">Transformer Type</span></th>
-                    <th><span style="color: white">Attribute</span></th>
-                    <th><span style="color: white">Element Comparer</span></th>
-                    <th><span style="color: white">Attribute Comparer</span></th>
-                    <th><span style="color: white">Empty Attribute Action</span></th>
+            <h2 font color="blue"> <span>Costume Distance Space</span> </h2>
+            <table style="width:fit-content;border: 1px solid">
+                <tr style="border: 1px solid">
+                    <th><span>Aggregator Type</span></th>
+                    <th><span>Transformer Type</span></th>
+                    <th><span>Attribute</span></th>
+                    <th><span>Element Comparer</span></th>
+                    <th><span>Attribute Comparer</span></th>
+                    <th><span>Empty Attribute Action</span></th>
                 </tr>
                     {% for component in session["strCostumePlan"] %}
                         {% if component == session["strCostumePlan"][0] %}
-                            <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                            <td rowspan="0" align=center style="border: 1px solid"><span>{{component}}</span></td>
                         {% elif component == session["strCostumePlan"][1] %}
-                            <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                            <td rowspan="0" align=center style="border: 1px solid"><span>{{component}}</span></td>
                         {% else %}
-                        <tr style="border: 1px solid white">
-                            <td><span style="color: white">{{component[0]}}</span></td>
-                            <td><span style="color: white">{{component[1]}}</span></td>
-                            <td><span style="color: white">{{component[2]}}</span></td>
-                            <td><span style="color: white">{{component[3]}}</span></td>
+                        <tr style="border: 1px solid">
+                            <td><span>{{component[0]}}</span></td>
+                            <td><span>{{component[1]}}</span></td>
+                            <td><span>{{component[2]}}</span></td>
+                            <td><span>{{component[3]}}</span></td>
                         </tr>
                         {% endif %}
                     {% endfor %}
             </table>
             </td>
             <td valign="top" align="middle" style="width: 45%" >
-            <div id="bereich" style="width: fit-content; padding: 10px ; height: fit-content ;background-color: white; border: 3px white;" >
+                <div id="bereich" style="color:white; width: fit-content; padding: 10px ; height: fit-content ;background-color: #404040; border: 3px black;" >
                 <h4> Saving and Loading</h4>
                 <form action = "/saveload_costume_plan" method = "POST">
                     <h6> Enter sessions Name <tab id=t2>: 
@@ -65,7 +64,7 @@
 <p>
 <br>
 <a href="/reset_costume_plan" ><input type="button" value="reset to defaults"></a>
-<label for="aggregator"><span style="color: white">Aggregator Type :</span></label>
+<label for="aggregator"><span>Aggregator Type :</span></label>
 <select id="aggregator" onchange="document.location.href=this.value">
     {% for aggregator in aggregators %}   
         {% if aggregator[0] == session["strCostumePlan"][0] %}
@@ -75,7 +74,7 @@
         {% endif %}
     {% endfor %}
 </select>
-<label for="transformer"><span style="color: white">Transformer Type :</span></label>
+<label for="transformer"><span>Transformer Type :</span></label>
 <select id="transformer" onchange="document.location.href=this.value">
     {% for transformer in transformers %}   
         {% if transformer[0] == session["strCostumePlan"][1] %}   
@@ -88,18 +87,18 @@
 </p>
 <table style="width:48% ; float:left">
     <tr>
-        <th><span style="color: white">Attribute</span></th>
-        <th><span style="color: white">Checkbox</span></th>
-        <th><span style="color: white">Element Comparer</span></th>
-        <th><span style="color: white">Attribute Comparer</span></th>
-        <th><span style="color: white">Empty Attribute Action</span></th>
+        <th><span>Attribute</span></th>
+        <th><span>Checkbox</span></th>
+        <th><span>Element Comparer</span></th>
+        <th><span>Attribute Comparer</span></th>
+        <th><span>Empty Attribute Action</span></th>
         
        
 
     </tr>
     {% for attribute in attributes1 %}
         <tr>
-            <td><span style="color: white">{{attribute[0]}}</span></td>
+            <td><span>{{attribute[0]}}</span></td>
             <td align="middle"><input type="checkbox" id="attributeCheck" name="attributeCheck" onchange="document.location.href=this.value" value="/instance_costume_plan_attribute_{{attribute[1]}}"
                 {% for element in session["strCostumePlan"]  %}
                     {% if element[0] == attribute[0] %}
@@ -185,18 +184,18 @@
 </table>
 <table style="width:48% ; float:right">
     <tr>
-        <th><span style="color: white">Attribute</span></th>
-        <th><span style="color: white">Checkbox</span></th>
-        <th><span style="color: white">Element Comparer</span></th>
-        <th><span style="color: white">Attribute Comparer</span></th>
-        <th><span style="color: white">Empty Attribute Action</span></th>
+        <th><span>Attribute</span></th>
+        <th><span>Checkbox</span></th>
+        <th><span>Element Comparer</span></th>
+        <th><span>Attribute Comparer</span></th>
+        <th><span>Empty Attribute Action</span></th>
         
        
 
     </tr>
     {% for attribute in attributes2 %}
         <tr>
-            <td><span style="color: white">{{attribute[0]}}</span></td>
+            <td><span>{{attribute[0]}}</span></td>
             <td align="middle"><input type="checkbox" id="attributeCheck" name="attributeCheck" onchange="document.location.href=this.value" value="/instance_costume_plan_attribute_{{attribute[1]}}"
                 {% for element in session["strCostumePlan"]  %}
                     {% if element[0] == attribute[0] %}

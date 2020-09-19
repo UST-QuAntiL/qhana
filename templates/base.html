@@ -5,25 +5,43 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>{% block title %}{% endblock %}</title>
 <style>
+
+html {
+    height: 100%;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .navbar {
   overflow: hidden;
-  background-color: white;
-  height:15.6em;
+  background-color: #404040; 
 }
 
 .navbar a {
   float: left;
   font-size: 16px;
-  color: black;
-  text-align: center;
+  font-weight: bold;
+  color: white;
+  background-color: #404040; 
+  text-align: left;
   vertical-align: middle;
   padding: 14px 16px;
   text-decoration: none;
+}
+
+a:hover{
+  background-color:rgb(97, 97, 97);
+  color:white;
+}
+a:active{
+  background-color:#000;
+  color:white;
 }
 
 .subnav {
@@ -33,10 +51,11 @@ body {
 
 .subnav .subnavbtn {
   font-size: 16px; 
+  font-weight: bold;
   vertical-align: middle; 
   border: none;
   outline: none;
-  color: black;
+  color: white;
   padding: 14px 16px;
   background-color: inherit;
   font-family: inherit;
@@ -44,14 +63,14 @@ body {
 }
 
 .navbar a:hover, .subnav:hover .subnavbtn {
-  background-color: rgb(218, 218, 218);
+  background-color: rgb(97, 97, 97);
 }
 
 .subnav-content {
   display: none;
   position: absolute;
   left: 1;
-  background-color: white;
+  background-color: 404040;
   width: 50%;
   z-index: 1;
 }
@@ -59,6 +78,7 @@ body {
 .subnav-content a {
   float: left;
   color: black;
+  color: white;
   text-decoration: none;
 }
 
@@ -74,51 +94,31 @@ body {
 </head>
 <body>
 
-<div class="navbar">
-  <a href="/"><img src="/static/logos/PlanQKimage.png" style="width:200px; vertical-align: middle;"></a>
-  <!--<a href="/">Home</a>-->
-  <!--
-  <div class="subnav">
-    <button class="subnavbtn">Database Informations<i class="fa fa-caret-down"></i></button>
-    <div class="subnav-content">
-        <a>{{session["dbConnectionString"]}}</a> 
-    </div>
-  </div>
-  -->
+<div class="navbar navbar-expand">
+  <a href="/"><img src="/static/logos/PlanQKimage.png" style="width:175px; vertical-align: middle;"></a>
   <div class="subnav">
     <button class="subnavbtn">Documentation<i class="fa fa-caret-down"></i></button>
     <div class="subnav-content">
         <a href="/attributes">Attributes</a>
-        <a href="/taxonomies">Taxonomies</a>
         <a href="/components">Components</a>
+        <a href="/taxonomies">Taxonomies</a>
     </div>
   </div>
-  
+
   <div class="subnav">
     <button class="subnavbtn">Data Preparation<i class="fa fa-caret-down"></i></button>
     <div class="subnav-content">
-      
-        
-      <div class="subnav">
-        <button class="subnavbtn">Distance Space Documentation<i class="fa fa-caret-down"></i></button>
-        <div class="subnav-content">
-          <a href="/costumeplan">Costume Distance Space</a>
-          <a href="/entitySimilarities">Similarities</a>
-        </div>
-      </div>
+      <a href="/distspace">Distance Space Computation</a>
       <a href="/">One-Hot Encoding</a>
-      
-        <!--<a href="/scaling">Embedding</a>-->
-        <!--<a href="/clustering">Clustering</a>-->
     </div>
   </div>
+
   <div class="subnav">
-    <button class="subnavbtn">Dimension Reduction<i class="fa fa-caret-down"></i></button>
+    <button class="subnavbtn">Feature Engineering<i class="fa fa-caret-down"></i></button>
     <div class="subnav-content">
         <a href="/">Autoencoder</a>
         <a href="/scaling">Embedding</a>
         <a href="/">PCA</a>
-        <!--<a href="/clustering">Clustering</a>-->
     </div>
   </div>
   <a href="/clustering">Clustering</a>
@@ -132,17 +132,12 @@ body {
       <a href="/table_list">Entity Table</a>
     </div>
   </div>
-  
-  <a href="/"></a>
-  <a href="/"></a>
-  <a href="/"></a>
-  <a href="/"></a>
-  <a href="/"></a>
 
 </div>
 <div class="row">
-    <div class="column" style="width: 5%"></div>
-    <div class="column" style="width: 95%">
+    <div class="column" style="width: 5%; color: black;"></div>
+    <div class="column" style="width: 95%; color: black;">
+      <body background="/static/logos/planqkbackground2.jpg"></body>
         {% block content %}
         {% endblock %}
     </div>

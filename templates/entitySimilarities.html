@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 {% block title %}entitySimilarities{% endblock %}
 {% block content %}
-<body background="/static/logos/planqkbackground2.jpg"></body>
 <p>
-    <h3><span style="color:white;">Similarities</span></h3>
+    <h3><span>Similarities</span></h3>
 </p>
 <br>
 <br>
@@ -14,10 +13,10 @@
     <table style="width: 100%">
         <tr>
             <td style="width: 50%">
-                <h4><span style="color:white">Initialize Similarities</span></h4>
+                <h4><span>Initialize Similarities</span></h4>
                 <br>
                 <form  action = "/entitySimilarities_initialize" method = "POST">
-                    <label for="subset"><span style="color:white">Subset:</span></label>
+                    <label for="subset"><span>Subset:</span></label>
                     <select name="SubsetSelect" id="SubsetSelect">
                         <option value="Custom">Custom</option>
                         <option value="Random">Random</option>
@@ -25,11 +24,11 @@
                         <option value="{{subset}}">{{subset}}</option>
                         {% endfor %}
                     </select>
-                    <label for="noic"><span style="color:white">Number of import Entities</span></label>
+                    <label for="noic"><span>Number of import Entities</span></label>
                     &nbsp
                     <input type="number" id="noic" name="noic" min="1" value={{numberCostumes}} style="width: 110px">
                     &nbsp &nbsp &nbsp
-                    <label for="memory"><span style="color:white">Memory</span></label>
+                    <label for="memory"><span>Memory</span></label>
                     &nbsp 
                     {% if memory %}
                         <input type="checkbox" id="memory" name="memory" checked></input>
@@ -40,26 +39,26 @@
                     <br>
 
                     <br>
-                        <table style="width: fit-content; border: 1px solid white">
-                            <tr style="border: 1px solid white">
-                                <th><span style="color:white">Aggregator Type</span></th>
-                                <th><span style="color:white">Transformer Type</span></th>
-                                <th><span style="color:white">Attribute</span></th>
-                                <th><span style="color:white">Element Comparer</span></th>
-                                <th><span style="color:white">Attribute Comparer</span></th>
-                                <th><span style="color:white">Empty Attribute Comparer</span></th>
+                        <table style="width: fit-content; border: 1px solid">
+                            <tr style="border: 1px solid">
+                                <th><span>Aggregator Type</span></th>
+                                <th><span>Transformer Type</span></th>
+                                <th><span>Attribute</span></th>
+                                <th><span>Element Comparer</span></th>
+                                <th><span>Attribute Comparer</span></th>
+                                <th><span>Empty Attribute Comparer</span></th>
                             </tr>
                             {% for component in session["strCostumePlan"] %}
                                 {% if component == session["strCostumePlan"][0] %}
-                                    <td rowspan="0" align=center style="border: 1px solid white"><span style="color:white">{{component}}</span></td>
+                                    <td rowspan="0" align=center style="border: 1px solid"><span>{{component}}</span></td>
                                 {% elif component == session["strCostumePlan"][1] %}
-                                    <td rowspan="0" align=center style="border: 1px solid white"><span style="color:white">{{component}}</span></td>
+                                    <td rowspan="0" align=center style="border: 1px solid"><span>{{component}}</span></td>
                                 {% else %}
-                                    <tr style="border: 1px solid white">
-                                        <td><span style="color: white">{{component[0]}}</span></td>
-                                        <td><span style="color: white">{{component[1]}}</span></td>
-                                        <td><span style="color: white">{{component[2]}}</span></td>
-                                        <td><span style="color: white">{{component[3]}}</span></td>
+                                    <tr style="border: 1px solid">
+                                        <td><span >{{component[0]}}</span></td>
+                                        <td><span >{{component[1]}}</span></td>
+                                        <td><span >{{component[2]}}</span></td>
+                                        <td><span >{{component[3]}}</span></td>
                                     </tr>
                                 {% endif %}
                             {% endfor %}
@@ -68,7 +67,7 @@
             </td>
 
             <td valign="top" align="middle" style="width: 45%" >
-            <div id="bereich" style="width: fit-content; padding: 10px ; height: fit-content ;background-color: white; border: 3px white;" >
+                <div id="bereich" style="color:white; width: fit-content; padding: 10px ; height: fit-content ;background-color: #404040; border: 3px white;" >
                 <h4> Saving and Loading</h4>
                 <form action = "/saveload_entitySimilarities" method = "POST">
                     <h6> Enter sessions Name <tab id=t2>: 
@@ -102,43 +101,43 @@ margin: 0 auto;
 color:white;
 background: white">
 <p>
-    <h4><span style="color: white">The following entitySimilarities Object are initialized : </span></h4>
+    <h4><span >The following entitySimilarities Object are initialized : </span></h4>
     <table>
         <tr>
-            <th style="width: 12%"><span style="color: white">Parameter</span></th>
-            <th style="width: 50%"><span style="color: white">Value</span></th>
+            <th style="width: 12%"><span >Parameter</span></th>
+            <th style="width: 50%"><span >Value</span></th>
         </tr>
         <tr>
-            <td><span style="color: white">Imported Entities</span></td>
-            <td><span style="color: white">{{numberCostumes}}</span></td>
+            <td><span >Imported Entities</span></td>
+            <td><span >{{numberCostumes}}</span></td>
         </tr>
         <tr>
-            <td><span style="color: white">Memory</span></td>
-            <td><span style="color: white">{{memory}}</span></td>
+            <td><span >Memory</span></td>
+            <td><span >{{memory}}</span></td>
         </tr>
         <tr>
-            <td><span style="color: white">Entity Plan</span></td>
+            <td><span >Entity Plan</span></td>
             <td>
-                <table style="width:fit-content; border: 1px solid white">
-                    <tr style="border: 1px solid white">
-                        <th><span style="color:white">Aggregator Type</span></th>
-                        <th><span style="color:white">Transformer Type</span></th>
-                        <th><span style="color:white">Attribute</span></th>
-                        <th><span style="color:white">Element Comparer</span></th>
-                        <th><span style="color:white">Attribute Comparer</span></th>
-                        <th><span style="color:white">Empty Attribute Comparer</span></th>
+                <table style="width:fit-content; border: 1px solid">
+                    <tr style="border: 1px solid">
+                        <th><span>Aggregator Type</span></th>
+                        <th><span>Transformer Type</span></th>
+                        <th><span>Attribute</span></th>
+                        <th><span>Element Comparer</span></th>
+                        <th><span>Attribute Comparer</span></th>
+                        <th><span>Empty Attribute Comparer</span></th>
                     </tr>
                     {% for component in strCostumePlan %}
                         {% if component == strCostumePlan[0] %}
-                        <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                        <td rowspan="0" align=center style="border: 1px solid"><span >{{component}}</span></td>
                         {% elif component == strCostumePlan[1] %}
-                        <td rowspan="0" align=center style="border: 1px solid white"><span style="color: white">{{component}}</span></td>
+                        <td rowspan="0" align=center style="border: 1px solid"><span >{{component}}</span></td>
                         {% else %}
-                            <tr style="border: 1px solid white">
-                                <td><span style="color: white">{{component[0]}}</span></td>
-                                <td><span style="color: white">{{component[1]}}</span></td>
-                                <td><span style="color: white">{{component[2]}}</span></td>
-                                <td><span style="color: white">{{component[3]}}</span></td>
+                            <tr style="border: 1px solid">
+                                <td><span >{{component[0]}}</span></td>
+                                <td><span >{{component[1]}}</span></td>
+                                <td><span >{{component[2]}}</span></td>
+                                <td><span >{{component[3]}}</span></td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -146,17 +145,17 @@ background: white">
             </td>
         </tr>
         <tr>
-            <td><span style="color: white">Entities in Memory</span></td>
-            <td><span style="color: white">{{EIN}}</span></td>
+            <td><span >Entities in Memory</span></td>
+            <td><span >{{EIN}}</span></td>
         </tr>
         <tr>
-            <td><br><span style="color: white">(Optional) Create Distance Matrix</span></td>
+            <td><br><span >(Optional) Create Distance Matrix</span></td>
             <td>
                 <br>
                 <form  action = "/entitySimilarities_create_similaritiesMatrix" method = "POST">
-                    <label for="NoCfSMMin"><span style="color: white">Min</span></label>
+                    <label for="NoCfSMMin"><span >Min</span></label>
                     <input type="number" id="NoCfSMin" name="NoCfSMMin" min="0" value={{min_value}} style="width: 70px">
-                    <label for="NoCfSMMax"><span style="color: white">Max</span></label>
+                    <label for="NoCfSMMax"><span >Max</span></label>
                     <input type="number" id="NoCfSMax" name="NoCfSMMax" min="0" value={{max_value}} style="width: 70px">
                     <input type = 'submit' name = 'buildSimiliaritiesMatrix' value = 'build Matrix'/>
                     {% if showplot %}
