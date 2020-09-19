@@ -244,6 +244,10 @@ def split_list(a_list):
 def distspace():
     return render_template("distspace.html")
 
+@app.route("/references")
+def references():
+    return render_template("references.html")
+
 @app.route('/saveload_costume_plan', methods = ['POST', 'GET'])
 def saveload_costume_plan():
     if request.method == 'POST':
