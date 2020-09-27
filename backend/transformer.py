@@ -50,8 +50,8 @@ class TransformerType(enum.Enum):
                 + "the polynomial inverse function dist(sim) = 1 / (1 + (sim/alpha)^beta)"
         elif transformerType == TransformerType.squareInverse:
             description += "Transforms similarities into distances using " \
-                + "the square inverse function dist(sim) = sqrt(2 * maxSim - 2 * s) " \
-                + "with maxSim beeing 1.0."
+                + "the square inverse function dist(sim) = (1/sqrt(2)) * sqrt(2 * maxSim - 2 * s) " \
+                + "with maxSim beeing 1.0 and the normalization factor (1/sqrt(2))."
         else:
             Logger.error("No description for transformer \"" + str(transformerType) + "\" specified")
             raise ValueError("No description for transformer \"" + str(transformerType) + "\" specified")
@@ -137,9 +137,9 @@ Represents the square inverse transformer
 """
 class SquareInverseTransformer(Transformer):
     """ 
-    Returns the sqrt(s(i,i) + s(j,j) - 2s(i,j)) = sqrt(2 (1 - s)) as distance with s beeing the similarity
-    and 1 as the maxSimilarity.
+    Returns the (1/sqrt(2)) * sqrt(s(i,i) + s(j,j) - 2s(i,j)) = sqrt(2) * sqrt(2 (1 - s)) as distance with s beeing the similarity
+    and 1 as the maxSimilarity. Due to the factor sqrt(2) the distnace is between 0 and 1.
     """
     def transform(self, similarity: float) -> float:
         maxSimilarity = 1.0
-        return math.sqrt(2 * maxSimilarity - 2 * similarity)
+        return (1.0 / math.sqrt(2.0)) * math.sqrt(2 * maxSimilarity - 2 * similarity)

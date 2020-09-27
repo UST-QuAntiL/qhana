@@ -235,6 +235,7 @@ class EntitySimilarities():
     # check if entities valid for comparing (sort entities(it's index) in __valid_entities_index if valid for comparing ...
     # and in __invalid_entities_index if it's not comparable)
     def __comparing_check(self, first: int, last: int)-> None:
+        return
         # check whether area has already been tested
         entity_index: List[int] = list(range(first,last+1))
         rem_list: List[int] = []
