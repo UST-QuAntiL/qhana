@@ -54,6 +54,8 @@ def home():
     attributes = []
     for attribute in Attribute:
         attributes.append(Attribute.get_name(attribute))
+
+    errorMessage = ""
     
     try:
         db = Database()
@@ -61,10 +63,11 @@ def home():
         dbConnectionString = "Database: Host=" + db.host + ", DB-Name=" + db.databaseName + ", User=" + db.user
     except Error as error:
         dbConnectionString =  str(error)
+        errorMessage = "Caution: There is an error and the application will probably not work as expected! Please contact the administrator."
 
     session["dbConnectionString"] = dbConnectionString
 
-    return render_template("home.html", attributes=attributes)
+    return render_template("home.html", error = errorMessage)
 
 @app.route("/reset_all")
 def reset_all():

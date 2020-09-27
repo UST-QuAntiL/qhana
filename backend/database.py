@@ -38,32 +38,28 @@ class Database(Singleton):
 
         if filename == None:
             filename = Database.config_file_default
-        try:
-            section = "mysql"
-            parser = ConfigParser()
-            parser.read(filename)
-            connection_string = {}
 
-            if parser.has_section(section):
-                items = parser.items(section)
-                for item in items:
-                    connection_string[item[0]] = item[1]
-            else:
-                Logger.error("{0} not found in the {1} file".format(section, filename))
-                raise Exception("{0} not found in the {1} file".format(section, filename))
+        section = "mysql"
+        parser = ConfigParser()
+        parser.read(filename)
+        connection_string = {}
 
-            self.databaseName = parser.get(section, "database")
-            self.user = parser.get(section, "user")
-            self.host = parser.get(section, "host")
-        
-            self.__connection = MySQLConnection(**connection_string)
-        
-            if self.__connection.is_connected():
-                Logger.debug("Successfully connected to database")
+        if parser.has_section(section):
+            items = parser.items(section)
+            for item in items:
+                connection_string[item[0]] = item[1]
+        else:
+            Logger.error("{0} not found in the {1} file".format(section, filename))
+            raise Exception("{0} not found in the {1} file".format(section, filename))
 
-        except Error as error:
-            Logger.error(str(error) + " The application will quit now.")
-            quit()
+        self.databaseName = parser.get(section, "database")
+        self.user = parser.get(section, "user")
+        self.host = parser.get(section, "host")
+    
+        self.__connection = MySQLConnection(**connection_string)
+    
+        if self.__connection.is_connected():
+            Logger.debug("Successfully connected to database")
 
     """
     Closes the database connection.
