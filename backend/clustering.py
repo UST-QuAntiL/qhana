@@ -1273,7 +1273,7 @@ class SdpMaxCut(Clustering):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        clusteringTypeName = "Semidefinite Programming MaxCut (Reference: https://github.com/pandrey-fr/maxcut)"
+        clusteringTypeName = "Semidefinite Programming MaxCut"
         params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
 
         parameter_number_of_clusters = self.get_number_of_clusters()
@@ -1449,7 +1449,7 @@ class BmMaxCut(Clustering):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        clusteringTypeName = "Bureir-Monteiro solver for MaxCut (Reference: https://github.com/pandrey-fr/maxcut)"
+        clusteringTypeName = "Bureir-Monteiro solver for MaxCut"
         params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
 
         parameter_number_of_clusters = self.get_number_of_clusters()
