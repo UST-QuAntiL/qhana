@@ -196,10 +196,29 @@ class EntityService:
                     filmIDs.append(row.split(',')[3])
 
         keys = []
-        for i in range(0,len(kostuemIDs)):
+        for i in range(0, len(kostuemIDs)):
             keys.append((kostuemIDs[i], rollenIDs[i], filmIDs[i]))
 
-        self.allEntities = EntityFactory.create(self.attributes.keys(), database, len(kostuemIDs), keys)
+        unsortedEntities = EntityFactory.create(self.attributes.keys(), database, len(kostuemIDs), keys)
+        sortedEntities = []
+        # sort the subset accordingly to the csv file
+        for i in range(0, len(kostuemIDs)):
+            elem = self.get_costume_with(unsortedEntities, keys[i][0], keys[i][1], keys[i][2])
+            sortedEntities.append(elem)
+            #if elem is None:
+            #    print("ERROR!")
+            #print("kostuem = " + str(keys[i][0]) + " rolle = " + str(keys[i][1]) + " film = " + str(keys[i][2]))
+
+        for i in range(0, len(sortedEntities)):
+            sortedEntities[i].set_id(i)
+
+        self.allEntities = sortedEntities
+
+    def get_costume_with(self, costumes, kostuemId, rollenId, filmId):
+        for elem in costumes:
+            if str(elem.kostuemId) == kostuemId and str(elem.rollenId) == rollenId and str(elem.filmId == filmId):
+                return elem
+        return None
 
     def create_subset(self, subsetEnum: Subset, database: Database) -> List[Entity]:
         if subsetEnum == Subset.subset5:

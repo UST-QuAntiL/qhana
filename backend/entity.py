@@ -156,6 +156,9 @@ class Entity:
     """
     def __str__(self) -> str:
         output = "name: " + self.name + ", id: " + str(self.id) + ", "
+        output += " kostuemId: " + str(self.kostuemId) + ", "
+        output += " rollenId: " + str(self.rollenId) + ", "
+        output += " filmId: " + str(self.filmId) + ", "
         for attribute_key in self.values:
             output += Attribute.get_name(attribute_key) + ": " + str(self.values[attribute_key]) + ", "
         return output[:-2]
