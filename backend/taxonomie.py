@@ -378,6 +378,7 @@ class Taxonomie:
         nodes = {}
         # Format is (child, parent)
         rows = Taxonomie.__get_taxonomie_table(name, database)
+
         graph = nx.DiGraph()
         root_node = None
 
@@ -386,7 +387,7 @@ class Taxonomie:
             parent = row[1]
 
             # If parent is none, this is the root node
-            if parent is None:
+            if parent is None or parent == "":
                 root_node = child
                 nodes[child] = root_node
                 continue
