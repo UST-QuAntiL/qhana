@@ -16,5 +16,6 @@ dependencies:
   - pygraphviz
   - pip
   - cvxpy
+  - pylatexenc
   - pip:
     - qiskit

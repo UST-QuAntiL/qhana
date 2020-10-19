@@ -31,6 +31,7 @@ The following packages (including their dependencies) are needed and will be ins
 | pygraphviz             | https://anaconda.org/anaconda/pygraphviz             |
 | qiskit                 | https://qiskit.org                                   |
 | cvxpy                  | https://anaconda.org/conda-forge/cvxpy               |
+| pylatexenc             | https://anaconda.org/conda-forge/pylatexenc          |
 
 ## Access to the database
 In order to get access to the database, one has to create a *config.ini* file such as:
