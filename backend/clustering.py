@@ -4,7 +4,7 @@ from typing import Any
 import enum
 import numpy as np
 from backend.logger import Logger, LogLevel
-from sklearn.cluster import OPTICS
+from sklearn.cluster import OPTICS, KMeans
 from backend.entity import Costume
 from typing import List
 from backend.quantumKMeans import NegativeRotationQuantumKMeans, DestructiveInterferenceQuantumKMeans
@@ -35,6 +35,7 @@ class ClusteringType(enum.Enum):
     bmMaxCut = 4 # Bureir-Monteiro implementation
     negativeRotationQuantumKMeans = 5 # Negative Rotation Quantum K Means
     destructiveInterferenceQuantumKMeans = 6 # Destructive Interference Quantum K Means
+    ClassicalKMeans = 7 # a classical scikit implementation of K means
 
     @staticmethod
     def get_name(clusteringTyp) -> str:
@@ -53,6 +54,8 @@ class ClusteringType(enum.Enum):
             name = "negativeRotationQuantumKMeans"
         elif clusteringTyp == ClusteringType.destructiveInterferenceQuantumKMeans:
             name = "destructiveInterferenceQuantumKMeans"
+        elif clusteringTyp == ClusteringType.ClassicalKMeans:
+            name = "classicalKMeans"
         else:
             Logger.error("No name for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No name for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -80,6 +83,8 @@ class ClusteringType(enum.Enum):
             description = ("Negative Rotation Quantum K Means")
         elif clusteringTyp == ClusteringType.destructiveInterferenceQuantumKMeans:
             description = ("Destructive Interference Quantum K Means")
+        elif clusteringTyp == ClusteringType.ClassicalKMeans:
+            description = ("Classical K Means")
         else:
             Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No description for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -127,6 +132,8 @@ class ClusteringFactory:
             return NegativeRotationQuantumKMeansClustering()
         elif type == ClusteringType.destructiveInterferenceQuantumKMeans:
             return DestructiveInterferenceQuantumKMeansClustering()
+        elif type == ClusteringType.ClassicalKMeans:
+            return ClassicalKMeans()
         else:
             Logger.error("Unknown type of clustering. The application will quit know.")
             raise Exception("Unknown type of clustering.")
@@ -1669,7 +1676,7 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
         backend = QuantumBackends.aer_statevector_simulator,
         ibmq_token = ""):
 
-        self.clusterAlgo = NegativeRotationQuantumKMeans()
+        self.clusterAlgo = DestructiveInterferenceQuantumKMeans()
 
         self.number_of_clusters = number_of_clusters
         self.max_qubits = max_qubits
@@ -1831,6 +1838,93 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
                 self.set_backend(QuantumBackends[param[3]])
             elif param[0] == "ibmqToken":
                 self.set_ibmq_token(param[3])
+
+    def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
+        pass
+
+class ClassicalKMeans(Clustering):
+    def __init__(
+        self,
+        number_of_clusters = 2,
+        max_runs = 10,
+        relative_residual_amount = 5
+    ):
+        self.number_of_clusters = number_of_clusters
+        self.max_runs = max_runs
+        self.relative_residual_amount = relative_residual_amount
+        return
+
+    def create_cluster(self, position_matrix : np.matrix, similarity_matrix : np.matrix ) -> np.matrix:
+        n_clusters = self.get_number_of_clusters()
+        random_state = 0
+        max_iter = self.get_max_runs()
+        tol = self.get_relative_residual_amount() / 100.0
+        kmeansOutput = KMeans(
+            n_clusters=n_clusters, 
+            random_state=random_state,
+            max_iter=max_iter,
+            tol=tol).fit(position_matrix)
+        return kmeansOutput.labels_.astype(np.int)
+
+    #getter and setter params
+    def get_number_of_clusters(self):
+        return self.number_of_clusters
+
+    def set_number_of_clusters(self, number_of_clusters):
+        self.number_of_clusters = number_of_clusters
+        return
+
+    def get_max_runs(self):
+        return self.max_runs
+
+    def set_max_runs(self, max_runs):
+        self.max_runs = max_runs
+        return
+
+    def get_relative_residual_amount(self):
+        return self.relative_residual_amount
+
+    def set_relative_residual_amount(self, relative_residual_amount):
+        self.relative_residual_amount = relative_residual_amount
+        return
+
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        clusteringTypeName = "Classical KMeans"
+        params.append(("name", "ClusterTyp" ,"Name of choosen Clustering Type", clusteringTypeName ,"header"))
+
+        parameter_number_of_clusters = self.get_number_of_clusters()
+        description_number_of_clusters = "int > 0 (default=2)"\
+                            +": k Clusters will be generated"
+        params.append(("numberClusters", "Number of Clusters" , description_number_of_clusters, parameter_number_of_clusters, "number", 1 , 1 ))
+        
+        parameter_max_runs = self.get_max_runs()
+        description_max_runs = "int > 0 (default 10): "\
+                            +"The amount of k mean iteration runs."
+        params.append(("maxRuns", "max runs" ,description_max_runs,parameter_max_runs,"number", 1 , 1 ))
+
+        parameter_relative_residual = self.get_relative_residual_amount()
+        description_relative_residual = "int > 0 (default 5): "\
+                            +"The amount in percentage of how many data points can change their label between" \
+                            + "two runs. The default is 5, i.e. when less then 5% of the data points change" \
+                            + "their label, we consider this as converged"
+        params.append(("relativeResidual", "relative residual amount" ,description_relative_residual,parameter_relative_residual,"number", 1 , 1 ))
+
+        return params
+        
+    def set_param_list(self, params: list = []) -> np.matrix:
+        for param in params:
+            if param[0] == "numberClusters":
+                self.set_number_of_clusters(param[3])
+            elif param[0] == "maxRuns":
+                self.set_max_runs(param[3])
+            elif param[0] == "relativeResidual":
+                self.set_relative_residual_amount(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
