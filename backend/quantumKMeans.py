@@ -10,7 +10,11 @@ class BaseQuantumKMeans():
     """
     This is the base implementation for quantum k means
     implementations on qiskit using the algorithms from
-    https://arxiv.org/abs/1909.12183
+    https://arxiv.org/abs/1909.12183.
+
+    The StatePreparationQuantumKMeans
+    is a different quantum Kmeans algorithm that has
+    been developed by my own.
     """
 
     def __init__(self):
@@ -84,6 +88,8 @@ class BaseQuantumKMeans():
                 (newCentroidMapping, amountExecutedCircuits) = self.ApplyNegativeRotationCircuit(centroidAngles, dataAngles, maxQubits, shotsEach, backend, shouldPlotCircuit)
             elif whichCircuit == "inter":
                 (newCentroidMapping, amountExecutedCircuits) = self.ApplyDestructiveInterferenceCircuit(centroidAngles, dataAngles, maxQubits, shotsEach, backend, shouldPlotCircuit)
+            elif whichCircuit == "custom":
+                (newCentroidMapping, amountExecutedCircuits) = self.ApplyStatePreparationQuantumKMeansCircuit(centroids, data, maxQubits, shotsEach, backend, shouldPlotCircuit)
             globalAmountExecutedCircuits += amountExecutedCircuits
             notConverged = not self.CheckConvergency(oldCentroidMapping, newCentroidMapping, relativeResidualNumber)
             if notConverged:
@@ -450,6 +456,77 @@ class BaseQuantumKMeans():
         
         return (centroidMapping, amountExecutedCircuits) 
 
+    def ApplyStatePreparationQuantumKMeansCircuit(self, centroids, data, maxQubits, shotsEach, backend, plot):
+        # this is also the amount of qubits that are needed in total.
+        # note that this is not necessarily in parallel, also sequential
+        # is possible here. He need at least 2 qubits that run in parallel.
+        globalWorkAmount = len(centroids) * len(data)
+        # we store the results as [(t1,c1), (t1,c2), ..., (t1,cn), (t2,c1), ..., (tm,cn)]
+        # while each (ti,cj) stands for one floating point number, i.e. P|0> for the second, resp.
+        # the first qubit (P|0> = P|00>)
+        result = np.zeros(globalWorkAmount)
+
+        # create tuples of parameters corresponding for each qubit,
+        # i.e. create [t1,c1, t1,c2, ..., t1,cn, t2,c1, ..., tm,cn]
+        # now with ti = DataAngle_i and cj = CenteroidAngle_j
+        parameters = []
+        for i in range(0, len(data)):
+            for j in range(0, len(centroids)):
+                theta_data = acos(data[i][0])
+                theta_centroid = acos(centroids[j][0])
+                parameters.append((theta_data, theta_centroid))
+
+        queueNotEmpty = True
+        index = 0 # this is the index to iterate over all parameter pairs in the queue (parameters list)
+        circuitsIndex = 0
+        amountExecutedCircuits = 0
+        while queueNotEmpty:
+            maxQubitsForCircuit = (globalWorkAmount - index) * 2
+            qubitsForCircuit = maxQubits if maxQubits < maxQubitsForCircuit else maxQubitsForCircuit
+            if qubitsForCircuit % 2 != 0:
+                qubitsForCircuit -= 1
+            qc = QuantumCircuit(qubitsForCircuit, qubitsForCircuit)
+
+            for i in range(0, qubitsForCircuit, 2):
+                qc.h(i)
+                qc.cx(i, i+1)
+                qc.ry(parameters[index][0], i)      # angle for data point
+                qc.ry(parameters[index][1], i+1)    # angle for centroid
+                qc.cx(i, i+1)
+                qc.h(i)
+                qc.measure(i, i)
+                qc.measure(i+1, i+1)
+                index += 1
+                if index == globalWorkAmount:
+                    queueNotEmpty = False
+                    break
+            
+            if plot:
+                qc.draw('mpl', filename='cus/circuit' + str(circuitsIndex) + '.svg')
+            circuitsIndex += 1
+            self.UpdateConsole(circuitAmount = ceil(globalWorkAmount * 2 / maxQubits), currentCircuit = ceil(index * 2 / maxQubits))
+            job = execute(qc, backend, shots=shotsEach)
+            amountExecutedCircuits += 1
+            histogram = job.result().get_counts()
+            distances = self.CalculateP0HitsOdd(histogram)
+            for i in range(0, len(distances)):
+                result[index - int(qubitsForCircuit / 2) + i] = distances[i]
+
+        centroidMapping = np.zeros(len(data))
+        for i in range(0, len(data)):
+            minusDistance = result[i * len(centroids) + 0]
+            lowestDistanceCentroidIndex = 0
+            for j in range(1, len(centroids)):
+                # now take the biggest value because
+                # the probability is propotional to minus
+                # the distance
+                if result[i * len(centroids) + j] > minusDistance:
+                    lowestDistanceCentroidIndex = j
+            centroidMapping[i] = lowestDistanceCentroidIndex
+        
+        return (centroidMapping, amountExecutedCircuits) 
+
+
     def CalculateP0Hits(self, histogram):
         """
         Given a histogram from a circuit job result it calculates
@@ -502,6 +579,25 @@ class BaseQuantumKMeans():
         qubitHits = self.MapHistogramToQubitHits(histogram)
         for i in range(0, int(len(qubitHits) / 2)):
             hits[i] = int(qubitHits[i * 2][1])
+
+        # dont norm because we take the lowest value just as a label
+        return hits
+
+    def CalculateP0HitsOdd(self, histogram):
+        """
+        Given a histogram from a circuit job result it calculates
+        the hits for the odd qubits being measured in |0> state.
+        """
+        # we store for index i the hits of |0X>,
+        # i.e. hits[i] = #(i-th odd qubit measured in |0>)
+        # the lenght is half the amount of qubits, that can be read out from the
+        # string of any arbitrary (e.g. the 0th) bitstring
+        length = int(len(list(histogram.keys())[0]) / 2)
+        hits = np.zeros(length)
+
+        qubitHits = self.MapHistogramToQubitHits(histogram)
+        for i in range(0, int(len(qubitHits) / 2)):
+            hits[i] = int(qubitHits[i * 2][0])
 
         # dont norm because we take the lowest value just as a label
         return hits
@@ -671,7 +767,30 @@ class DestructiveInterferenceQuantumKMeans(BaseQuantumKMeans):
         data vector with index 1 -> mapped to cluster 0
         data vector with index 2 -> mapped to cluster 1
         """
-        clusterMapping = self.ExecuteNegativeRotation(data, self.k, self.maxQubits, self.shotsEach, self.maxRuns, self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "negrot")
+        clusterMapping = self.ExecuteNegativeRotation(data, self.k, self.maxQubits, self.shotsEach, self.maxRuns, self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "inter")
+        return clusterMapping
+
+class StatePreparationQuantumKMeans(BaseQuantumKMeans):
+    """
+    A class for applying the destructive interference k means
+    algorithm on qiskit.
+    """
+
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def Run(self, data, plotData = False, plotCircuit = False):
+        """
+        Runs the circuit and returns the cluster mapping, i.e.
+        we return a list with a mapping from data indizes to cluster indizes,
+        i.e. if we return a list [2, 0, 1, ...] this means:
+
+        data vector with index 0 -> mapped to cluster with index 2
+        data vector with index 1 -> mapped to cluster 0
+        data vector with index 2 -> mapped to cluster 1
+        """
+        clusterMapping = self.ExecuteNegativeRotation(data, self.k, self.maxQubits, self.shotsEach, self.maxRuns, self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "custom")
         return clusterMapping
 
 if __name__== "__main__":
