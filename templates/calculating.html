@@ -139,8 +139,29 @@
         {% endfor %}
         </table>
 </p>
- 
-
+<br>
+<br>
+<p>
+    <h5><span>
+    The following classification settings are chosen:</span>
+    </h5>
+        <table style="width:80%; border: 3px solid">
+            <tr style="border: 3px solid">
+                <th width=20%><span >Parameter</span></th>
+                <th width=10%><span >Value</span></th>
+                <th width=50%><span >Description</span></th>
+                <!--<th><span>Debug</span></th>-->
+            </tr>
+        {% for classificationParam in classificationParams%}
+                <tr style="border: 1px solid">
+                    <td><span>{{classificationParam[1]}}</span></td>
+                    <td><span>{{classificationParam[3]}}</span></td>
+                    <td><span>{{classificationParam[2]}}</span></td>
+                    <!--<td><span>{{clusteringParam}}</span></td>-->
+                </tr>
+        {% endfor %}
+        </table>
+</p>
 
 
 

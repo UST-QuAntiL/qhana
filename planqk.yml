@@ -13,7 +13,6 @@ dependencies:
   - scikit-learn
   - pandas
   - flask
-  - pygraphviz
   - pip
   - cvxpy
   - pylatexenc

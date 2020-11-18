@@ -21,6 +21,9 @@ import backend.savingAndLoading as sal
 from backend.entitySimilarities import EntitySimilarities
 import backend.dataForPlots as dfp
 import matplotlib
+from backend.classification import ClassificationTypes, ClassificationFactory, Classification
+from tkinter.constants import NO
+from backend.plotsForClassification import PlotsForClassification
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -30,7 +33,6 @@ from backend.scaling import ScalingType, ScalingFactory , Scaling , Multidimensi
 from backend.clustering import ClusteringType, ClusteringFactory, Clustering, Optics
 import numpy as np
 from backend.entityService import Subset
-from sklearn.decomposition import PCA
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -38,6 +40,7 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.entitySimilarities: EntitySimilarities = None
 app.scaling: Scaling = None
 app.clustering: Clustering = None
+app.classification: Classification = None
 app.strCostumePlan: list = None
 app.result: list = None
 app.tablelist: list = None
@@ -76,6 +79,7 @@ def reset_all():
     app.entitySimilarities: EntitySimilarities = None
     app.scaling: Scaling = None
     app.clustering: Clustering = None
+    app.classification: Classification = None
     app.strCostumePlan: list = None
     app.result: list = None
     app.tablelist: list = None
@@ -786,6 +790,117 @@ def saveload_clustering():
         session["saveload"] = request.form['session']
     return clustering()
 
+# classification page
+@app.route('/classification')
+def classification():
+    classifications = []
+    for classificationType in ClassificationTypes:
+        name = ClassificationTypes.get_name(classificationType)
+        classifications.append((name, classificationType))
+
+    exist_classification: bool = False
+    params = []
+
+    if isinstance(app.classification , Classification):
+        exist_classification = True
+        params = app.classification.get_param_list()
+
+    return render_template(
+        "classification.html",
+        existClassification = exist_classification,
+        classifications = classifications,
+        params = params
+    )
+
+@app.route('/initialize_classification' , methods = ['POST', 'GET'])
+def initialize_classification():
+    if request.method == 'POST':
+        classificationType = eval(request.form['classification'])
+        app.classification = ClassificationFactory.create(classificationType)
+    return classification()
+
+@app.route('/set_classification' , methods = ['POST', 'GET'])
+def set_classification():
+    # check for other scaling types the set methodes
+    if request.method == 'POST':
+        if isinstance(app.classification, Classification):
+            params = app.classification.get_param_list()
+            params2 = params
+            for param in params:
+                if param[4] == "number":
+                    if param[6] < 1:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = float(request.form[param[0]])
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(float(request.form[param[0]]))
+                    elif param[6] == 1:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = int(request.form[param[0]])
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(int(request.form[param[0]]))
+                elif param[4] == "text":
+                    if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = np.inf
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(np.inf)
+                    elif request.form[param[0]] == "None":
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = None
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(None)
+                    else:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = request.form[param[0]]
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(np.inf)
+                    # How do we proceed if we really have a string?
+                    #elif isinstance (eval(request.form[param[0]]), float):
+                    #    index = params.index(param)
+                    #    var = list(param)
+                    #    var[3] = float(request.form[param[0]])
+                    #    param = tuple(var)
+                    #    params2[index] = param
+                    #    #print(float(request.form[param[0]]))
+                    #else:
+                    #    print("no right type found : " + request.form[param[0]])
+                elif param[4] == "select":
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = request.form[param[0]]
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(request.form[param[0]])
+                elif param[4] == "checkbox":
+                    if request.form.get(param[0]):
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = True
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(True)
+                    else:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = False
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(False)
+
+            app.classification.set_param_list(params2)
+
+    return classification()
+
 # assume and calculating
 @app.route("/calculating")
 def calculating():
@@ -811,13 +926,20 @@ def calculating():
     else:
         clusteringParams.append(("errorClustering", "no Clustering Type initialized", " go to clustering and initialize","failed"))
 
+    classificationParams: list = []
+    if isinstance(app.classification , Classification):
+        classificationParams = app.classification.get_param_list()
+    else:
+        classificationParams.append(("errorClassification", "no Classification Type initialized", " go to classification and initialize","failed"))
+
     #flash('Thank you for registering')
     return render_template(
         "calculating.html",
         strCostumePlan = costume_plan,
         simiParams = simiParams,
         scalingParams = scalingParams,
-        clusteringParams = clusteringParams
+        clusteringParams = clusteringParams,
+        classificationParams = classificationParams
     )
 
 # start calculating
@@ -844,15 +966,14 @@ def start_calculating():
     except Exception as error:
         flash(" an Error occurs in creating similarity matrix. Please try again. Error: " + str(error))
         return calculating()
-    
+
     try:
         pos: np.matrix 
         pos = app.scaling.scaling(similarities)
         stress = app.scaling.stress_level()
         ###################TZest#############
-        pca = PCA(n_components=2)
-        pos2d = pca.fit_transform(pos)
         
+
         #####################################
         #pos2d: np.matrix 
         #dim: int = app.scaling.get_dimensions()
@@ -860,24 +981,32 @@ def start_calculating():
         #pos2d = app.scaling.scaling(similarities)
         #app.scaling.set_dimensions(dim)
         params.append(("positionMatrixND" , "Position Matrix n-Dimensional" , "description" , pos , "header"))
-        params.append(("positionMatrix2D" , "Position Matrix 2-Dimensional" , "description" , pos2d , "header"))
+        params.append(("positionMatrix2D" , "Position Matrix 2-Dimensional" , "description" , None , "header"))
         params.append(("stressLevel" , "Stress Level" , "description" , stress , "header"))
     except Exception as error:
         flash(" an Error occurs in creating position matrix. Please try again. Error: " + str(error))
         return calculating()
 
-    try:
-        labels: np.matrix
-        labels = app.clustering.create_cluster(pos,similarities)
-        params.append(("labels" , "Label Matrix" , "description" , labels , "header"))
-    except Exception as error:
-        flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
-        return calculating()
+    labels: np.matrix = None
+    if isinstance(app.clustering, Clustering):
+        try:
+            labels = app.clustering.create_cluster(pos,similarities)
+            params.append(("labels" , "Label Matrix" , "description" , labels , "header"))
+        except Exception as error:
+            flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
+            return calculating()
 
-
+    decision_fun, support_vectors = None, None
+    if isinstance(app.classification, Classification):
+        try:
+            decision_fun, support_vectors = app.classification.create_classifier(pos,similarities)
+            params.append(("decision_fun" , "Decision boundary" , "description" , decision_fun , "header"))
+        except Exception as error:
+            flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
+            return calculating()
     # dfp_instance
     try:
-        dfp_instance = dfp.DataForPlots(similarities, sequenz ,None,pos2d, labels)
+        dfp_instance = dfp.DataForPlots(similarities, sequenz, None, pos, labels, decision_fun, support_vectors)
     except Exception as error:
         flash(" an Error occurs in creating Data for Plot Instance. Please try again. Error: " + str(error))
         return calculating()
@@ -897,13 +1026,21 @@ def start_calculating():
         plt.savefig('static/scaling.png', dpi=300, bbox_inches='tight')
         plt.close(1)
 
-        plt.figure(1)
-        G = gridspec.GridSpec(1, 1)
-        ax1 = plt.subplot(G[0, 0])
-        pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax1)
-        plt.savefig('static/clustering.png', dpi=300, bbox_inches='tight')
-        plt.close(1)
+        if isinstance(app.clustering, Clustering):
+            plt.figure(1)
+            G = gridspec.GridSpec(1, 1)
+            ax1 = plt.subplot(G[0, 0])
+            pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax1)
+            plt.savefig('static/clustering.png', dpi=300, bbox_inches='tight')
+            plt.close(1)
 
+        if isinstance(app.classification, Classification):
+            plt.figure(1)
+            G = gridspec.GridSpec(1, 1)
+            ax1 = plt.subplot(G[0, 0])
+            PlotsForClassification.classifier_2d_plot(dfp_instance ,ax1)
+            plt.savefig('static/classification.png', dpi=300, bbox_inches='tight')
+            plt.close(1)
     except Exception as error:
         flash(" an Error occurs in creating Plots. Please try again. Error: " + str(error))
         return calculating()
@@ -935,6 +1072,9 @@ def view_result(value):
     
     if value == "labels":
         return "<img src=" + url_for("static", filename="clustering.png") + " object-fit: contain' >"
+
+    if value == "decision_fun":
+        return "<img src=" + url_for("static", filename="classification.png") + " object-fit: contain' >"
 
 @app.route("/result_value_similarity", methods = ['POST', 'GET'])
 def result_value_similarity():

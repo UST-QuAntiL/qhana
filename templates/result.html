@@ -122,6 +122,18 @@
                     {% endwith %}
                 </td>
             </tr>
+            {% elif param[0] == "decision_fun" %}
+            <tr style="border: 1px solid">
+                <td style="border: 1px solid"><span >{{param[1]}}</span></td>
+                <td style="border: 1px solid"><span >{{param[2]}}</span></td>
+                <td style="border: 1px solid"><img src="/static/classification.png" alt="image" style="width:200px"></td>
+                <td style="border: 1px solid"><a href="/view_result_{{param[0]}}" target="_blank"><input type="button" value="View classification plot"></a>
+
+                </td>
+                <td style="border: 1px solid">
+
+                </td>
+            </tr>
             {% endif %}
         {% endfor %}
         </table>
