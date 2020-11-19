@@ -202,7 +202,7 @@ class qkeQiskitSVM(Classification):
         return
 
     def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        labels = get_subsetLabels(position_matrix)
+        labels = get_subsetLabels(position_matrix, zero=True)
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         if self.__backend.name.startswith("aer"):
@@ -221,14 +221,28 @@ class qkeQiskitSVM(Classification):
 
         qsvm = QSVM(feature_map)
         quantum_instance = QuantumInstance(backend, seed_simulator=9283712, seed_transpiler=9283712, shots=self.__shots)
-        print("not trained")
         qsvm.train(position_matrix, labels, quantum_instance)
 
 #         kernel_matrix = qsvm.construct_kernel_matrix(x1_vec=position_matrix, quantum_instance=quantum_instance)
 #         print(kernel_matrix)
-        print("trained")
-        print(qsvm.predict(data=position_matrix))
-        return qsvm.predict, []
+
+        pred_wrapper = self.prediction_wrapper(qsvm.predict)
+
+        #print(pred_wrapper.predict(data=position_matrix))
+        return pred_wrapper.predict, qsvm.ret['svm']['support_vectors']
+
+    """ this wrapper replaces labels 0 by -1.
+    """
+    class prediction_wrapper():
+
+        def __init__(self, pred_func):
+            self.pred_func = pred_func
+
+        def predict(self, data):
+            result = self.pred_func(data)
+            labels = np.array(result)#[1]
+            labels = np.where(labels==0, -1, labels)
+            return labels
 
     def instanciate_featuremap(self, feature_dimension):
         if self.__featuremap == "ZFeatureMap":
@@ -367,7 +381,7 @@ class variationalQiskitSVM(Classification):
         return
 
     def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        labels = get_subsetLabels(position_matrix)
+        labels = get_subsetLabels(position_matrix, zero=True)
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         backend = None
@@ -396,14 +410,13 @@ class variationalQiskitSVM(Classification):
         vqc.train(position_matrix, labels, quantum_instance)
 
         pred_wrapper = self.prediction_wrapper(vqc.predict)
-        print(pred_wrapper.predict(data=position_matrix))
+        #print(pred_wrapper.predict(data=position_matrix))
         return pred_wrapper.predict, []
 
     """ this wrapper takes the prediction function and strips off unnecessary
         data from the returned results, so it fits the form of other prediction
-        functions
+        functions. It also replaces labels 0 by -1.
     """
-
     class prediction_wrapper():
 
         def __init__(self, pred_func):
@@ -411,7 +424,9 @@ class variationalQiskitSVM(Classification):
 
         def predict(self, data):
             result = self.pred_func(data)
-            return result[1]
+            labels = result[1]
+            labels = np.where(labels==0, -1, labels)
+            return labels
 
     def instanciate_featuremap(self, feature_dimension):
         if self.__featuremap == "ZFeatureMap":
@@ -598,11 +613,11 @@ class variationalQiskitSVM(Classification):
 """
 
 
-def get_subsetLabels(position_matrix):
+def get_subsetLabels(position_matrix, zero=False):
     n_samples = len(position_matrix)
     labels = [1 for _ in range(n_samples)]
     for i in range(math.ceil(n_samples / 2), n_samples):
-        labels[i] = -1
+        labels[i] = -1 if not zero else 0
 
     labels = np.array(labels)
     return labels

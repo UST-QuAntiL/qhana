@@ -66,9 +66,6 @@ class PlotsForClassification():
         """ compute accuracy """
         predictions = decision_fun(position_matrix_orig)
 
-        for i in range(len(predictions)):
-            predictions[i] = 1 if predictions[i] > 0 else -1
-
         # draw contours
         subplot.contourf(grid2d[:,0].reshape(x_grid.shape), grid2d[:,1].reshape(x_grid.shape),
                         z_labels, #colors="k",
