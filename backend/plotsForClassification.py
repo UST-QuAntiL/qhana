@@ -13,6 +13,7 @@ from backend.attribute import Attribute
 from math import ceil
 from sklearn import metrics
 from backend.classification import get_subsetLabels
+from backend.classification import split_samples
 
 class PlotsForClassification():
 
@@ -20,6 +21,8 @@ class PlotsForClassification():
     def classifier_2d_plot(dataforplots: dfp.DataForPlots, subplot) -> None:
         position_matrix: np.matrix = dataforplots.get_position_matrix()
         position_matrix_orig: np.matrix = dataforplots.get_position_matrix_orig()
+        train_set, train_labels = split_samples.get_training_set(position_matrix_orig, reuse=True, zero=False)
+        test_set, test_labels = split_samples.get_test_set(position_matrix_orig, zero=False)
         support_vectors: np.matrix = dataforplots.get_support_vectors()
         decision_fun = dataforplots.get_decision_fun()
         transform = dataforplots.get_transform2d()
@@ -39,6 +42,10 @@ class PlotsForClassification():
             support_vectors2d = transform(support_vectors)
             subplot.scatter(support_vectors2d[:,0], support_vectors2d[:,1],
                         s=150, linewidth=.5, facecolors='none', edgecolors='green', label="supp. vectors")
+
+        """ mark training data """
+        transformed_trainset = transform(train_set)
+        subplot.scatter(transformed_trainset[:,0], transformed_trainset[:,1], s=50, marker="x", label="train data")
 
         """ draw decision fun boundaries """
         # get axes
@@ -63,9 +70,6 @@ class PlotsForClassification():
         z_labels = decision_fun(grid)
         z_labels = z_labels.reshape(x_grid.shape)
 
-        """ compute accuracy """
-        predictions = decision_fun(position_matrix_orig)
-
         # draw contours
         subplot.contourf(grid2d[:,0].reshape(x_grid.shape), grid2d[:,1].reshape(x_grid.shape),
                         z_labels, #colors="k",
@@ -75,11 +79,12 @@ class PlotsForClassification():
         #                z_labels, colors="k",
         #                levels=1, linewidths=0.5, linestyles=["-"])
 
-        accuracy = metrics.accuracy_score(labels, predictions)
-        recall = metrics.recall_score(labels, predictions)
-        precision = metrics.precision_score(labels, predictions)
+        """ compute accuracy """
+        predictions = decision_fun(test_set)
+        accuracy = round(metrics.accuracy_score(test_labels, predictions), 3)
+        recall = round(metrics.recall_score(test_labels, predictions), 3)
+        precision = round(metrics.precision_score(test_labels, predictions), 3)
 
         """ add legend """
         subplot.legend(scatterpoints=1, loc='best', shadow=False)
         subplot.set_title('Classification \naccuracy={}, precision={}, recall={}'.format(accuracy, precision, recall))
-

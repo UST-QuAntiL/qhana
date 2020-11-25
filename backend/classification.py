@@ -19,6 +19,8 @@ from qiskit.aqua.components.optimizers import ADAM, AQGD, BOBYQA, COBYLA, NELDER
 import sys
 from qiskit.circuit.library.n_local import RealAmplitudes, ExcitationPreserving, EfficientSU2
 from qiskit.circuit.library.n_local.two_local import TwoLocal
+import random
+from numpy import setdiff1d
 
 """
 Enum for Classifications
@@ -114,7 +116,7 @@ class ClassicSklearnSVM(Classification):
         return
 
     def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        labels = get_subsetLabels(position_matrix)
+        position_matrix, labels = split_samples.get_training_set(position_matrix, reuse=True)
 
         classifier = svm.SVC(C=self.__C_param, kernel=self.__kernel, degree=self.__degree)
         classifier.fit(position_matrix, labels)
@@ -202,7 +204,7 @@ class qkeQiskitSVM(Classification):
         return
 
     def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        labels = get_subsetLabels(position_matrix, zero=True)
+        position_matrix, labels = split_samples.get_training_set(position_matrix, zero=True, reuse=True)
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         if self.__backend.name.startswith("aer"):
@@ -365,7 +367,8 @@ class variationalQiskitSVM(Classification):
         entanglement="linear",
         reps=2,
         shots=1024,
-        var_form="ExcitationPreserving",
+        var_form="RyRz",
+        reps_varform = 3,
         optimizer="SPSA",
         maxiter=200
     ):
@@ -376,12 +379,13 @@ class variationalQiskitSVM(Classification):
         self.__shots = shots
         self.__ibmq_token = ibmq_token
         self.__var_form = var_form
+        self.__reps_varform = reps_varform
         self.__optimizer = optimizer
         self.__maxiter = maxiter
         return
 
     def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        labels = get_subsetLabels(position_matrix, zero=True)
+        position_matrix, labels = split_samples.get_training_set(position_matrix, zero=True, reuse=True)
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         backend = None
@@ -445,7 +449,7 @@ class variationalQiskitSVM(Classification):
             return ExcitationPreserving(num_qubits=feature_dimension, entanglement=self.__entanglement)
         elif self.__var_form == "EfficientSU2":
             return EfficientSU2(num_qubits=feature_dimension, entanglement=self.__entanglement)
-        elif self.__var_form == "ryrz":
+        elif self.__var_form == "RyRz":
             return TwoLocal(num_qubits=feature_dimension, rotation_blocks=['ry', 'rz'], entanglement_blocks="cz", entanglement=self.__entanglement, reps=3)
         else:
             Logger.error("No such variational form available: {}".format(self.__var_form))
@@ -514,6 +518,12 @@ class variationalQiskitSVM(Classification):
     def set_var_form(self, var_form):
         self.__var_form = var_form
 
+    def get_repsvarform(self):
+        return self.__reps_varform
+
+    def set_repsvarform(self, reps):
+        self.__reps_varform = reps
+
     def get_optimizer(self):
         return self.__optimizer
 
@@ -569,15 +579,24 @@ class variationalQiskitSVM(Classification):
         params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
 
         parameter_varform = self.get_var_form()
-        description_varform = "Variational Form : {'RealAmplitudes', 'ExcitationPreserving', 'EfficientSU2'}, (default='ExcitationPreserving')"
-        params.append(("varform", "Variational Form", description_varform, parameter_varform, "select", ["RealAmplitudes", "ExcitationPreserving", "EfficientSU2", "ryrz"]))
+        description_varform = "Variational Form : {'RealAmplitudes', 'ExcitationPreserving', 'EfficientSU2', 'RyRz'}, (default='RyRz')\n"\
+                                +"The variational form instance."
+        params.append(("varform", "Variational Form", description_varform, parameter_varform, "select", ["RealAmplitudes", "ExcitationPreserving", "EfficientSU2", "RyRz"]))
+
+        parameter_repsvarform = self.get_repsvarform()
+        description_repsvarform= "reps: int (default=3)\n For variational form;"\
+                                    +"Specifies how often a block consisting of a rotation layer and entanglement"\
+                                    +"layer is repeated."
+        params.append(("reps_varform", "Repetitions (variational Form)", description_repsvarform, parameter_repsvarform, "number", 1,1))
 
         parameter_optimizer = self.get_optimizer()
-        description_optimizer = "Optimizer : {'ADAM', 'AQGD', 'BOBYQA', 'COBYLA', 'NELDER_MEAD', 'SPSA', 'POWELL', 'NFT', 'TNC'}, (default='SPSA')"
+        description_optimizer = "Optimizer : {'ADAM', 'AQGD', 'BOBYQA', 'COBYLA', 'NELDER_MEAD', 'SPSA', 'POWELL', 'NFT', 'TNC'}, (default='SPSA')\n"\
+                                    +"The classical optimizer to use."
         params.append(("optimizer", "Optimizer", description_optimizer, parameter_optimizer, "select", ["ADAM", "AQGD", "BOBYQA", "COBYLA", "NELDER_MEAD", "SPSA", "POWELL", "NFT", "TNC"]))
 
         parameter_maxiter = self.get_maxiter()
-        description_maxiter = "Max iterations : int (default=200)"
+        description_maxiter = "Max iterations : int (default=200)\n For optimizer;"\
+                                +"Maximum number of iterations to perform."
         params.append(("maxiter", "Max iterations", description_maxiter, parameter_maxiter, "number", 1, 1))
 
         return params
@@ -598,6 +617,8 @@ class variationalQiskitSVM(Classification):
                 self.set_backend(QuantumBackends[param[3]])
             if param[0] == "varform":
                 self.set_var_form(param[3])
+            if param[0] == "reps_varform":
+                self.set_repsvarform(param[3])
             if param[0] == "optimizer":
                 self.set_optimizer(param[3])
             if param[0] == "maxiter":
@@ -611,8 +632,6 @@ class variationalQiskitSVM(Classification):
     with the -1 class. If number of data points is uneven, then the +1 class has
     one more data point than -1 class.
 """
-
-
 def get_subsetLabels(position_matrix, zero=False):
     n_samples = len(position_matrix)
     labels = [1 for _ in range(n_samples)]
@@ -624,10 +643,8 @@ def get_subsetLabels(position_matrix, zero=False):
 
 """ transforms data into a dictionary of the form
     {'A': np.ndarray, 'B': np.ndarray, ...}.
-    as requred for VQC initialization
+    as required for VQC initialization
 """
-
-
 def get_dict_dataset(position_matrix, labels):
     dict = {}
     for label in set(labels):
@@ -637,3 +654,55 @@ def get_dict_dataset(position_matrix, labels):
     for key in dict:
         dict[key] = np.array(dict[key])
     return dict
+
+""" methods to randomly split data into training and
+    test data set.
+"""
+class split_samples():
+    train_indices = []
+    matrix_hash = None
+
+    @staticmethod
+    def get_training_set(position_matrix, reuse=False, zero=False):
+        """
+            parameter "reuse": determines whether the splitting
+                of training data for the same position matrix
+                from a previous run shall be kept fix (reused)
+            parameter "zero" as for get_subsetLabels method
+        """
+        n_samples = position_matrix.shape[0]
+        labels = get_subsetLabels(position_matrix, zero)
+
+        print(position_matrix.shape)
+        print(n_samples)
+
+        if n_samples <= 10:
+            split_samples.train_indices = []
+            return position_matrix, labels
+
+        current_hash = hash(str(position_matrix))
+        if (reuse and current_hash == split_samples.matrix_hash):
+            return position_matrix[split_samples.train_indices], labels[split_samples.train_indices]
+        split_samples.matrix_hash = current_hash
+
+        # select 5 positive samples' indices
+        train_set = []
+        while len(set(train_set))<5:
+            train_set.append(random.randrange(0, math.ceil(n_samples / 2)))
+        # add 5 negative samples' indices
+        while len(set(train_set))<10:
+            train_set.append(random.randrange(math.ceil(n_samples / 2), n_samples))
+        split_samples.train_indices = sorted(list(set(train_set)))
+        print(split_samples.train_indices)
+        return position_matrix[split_samples.train_indices], labels[split_samples.train_indices]
+
+    @staticmethod
+    def get_test_set(position_matrix, zero=False):
+        labels = get_subsetLabels(position_matrix, zero)
+        n_samples = position_matrix.shape[0]
+
+        if n_samples <= 10:
+            return position_matrix, labels
+        test_indices = setdiff1d(range(n_samples), split_samples.train_indices, assume_unique=True)
+        print(test_indices)
+        return position_matrix[test_indices], labels[test_indices]
