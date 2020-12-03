@@ -24,6 +24,8 @@ import matplotlib
 from backend.classification import ClassificationTypes, ClassificationFactory, Classification
 from tkinter.constants import NO
 from backend.plotsForClassification import PlotsForClassification
+from backend.labeler import LabelerTypes, Labeler, LabelerFactory
+from backend.splitter import SplitterTypes, Splitter, SplitterFactory
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -45,6 +47,8 @@ app.strCostumePlan: list = None
 app.result: list = None
 app.tablelist: list = None
 app.start: bool = True
+app.labeler = LabelerFactory.create(LabelerTypes.fixedSubset) # use as a default labeler
+app.splitter = SplitterFactory.create(SplitterTypes.none) # use as a default splitter
 
 @app.route("/home")
 @app.route("/")
@@ -790,6 +794,228 @@ def saveload_clustering():
         session["saveload"] = request.form['session']
     return clustering()
 
+# Data labeler page for classification
+@app.route('/labeler')
+def labeler():
+    labelers = []
+    for labelerType in LabelerTypes:
+        name = LabelerTypes.get_name(labelerType)
+        labelers.append((name, labelerType))
+
+    exists_labeler: bool = False
+    params = []
+
+    if isinstance(app.labeler, Labeler):
+        exists_labeler = True
+        params = app.labeler.get_param_list()
+
+    return render_template(
+        "labeler.html",
+        existLabeler = exists_labeler,
+        labelers = labelers,
+        params = params
+        )
+
+@app.route('/initialize_labeler' , methods = ['POST', 'GET'])
+def initialize_labeler():
+    if request.method == 'POST':
+        labelerType = eval(request.form['labeler'])
+        app.labeler = LabelerFactory.create(labelerType)
+    return labeler()
+
+@app.route('/set_labeler' , methods = ['POST', 'GET'])
+def set_labler():
+    # check for other scaling types the set methodes
+    if request.method == 'POST':
+        if isinstance(app.labeler, Labeler):
+            params = app.labeler.get_param_list()
+            params2 = params
+            for param in params:
+                if param[4] == "number":
+                    if param[6] < 1:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = float(request.form[param[0]])
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(float(request.form[param[0]]))
+                    elif param[6] == 1:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = int(request.form[param[0]])
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(int(request.form[param[0]]))
+                elif param[4] == "text":
+                    if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = np.inf
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(np.inf)
+                    elif request.form[param[0]] == "None":
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = None
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(None)
+                    else:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = request.form[param[0]]
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(np.inf)
+                    # How do we proceed if we really have a string?
+                    #elif isinstance (eval(request.form[param[0]]), float):
+                    #    index = params.index(param)
+                    #    var = list(param)
+                    #    var[3] = float(request.form[param[0]])
+                    #    param = tuple(var)
+                    #    params2[index] = param
+                    #    #print(float(request.form[param[0]]))
+                    #else:
+                    #    print("no right type found : " + request.form[param[0]])
+                elif param[4] == "select":
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = request.form[param[0]]
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(request.form[param[0]])
+                elif param[4] == "checkbox":
+                    if request.form.get(param[0]):
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = True
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(True)
+                    else:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = False
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(False)
+
+            app.labeler.set_param_list(params2)
+
+    return labeler()
+
+# Data splitter page for classification
+@app.route('/splitter')
+def splitter():
+    splitters = []
+    for splitterType in SplitterTypes:
+        name = SplitterTypes.get_name(splitterType)
+        splitters.append((name, splitterType))
+
+    exists_splitter: bool = False
+    params = []
+
+    if isinstance(app.splitter, Splitter):
+        exists_splitter = True
+        params = app.splitter.get_param_list()
+
+    return render_template(
+        "splitter.html",
+        existSplitter = exists_splitter,
+        splitters = splitters,
+        params = params
+        )
+
+@app.route('/initialize_splitter' , methods = ['POST', 'GET'])
+def initialize_splitter():
+    if request.method == 'POST':
+        splitterType = eval(request.form['splitter'])
+        app.splitter = SplitterFactory.create(splitterType)
+    return splitter()
+
+@app.route('/set_splitter' , methods = ['POST', 'GET'])
+def set_splitter():
+    # check for other scaling types the set methodes
+    if request.method == 'POST':
+        if isinstance(app.splitter, Splitter):
+            params = app.splitter.get_param_list()
+            params2 = params
+            for param in params:
+                if param[4] == "number":
+                    if param[6] < 1:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = float(request.form[param[0]])
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(float(request.form[param[0]]))
+                    elif param[6] == 1:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = int(request.form[param[0]])
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(int(request.form[param[0]]))
+                elif param[4] == "text":
+                    if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = np.inf
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(np.inf)
+                    elif request.form[param[0]] == "None":
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = None
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(None)
+                    else:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = request.form[param[0]]
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(np.inf)
+                    # How do we proceed if we really have a string?
+                    #elif isinstance (eval(request.form[param[0]]), float):
+                    #    index = params.index(param)
+                    #    var = list(param)
+                    #    var[3] = float(request.form[param[0]])
+                    #    param = tuple(var)
+                    #    params2[index] = param
+                    #    #print(float(request.form[param[0]]))
+                    #else:
+                    #    print("no right type found : " + request.form[param[0]])
+                elif param[4] == "select":
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = request.form[param[0]]
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(request.form[param[0]])
+                elif param[4] == "checkbox":
+                    if request.form.get(param[0]):
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = True
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(True)
+                    else:
+                        index = params.index(param)
+                        var = list(param)
+                        var[3] = False
+                        param = tuple(var)
+                        params2[index] = param
+                        #print(False)
+
+            app.splitter.set_param_list(params2)
+
+    return splitter()
+
 # classification page
 @app.route('/classification')
 def classification():
@@ -996,10 +1222,26 @@ def start_calculating():
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
             return calculating()
 
+    train_data, train_labels, test_data, test_labels = None, None, None, None
     decision_fun, support_vectors = None, None
+    dict_label_class = {}
     if isinstance(app.classification, Classification):
+
+        if not isinstance(app.labeler, Labeler):
+            flash("Configuration error: No labeler set for classification")#
+            return calculating()
+        if not isinstance(app.splitter, Splitter):
+            flash("Configuration error: No splitter set for classification")
+            return calculating()
+
         try:
-            decision_fun, support_vectors = app.classification.create_classifier(pos,similarities)
+            entities = app.entitySimilarities.get_list_entities()
+            entities = np.array(entities)
+            valid_entities = entities[app.entitySimilarities.get_valid_entity_index()]
+
+            labels, dict_label_class = app.labeler.get_labels(pos, valid_entities, app.entitySimilarities.get_list_attributes(), similarities)
+            train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels, similarities)
+            decision_fun, support_vectors = app.classification.create_classifier(train_data, train_labels, similarities)
             params.append(("decision_fun" , "Decision boundary" , "description" , decision_fun , "header"))
         except Exception as error:
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
@@ -1038,7 +1280,7 @@ def start_calculating():
             plt.figure(1)
             G = gridspec.GridSpec(1, 1)
             ax1 = plt.subplot(G[0, 0])
-            PlotsForClassification.classifier_2d_plot(dfp_instance ,ax1)
+            PlotsForClassification.classifier_2d_plot(dfp_instance, train_data, train_labels, test_data, test_labels, dict_label_class, ax1)
             plt.savefig('static/classification.png', dpi=300, bbox_inches='tight')
             plt.close(1)
     except Exception as error:

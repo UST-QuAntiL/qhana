@@ -67,7 +67,7 @@ class Classification(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def create_classifier(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
+    def create_classifier(self, position_matrix : np.matrix , labels: list, similarity_matrix : np.matrix) -> np.matrix:
         pass
 
     @abstractmethod
@@ -115,9 +115,7 @@ class ClassicSklearnSVM(Classification):
         self.__degree = degree
         return
 
-    def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        position_matrix, labels = split_samples.get_training_set(position_matrix, reuse=True)
-
+    def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
         classifier = svm.SVC(C=self.__C_param, kernel=self.__kernel, degree=self.__degree)
         classifier.fit(position_matrix, labels)
 
@@ -203,8 +201,8 @@ class qkeQiskitSVM(Classification):
         self.__ibmq_token = ibmq_token
         return
 
-    def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        position_matrix, labels = split_samples.get_training_set(position_matrix, zero=True, reuse=True)
+    def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
+        labels = np.where(labels==-1, 0, labels) # relabeling
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         if self.__backend.name.startswith("aer"):
@@ -384,8 +382,8 @@ class variationalQiskitSVM(Classification):
         self.__maxiter = maxiter
         return
 
-    def create_classifier(self, position_matrix : np.matrix, similarity_matrix : np.matrix) -> np.matrix:
-        position_matrix, labels = split_samples.get_training_set(position_matrix, zero=True, reuse=True)
+    def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
+        labels = np.where(labels==-1, 0, labels) # relabeling
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         backend = None
@@ -402,10 +400,7 @@ class variationalQiskitSVM(Classification):
 
         dimension = position_matrix.shape[1]
         feature_map = self.instanciate_featuremap(feature_dimension=dimension)
-        # 'optimizer', 'var_form', and 'training_dataset'
-        optimizer = SPSA(maxiter=100, save_steps=1)
-        # optimizer = AQGD()
-
+        optimizer = self.instanciate_optimizer()
         var_form = self.instanciate_veriational_form(dimension)
 
         vqc = VQC(feature_map=feature_map, optimizer=optimizer, training_dataset=get_dict_dataset(position_matrix, labels), var_form=var_form)
@@ -627,20 +622,6 @@ class variationalQiskitSVM(Classification):
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
 
-""" generates the labels for pre-defined subsets based on the order of data points
-    The first half of data points is associated with the +1 class, the second half
-    with the -1 class. If number of data points is uneven, then the +1 class has
-    one more data point than -1 class.
-"""
-def get_subsetLabels(position_matrix, zero=False):
-    n_samples = len(position_matrix)
-    labels = [1 for _ in range(n_samples)]
-    for i in range(math.ceil(n_samples / 2), n_samples):
-        labels[i] = -1 if not zero else 0
-
-    labels = np.array(labels)
-    return labels
-
 """ transforms data into a dictionary of the form
     {'A': np.ndarray, 'B': np.ndarray, ...}.
     as required for VQC initialization
@@ -654,55 +635,3 @@ def get_dict_dataset(position_matrix, labels):
     for key in dict:
         dict[key] = np.array(dict[key])
     return dict
-
-""" methods to randomly split data into training and
-    test data set.
-"""
-class split_samples():
-    train_indices = []
-    matrix_hash = None
-
-    @staticmethod
-    def get_training_set(position_matrix, reuse=False, zero=False):
-        """
-            parameter "reuse": determines whether the splitting
-                of training data for the same position matrix
-                from a previous run shall be kept fix (reused)
-            parameter "zero" as for get_subsetLabels method
-        """
-        n_samples = position_matrix.shape[0]
-        labels = get_subsetLabels(position_matrix, zero)
-
-        print(position_matrix.shape)
-        print(n_samples)
-
-        if n_samples <= 10:
-            split_samples.train_indices = []
-            return position_matrix, labels
-
-        current_hash = hash(str(position_matrix))
-        if (reuse and current_hash == split_samples.matrix_hash):
-            return position_matrix[split_samples.train_indices], labels[split_samples.train_indices]
-        split_samples.matrix_hash = current_hash
-
-        # select 5 positive samples' indices
-        train_set = []
-        while len(set(train_set))<5:
-            train_set.append(random.randrange(0, math.ceil(n_samples / 2)))
-        # add 5 negative samples' indices
-        while len(set(train_set))<10:
-            train_set.append(random.randrange(math.ceil(n_samples / 2), n_samples))
-        split_samples.train_indices = sorted(list(set(train_set)))
-        print(split_samples.train_indices)
-        return position_matrix[split_samples.train_indices], labels[split_samples.train_indices]
-
-    @staticmethod
-    def get_test_set(position_matrix, zero=False):
-        labels = get_subsetLabels(position_matrix, zero)
-        n_samples = position_matrix.shape[0]
-
-        if n_samples <= 10:
-            return position_matrix, labels
-        test_indices = setdiff1d(range(n_samples), split_samples.train_indices, assume_unique=True)
-        print(test_indices)
-        return position_matrix[test_indices], labels[test_indices]
