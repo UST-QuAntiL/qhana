@@ -52,7 +52,7 @@ class Labeler(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def get_labels(self, position_matrix : np.matrix, entities: List, attributes: dict, similarity_matrix : np.matrix) -> (list, dict):
+    def get_labels(self, position_matrix : np.matrix, entities: List, similarity_matrix : np.matrix) -> (list, dict):
         pass
 
     @abstractmethod
@@ -91,7 +91,7 @@ class fixedSubsetLabeler(Labeler):
     ):
         return
 
-    def get_labels(self, position_matrix : np.matrix, entities: List, attributes: dict, similarity_matrix : np.matrix) -> (list, dict):
+    def get_labels(self, position_matrix : np.matrix, entities: List, similarity_matrix : np.matrix) -> (list, dict):
         n_samples = len(position_matrix)
         labels = [1 for _ in range(n_samples)]
         for i in range(math.ceil(n_samples / 2), n_samples):
@@ -131,7 +131,7 @@ class attributeLabeler(Labeler):
         self.__attribute = attribute
         return
 
-    def get_labels(self, position_matrix : np.matrix, entities: List, attributes: dict, similarity_matrix : np.matrix) -> (list, dict):
+    def get_labels(self, position_matrix : np.matrix, entities: List, similarity_matrix : np.matrix) -> (list, dict):
         rawLabels = [entity.values[self.__attribute][0] for entity in entities]
         classesSet = set(rawLabels)
         classes = list(classesSet)

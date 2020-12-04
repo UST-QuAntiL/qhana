@@ -1239,7 +1239,7 @@ def start_calculating():
             entities = np.array(entities)
             valid_entities = entities[app.entitySimilarities.get_valid_entity_index()]
 
-            labels, dict_label_class = app.labeler.get_labels(pos, valid_entities, app.entitySimilarities.get_list_attributes(), similarities)
+            labels, dict_label_class = app.labeler.get_labels(pos, valid_entities, similarities)
             train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels, similarities)
             decision_fun, support_vectors = app.classification.create_classifier(train_data, train_labels, similarities)
             params.append(("decision_fun" , "Decision boundary" , "description" , decision_fun , "header"))
