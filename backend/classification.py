@@ -368,7 +368,11 @@ class variationalQiskitSVM(Classification):
         var_form="RyRz",
         reps_varform = 3,
         optimizer="SPSA",
-        maxiter=200
+        maxiter=100,
+        adam_tolerance = 0,
+        adam_learningrate = 0.1,
+        adam_noicefactor = 1e-8,
+        adam_epsilon = 1e-10,
     ):
         self.__featuremap = featuremap
         self.__backend = backend
@@ -380,6 +384,10 @@ class variationalQiskitSVM(Classification):
         self.__reps_varform = reps_varform
         self.__optimizer = optimizer
         self.__maxiter = maxiter
+        self.__adam_tolerance = adam_tolerance
+        self.__adam_learningrate = adam_learningrate
+        self.__adam_noisefactor = adam_noicefactor
+        self.__adam_epsilon = adam_epsilon
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
@@ -451,7 +459,8 @@ class variationalQiskitSVM(Classification):
 
     def instanciate_optimizer(self):
         if self.__optimizer == "ADAM":
-            return ADAM(maxiter=self.__maxiter)
+            return ADAM(maxiter=self.__maxiter, tol = self.__adam_tolerance, lr=self.__adam_learningrate,
+                        noise_factor=self.__adam_noisefactor, eps=self.__adam_epsilon)
         if self.__optimizer == "AQGD":
             return AQGD(maxiter=self.__maxiter)
         if self.__optimizer == "BOBYQA":
@@ -531,6 +540,30 @@ class variationalQiskitSVM(Classification):
     def set_maxiter(self, maxiter):
         self.__maxiter = maxiter
 
+    def get_adamtolerance(self):
+        return self.__adam_tolerance
+
+    def get_adamlearningrate(self):
+        return self.__adam_learningrate
+
+    def get_adamnoisefactor(self):
+        return self.__adam_noisefactor
+
+    def get_adamepsilon(self):
+        return self.__adam_epsilon
+
+    def set_adamtolerance(self, adam_tolerance):
+        self.__adam_tolerance = adam_tolerance
+
+    def set_adamlearningrate(self, adam_learningrate):
+        self.__adam_learningrate = adam_learningrate
+
+    def set_adamnoisefactor(self, adam_noicefactor):
+        self.__adam_noisefactor = adam_noicefactor
+
+    def set_adamepsilon(self, adam_epsilon):
+        self.__adam_epsilon = adam_epsilon
+
     def get_param_list(self) -> list:
         """
         # each tuple has informations as follows
@@ -590,10 +623,25 @@ class variationalQiskitSVM(Classification):
         params.append(("optimizer", "Optimizer", description_optimizer, parameter_optimizer, "select", ["ADAM", "AQGD", "BOBYQA", "COBYLA", "NELDER_MEAD", "SPSA", "POWELL", "NFT", "TNC"]))
 
         parameter_maxiter = self.get_maxiter()
-        description_maxiter = "Max iterations : int (default=200)\n For optimizer;"\
+        description_maxiter = "Max iterations : int (default=100)\n For optimizer;"\
                                 +"Maximum number of iterations to perform."
         params.append(("maxiter", "Max iterations", description_maxiter, parameter_maxiter, "number", 1, 1))
 
+        parameter_adamtolerance = self.get_adamtolerance()
+        description_adamtolerance = "Tolerance parameter of ADAM optimizer"
+        params.append(("adam_tolerance", "ADAM Optimizer: Tolerance", description_adamtolerance, parameter_adamtolerance, "number", 0, 1e-6))
+
+        parameter_adamlearningrate = self.get_adamlearningrate()
+        description_adamlearningrate = "Learning rate parameter of ADAM optimizer"
+        params.append(("adam_learningrate", "ADAM Optimizer: Learning rate", description_adamlearningrate, parameter_adamlearningrate, "number", 0, 1e-3))
+
+        parameter_adamnoisefactor = self.get_adamnoisefactor()
+        description_adamnoisefactor = "Noise factor parameter of ADAM optimizer"
+        params.append(("adam_noise", "ADAM Optimizer: Noise factor", description_adamnoisefactor, parameter_adamnoisefactor, "number", 0, 1e-8))
+
+        parameter_adamepsilon = self.get_adamepsilon()
+        description_adamepsilon = "Epsilon parameter of ADAM optimizer"
+        params.append(("adam_epsilon", "ADAM Optimizer: Epsilon", description_adamepsilon, parameter_adamepsilon, "number", 0, 1e-10))
         return params
 
     def set_param_list(self, params: list=[]) -> np.matrix:
@@ -618,6 +666,14 @@ class variationalQiskitSVM(Classification):
                 self.set_optimizer(param[3])
             if param[0] == "maxiter":
                 self.set_maxiter(param[3])
+            if param[0] == "adam_tolerance":
+                self.set_adamtolerance(param[3])
+            if param[0] == "adam_learningrate":
+                self.set_adamlearningrate(param[3])
+            if param[0] == "adam_noise":
+                self.set_adamnoisefactor(param[3])
+            if param[0] == "adam_epsilon":
+                self.set_adamepsilon(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
