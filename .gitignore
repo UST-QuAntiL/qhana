@@ -1,5 +1,6 @@
 */__pycache__/*
 *.ini
+*.idea
 .vscode/*
 taxonomies/*
 static/taxonomies/*
