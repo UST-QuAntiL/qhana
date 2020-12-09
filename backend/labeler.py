@@ -92,12 +92,23 @@ class fixedSubsetLabeler(Labeler):
         return
 
     def get_labels(self, position_matrix : np.matrix, entities: List, similarity_matrix : np.matrix) -> (list, dict):
-        n_samples = len(position_matrix)
-        labels = [1 for _ in range(n_samples)]
-        for i in range(math.ceil(n_samples / 2), n_samples):
-            labels[i] = -1
+        validIds = [entity.id for entity in entities]
 
-        labels = np.array(labels)
+        # TODO: selected subset size could be passed as a parameter
+        subsetSizes = np.array([5, 10, 25, 40])
+        maxId = max(validIds)
+        larger_subsets = subsetSizes > maxId
+        if not True in larger_subsets:
+            raise Exception("Error in labeler: no valid subset")
+        n_samples = subsetSizes[list(larger_subsets).index(True)] # gets the first subsetSize that is larger than maxId
+
+        rawLabels = [1 for _ in range(n_samples)]
+        for i in range(math.ceil(n_samples / 2), n_samples):
+            rawLabels[i] = -1
+
+        validLabels = np.array(rawLabels)[validIds]
+
+        labels = validLabels
         dict_label_class = {1: 'positive', -1: 'negative'}
         return labels, dict_label_class
 
@@ -137,15 +148,17 @@ class attributeLabeler(Labeler):
         classes = list(classesSet)
         n_classes = len(classes)
 
+        # transform to numeric labels
         labels = [classes.index(rawLabel) for rawLabel in rawLabels]
 
+        # create a dictionary number -> label
         dict_label_class = {}
         for i in range(n_classes):
             dict_label_class[i] = classes[i]
             
         """ if there are only 2 classes: use -1 and 1 as labels"""
+        labels = np.array(labels)
         if n_classes == 2:
-            labels = np.array(labels)
             labels = np.where(labels==0, -1, labels)
             dict_label_class[-1] = dict_label_class[0]
 
