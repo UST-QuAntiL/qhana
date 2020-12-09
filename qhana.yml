@@ -1,4 +1,4 @@
-name: planqk
+name: qhana
 channels:
   - conda-forge
   - anaconda

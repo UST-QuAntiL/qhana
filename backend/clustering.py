@@ -735,11 +735,36 @@ class Optics(Clustering):
                 self.set_leaf_size(param[3])
 
 class QuantumBackends(enum.Enum):
+    custom_ibmq = "custom_ibmq"
     aer_statevector_simulator = "aer_statevector_simulator"
     aer_qasm_simulator = "aer_qasm_simulator"
     ibmq_qasm_simulator = "ibmq_qasm_simulator"
     ibmq_16_melbourne = "ibmq_16_melbourne"
-    ibmq_london = "ibmq_london"
+    ibmq_armonk = "ibmq_armonk"
+    ibmq_5_yorktown = "ibmq_5_yorktown"
+    ibmq_ourense = "ibmq_ourense"
+    ibmq_vigo = "ibmq_vigo"
+    ibmq_valencia = "ibmq_valencia"
+    ibmq_athens = "ibmq_athens"
+    ibmq_santiago = "ibmq_santiago"
+
+    @staticmethod
+    def get_quantum_backend(backendEnum, ibmqToken = None, customBackendName = None):
+        backend = None
+        if backendEnum.name.startswith("aer"):
+            # Use local AER backend
+            aerBackendName = backendEnum.name[4:]
+            backend = Aer.get_backend(aerBackendName)
+        elif backendEnum.name.startswith("ibmq"):
+            # Use IBMQ backend
+            provider = IBMQ.enable_account(ibmqToken)
+            backend = provider.get_backend(backendEnum.name)
+        elif backendEnum.name.startswith("custom_ibmq"):
+            provider = IBMQ.enable_account(ibmqToken)
+            backend = provider.get_backend(customBackendName)
+        else:
+            Logger.error("Unknown quantum backend specified!")
+        return backend
 
 class VQEMaxCut(Clustering):
     def __init__(self,
@@ -748,13 +773,15 @@ class VQEMaxCut(Clustering):
                  reps: int = 1,
                  entanglement: str = 'linear',
                  backend = QuantumBackends.aer_statevector_simulator,
-                 ibmq_token = ""):
+                 ibmq_token: str = "",
+                 ibmq_custom_backend: str = ""):
         self.__number_of_clusters = number_of_clusters
         self.__max_trials = max_trials
         self.__reps = reps
         self.__entanglement = entanglement
         self.__backend = backend
         self.__ibmq_token = ibmq_token
+        self.__ibmq_custom_backend = ibmq_custom_backend
         
     def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
         if self.__number_of_clusters == 1:
@@ -839,17 +866,7 @@ class VQEMaxCut(Clustering):
         qubitOp, offset = max_cut.get_operator(similarity_matrix)
         seed = 10598
 
-        backend = None
-
-        if self.__backend.name.startswith("aer"):
-            # Use local AER backend
-            backend = Aer.get_backend("statevector_simulator")
-        elif self.__backend.name.startswith("ibmq"):
-            # Use IBMQ backend
-            provider = IBMQ.enable_account(self.__ibmq_token)
-            backend = provider.get_backend(self.__backend.value)
-        else:
-            Logger.error("Unknown quantum backend specified!")
+        backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
 
         quantum_instance = QuantumInstance(backend, seed_simulator=seed, seed_transpiler=seed)
 
@@ -883,6 +900,8 @@ class VQEMaxCut(Clustering):
         return self.__backend
     def get_ibmq_token(self) -> str:
         return self.__ibmq_token
+    def get_ibmq_custom_backend(self):
+        return self.__ibmq_custom_backend
 
     def set_number_of_clusters(self, number_of_clusters : int = 1) -> None:
         if isinstance(number_of_clusters, int) and number_of_clusters > 0:
@@ -899,6 +918,8 @@ class VQEMaxCut(Clustering):
         self.__backend = backend
     def set_ibmq_token(self, ibmq_token: str = "") -> None:
         self.__ibmq_token = ibmq_token
+    def set_ibmq_custom_backend(self, ibmq_custom_backend: str = ""):
+        self.__ibmq_custom_backend = ibmq_custom_backend
 
     #getter and setter params
     def get_param_list(self) -> list:
@@ -942,13 +963,20 @@ class VQEMaxCut(Clustering):
 
         parameter_backend = self.get_backend().value
         description_backend = "Enum default(aer_statevector_simulator) "\
-            + " A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
+            + " A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."\
+            + " When using (custom_ibmq), a custom ibmq backend can be specified."
         params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
+
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") "\
+            + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend, str(parameter_ibmq_custom_backend), "text", "", ""))
 
         parameter_ibmq_token = self.get_ibmq_token()
         description_ibmq_token = "str default(\"\") "\
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -965,6 +993,8 @@ class VQEMaxCut(Clustering):
                 self.set_backend(QuantumBackends[param[3]])
             elif param[0] == "ibmqToken":
                 self.set_ibmq_token(param[3])
+            elif param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
@@ -1505,7 +1535,8 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
         max_runs = 10,
         relative_residual_amount = 5,
         backend = QuantumBackends.aer_statevector_simulator,
-        ibmq_token = ""):
+        ibmq_token = "",
+        ibmq_custom_backend = ""):
 
         self.clusterAlgo = NegativeRotationQuantumKMeans()
 
@@ -1516,6 +1547,7 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
         self.relative_residual_amount = relative_residual_amount
         self.backend = backend
         self.ibmq_token = ibmq_token
+        self.ibmq_custom_backend = ibmq_custom_backend
         return
         
     def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
@@ -1525,19 +1557,7 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
         self.clusterAlgo.set_max_runs(self.get_max_runs())
         self.clusterAlgo.set_relative_residual_amount(self.get_relative_residual_amount())
 
-        qBackend = None
-        if self.get_backend().name.startswith("aer"):
-            # Use local AER backend
-            if "qasm_simulator" in self.get_backend().name:
-                qBackend = Aer.get_backend("qasm_simulator")
-            else:
-                qBackend = Aer.get_backend("statevector_simulator")
-        elif self.get_backend().name.startswith("ibmq"):
-            # Use IBMQ backend
-            provider = IBMQ.enable_account(self.get_ibmq_token())
-            qBackend = provider.get_backend(self.get_backend().value)
-        else:
-            Logger.error("Unknown quantum backend specified!")
+        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
 
         self.clusterAlgo.set_backend(qBackend)
 
@@ -1603,6 +1623,13 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
 
     def set_ibmq_token(self, ibmq_token):
         self.ibmq_token = ibmq_token
+        return
+
+    def get_ibmq_custom_backend(self):
+        return self.ibmq_custom_backend
+
+    def set_ibmq_custom_backend(self, ibmq_custom_backend):
+        self.ibmq_custom_backend = ibmq_custom_backend
         return
 
     def get_param_list(self) -> list:
@@ -1647,10 +1674,16 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
             + " A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
         params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
 
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") "\
+            + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend, str(parameter_ibmq_custom_backend), "text", "", ""))
+
         parameter_ibmq_token = self.get_ibmq_token()
-        description_ibmq_token = "str default(\"\"): "\
+        description_ibmq_token = "str default(\"\") "\
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -1669,6 +1702,8 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
                 self.set_backend(QuantumBackends[param[3]])
             elif param[0] == "ibmqToken":
                 self.set_ibmq_token(param[3])
+            elif param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
@@ -1681,7 +1716,8 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
         max_runs = 10,
         relative_residual_amount = 5,
         backend = QuantumBackends.aer_statevector_simulator,
-        ibmq_token = ""):
+        ibmq_token = "",
+        ibmq_custom_backend = ""):
 
         self.clusterAlgo = DestructiveInterferenceQuantumKMeans()
 
@@ -1692,6 +1728,7 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
         self.relative_residual_amount = relative_residual_amount
         self.backend = backend
         self.ibmq_token = ibmq_token
+        self.ibmq_custom_backend = ibmq_custom_backend
         return
         
     def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
@@ -1701,19 +1738,7 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
         self.clusterAlgo.set_max_runs(self.get_max_runs())
         self.clusterAlgo.set_relative_residual_amount(self.get_relative_residual_amount())
 
-        qBackend = None
-        if self.get_backend().name.startswith("aer"):
-            # Use local AER backend
-            if "qasm_simulator" in self.get_backend().name:
-                qBackend = Aer.get_backend("qasm_simulator")
-            else:
-                qBackend = Aer.get_backend("statevector_simulator")
-        elif self.get_backend().name.startswith("ibmq"):
-            # Use IBMQ backend
-            provider = IBMQ.enable_account(self.get_ibmq_token())
-            qBackend = provider.get_backend(self.get_backend().value)
-        else:
-            Logger.error("Unknown quantum backend specified!")
+        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
 
         self.clusterAlgo.set_backend(qBackend)
 
@@ -1779,6 +1804,13 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
 
     def set_ibmq_token(self, ibmq_token):
         self.ibmq_token = ibmq_token
+        return
+
+    def get_ibmq_custom_backend(self):
+        return self.ibmq_custom_backend
+
+    def set_ibmq_custom_backend(self, ibmq_custom_backend):
+        self.ibmq_custom_backend = ibmq_custom_backend
         return
 
     def get_param_list(self) -> list:
@@ -1823,10 +1855,16 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
             + " A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
         params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
 
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") "\
+            + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend, str(parameter_ibmq_custom_backend), "text", "", ""))
+
         parameter_ibmq_token = self.get_ibmq_token()
-        description_ibmq_token = "str default(\"\"): "\
+        description_ibmq_token = "str default(\"\") "\
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -1845,6 +1883,8 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
                 self.set_backend(QuantumBackends[param[3]])
             elif param[0] == "ibmqToken":
                 self.set_ibmq_token(param[3])
+            elif param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
@@ -1857,7 +1897,8 @@ class StatePreparationQuantumKMeansClustering(Clustering):
         max_runs = 10,
         relative_residual_amount = 5,
         backend = QuantumBackends.aer_statevector_simulator,
-        ibmq_token = ""):
+        ibmq_token = "",
+        ibmq_custom_backend = ""):
 
         self.clusterAlgo = StatePreparationQuantumKMeans()
 
@@ -1868,6 +1909,7 @@ class StatePreparationQuantumKMeansClustering(Clustering):
         self.relative_residual_amount = relative_residual_amount
         self.backend = backend
         self.ibmq_token = ibmq_token
+        self.ibmq_custom_backend = ibmq_custom_backend
         return
         
     def create_cluster(self, position_matrix : np.matrix , similarity_matrix : np.matrix) -> np.matrix:
@@ -1877,19 +1919,7 @@ class StatePreparationQuantumKMeansClustering(Clustering):
         self.clusterAlgo.set_max_runs(self.get_max_runs())
         self.clusterAlgo.set_relative_residual_amount(self.get_relative_residual_amount())
 
-        qBackend = None
-        if self.get_backend().name.startswith("aer"):
-            # Use local AER backend
-            if "qasm_simulator" in self.get_backend().name:
-                qBackend = Aer.get_backend("qasm_simulator")
-            else:
-                qBackend = Aer.get_backend("statevector_simulator")
-        elif self.get_backend().name.startswith("ibmq"):
-            # Use IBMQ backend
-            provider = IBMQ.enable_account(self.get_ibmq_token())
-            qBackend = provider.get_backend(self.get_backend().value)
-        else:
-            Logger.error("Unknown quantum backend specified!")
+        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
 
         self.clusterAlgo.set_backend(qBackend)
 
@@ -1957,6 +1987,13 @@ class StatePreparationQuantumKMeansClustering(Clustering):
         self.ibmq_token = ibmq_token
         return
 
+    def get_ibmq_custom_backend(self):
+        return self.ibmq_custom_backend
+
+    def set_ibmq_custom_backend(self, ibmq_custom_backend):
+        self.ibmq_custom_backend = ibmq_custom_backend
+        return
+
     def get_param_list(self) -> list:
         """
         # each tuple has informations as follows
@@ -1999,10 +2036,16 @@ class StatePreparationQuantumKMeansClustering(Clustering):
             + " A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
         params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
 
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") "\
+            + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend, str(parameter_ibmq_custom_backend), "text", "", ""))
+
         parameter_ibmq_token = self.get_ibmq_token()
-        description_ibmq_token = "str default(\"\"): "\
+        description_ibmq_token = "str default(\"\") "\
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -2021,6 +2064,8 @@ class StatePreparationQuantumKMeansClustering(Clustering):
                 self.set_backend(QuantumBackends[param[3]])
             elif param[0] == "ibmqToken":
                 self.set_ibmq_token(param[3])
+            elif param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
