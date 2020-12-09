@@ -1,43 +1,50 @@
 from mysql.connector import MySQLConnection
-from mysql.connector import Error
 from configparser import ConfigParser
 from backend.singleton import Singleton
-from backend.logger import Logger, LogLevel
+from backend.logger import Logger
+import os
 
-"""
-Respresents the database class for db connection.
-"""
+
 class Database(Singleton):
+    """
+    Represents the database class for db connection.
+    """
+
+    config_file_default = "config.ini"
     """
     Specifies the default for the config file
     """
-    config_file_default = "config.ini"
 
-    """
-    Initializes the database singleton.
-    """
     def __init__(self) -> None:
+        """
+        Initializes the database singleton.
+        """
         self.__connection = None
         self.__cursor = None
+        self.connected = False
         return
-    
-    """
-    Deletes the database singleton.
-    """
+
     def __del__(self) -> None:
+        """
+        Deletes the database singleton.
+        """
         self.close()
         return
 
-    """
-    Opens the database using the config.ini file.
-    """
-    def open(self, filename = None) -> None:
+    def open(self, filename=None) -> None:
+        """
+        Opens the database using the config file.
+        """
+
         # if already connected do nothing
         if self.__connection is not None and self.__connection.is_connected():
             return
 
-        if filename == None:
+        if filename is None:
             filename = Database.config_file_default
+
+        if not os.path.exists(filename):
+            Logger.error("Couldn't find config file for database connection.")
 
         section = "mysql"
         parser = ConfigParser()
@@ -55,23 +62,25 @@ class Database(Singleton):
         self.databaseName = parser.get(section, "database")
         self.user = parser.get(section, "user")
         self.host = parser.get(section, "host")
-    
+
         self.__connection = MySQLConnection(**connection_string)
-    
+
         if self.__connection.is_connected():
+            self.connected = True
             Logger.debug("Successfully connected to database")
 
-    """
-    Closes the database connection.
-    """
     def close(self) -> None:
+        """
+        Closes the database connection.
+        """
         if self.__connection is not None and self.__connection.is_connected():
             self.__connection.close()
             self.__cursor = None
+            self.connected = False
             Logger.debug("Successfully disconnected from database")
 
-    """
-    Returns a cursor to the database.
-    """
     def get_cursor(self):
+        """
+        Returns a cursor to the database.
+        """
         return self.__connection.cursor()

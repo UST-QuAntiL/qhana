@@ -63,13 +63,18 @@ def home():
         attributes.append(Attribute.get_name(attribute))
 
     errorMessage = ""
-    
+    dbConnectionString = ""
+
     try:
         db = Database()
         db.open()
-        dbConnectionString = "Database: Host=" + db.host + ", DB-Name=" + db.databaseName + ", User=" + db.user
-    except Error as error:
-        dbConnectionString =  str(error)
+        if not db.connected:
+            errorMessage = "Couldn't find config file for database connection.\n"
+            errorMessage += "The tool is not going to work properly."
+        else:
+            dbConnectionString = "Database: Host=" + db.host + ", DB-Name=" + db.databaseName + ", User=" + db.user
+    except Exception as ex:
+        dbConnectionString = str(ex)
         errorMessage = "Caution: There is an error and the application will probably not work as expected! Please contact the administrator."
 
     session["dbConnectionString"] = dbConnectionString
