@@ -64,7 +64,7 @@ class Splitter(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def get_train_test_set(self, position_matrix : np.matrix , labels: list, similarity_matrix : np.matrix) \
+    def get_train_test_set(self, position_matrix : np.matrix , labels: list, entities: List, similarity_matrix : np.matrix) \
                                 -> (np.matrix, list, np.matrix, list):
         pass
 
@@ -108,7 +108,7 @@ class noneSplitter(Splitter):
     ):
         return
 
-    def get_train_test_set(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
+    def get_train_test_set(self, position_matrix : np.matrix, labels: list, entities: List, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
         return position_matrix, labels, position_matrix, labels
 
     def get_param_list(self) -> list:
@@ -144,11 +144,8 @@ class randomSplitter(Splitter):
     matrix_hash = None
     train_indices = []
 
-    def get_train_test_set(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
+    def get_train_test_set(self, position_matrix : np.matrix, labels: list, entities: List, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
         n_samples = position_matrix.shape[0]
-
-        print(position_matrix.shape)
-        print(n_samples)
 
         if n_samples <= self.train_set_size:
             self.train_indices = []
@@ -156,8 +153,6 @@ class randomSplitter(Splitter):
             raise Exception("Train set size in splitter is larger than number of samples.")
 
         current_hash = hash(str(position_matrix)+str(self.train_set_size))
-        print(current_hash)
-        print(self.matrix_hash)
         if not (self.reuse and current_hash == self.matrix_hash):
             self.matrix_hash = current_hash
     
@@ -170,7 +165,6 @@ class randomSplitter(Splitter):
             while len(set(train_set)) < self.train_set_size:
                 train_set.append(random.randrange(math.ceil(n_samples / 2), n_samples))
             self.train_indices = sorted(list(set(train_set)))
-            print(self.train_indices)
 
         test_indices = setdiff1d(range(n_samples), self.train_indices, assume_unique=True)
 
@@ -235,7 +229,7 @@ class sklearnSplitter(Splitter):
 
     rand_state = None
 
-    def get_train_test_set(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
+    def get_train_test_set(self, position_matrix : np.matrix, labels: list, entities: List, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
         if not self.reuse:
             self.rand_state = randrange(100) 
 
@@ -262,8 +256,8 @@ class sklearnSplitter(Splitter):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        labelerTypeName = "None splitter"
-        params.append(("name", "Splitter Type" , "Use all data for both training and testing ",
+        labelerTypeName = "sklearn splitter"
+        params.append(("name", "Splitter Type" , "Directly uses the train_test_split method of sklearn to split data into train and test sets ",
                                                 labelerTypeName , "header"))
         
         parameter_trainsize = self.get_train_size()
@@ -294,26 +288,54 @@ class subsetSplitter(Splitter):
 
     def __init__(
         self,
+        train_subset = 10
     ):
-        return
+        self.__train_subset = train_subset
+        self.__subsetSizes = np.array([5, 10, 25, 40])
 
-    def get_train_test_set(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
-        return position_matrix, labels, position_matrix, labels
+    def get_train_test_set(self, position_matrix : np.matrix, labels: list, entities: List, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
+        validIds = [entity.id for entity in entities]
 
-        # TODO: Identify smaller subset and return it as train set
-        len = position_matrix.shape[0]
-        if len <= 10:
-            return position_matrix
+        # TODO: selected subset size could be passed as a parameter
+        subsetSizes = np.array([5, 10, 25, 40])
+        maxId = max(validIds)
+        larger_subsets = subsetSizes > maxId
+        if not True in larger_subsets:
+            raise Exception("Error in labeler: no valid subset")
+        n_samples = subsetSizes[list(larger_subsets).index(True)] # gets the first subsetSize that is larger than maxId
+
+        if n_samples <= self.__train_subset:
+            raise Exception("Error in splitter: train subset not smaller than initialized subset")
         else:
+            train_indices = []
             for _class in {'Negative', 'Positive'}:
-                file10 = open('subsets/10/{}Subset10.csv'.format(_class), 'r')
-                Lines10 = file10.readlines()[1:]
-                fileSet = open('subsets/{}/{}Subset{}.csv'.format(str(len),_class,str(len)), 'r')
-                LinesSet = fileSet.readlines()[1:]
-                for line in Lines10:
-                    print(LinesSet.index(line))
+                fileTrainSet = open('subsets/{}/{}Subset{}.csv'.format(str(self.__train_subset),_class, str(self.__train_subset)), 'r')
+                LinesTrainSet = fileTrainSet.readlines()[1:]
+                fileInitSet = open('subsets/{}/{}Subset{}.csv'.format(str(n_samples),_class,str(n_samples)), 'r')
+                LinesInitSet = fileInitSet.readlines()[1:]
+                for line in LinesTrainSet:
+                    train_indices.append(LinesInitSet.index(line) \
+                        + (0 if _class == 'Positive' else math.ceil(n_samples/2)))
 
-        return
+        test_indices = setdiff1d(range(n_samples), train_indices, assume_unique=True)
+
+        # translate indices to the corresponding ones in position matrix
+        # meanwhile invalid samples are ignored
+        train_indices_new, test_indices_new = [], []
+        for entity in entities:
+            if entity.id in train_indices:
+                train_indices_new.append(list(entities).index(entity))
+            if entity.id in test_indices:
+                test_indices_new.append(list(entities).index(entity))
+
+        return position_matrix[train_indices_new], labels[train_indices_new], \
+                position_matrix[test_indices_new], labels[test_indices_new]
+
+    def get_trainsubset(self):
+        return self.__train_subset
+
+    def set_trainsubset(self, train_subset):
+        self.__train_subset = train_subset
 
     def get_param_list(self) -> list:
         """
@@ -322,14 +344,20 @@ class subsetSplitter(Splitter):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        labelerTypeName = "None splitter"
-        params.append(("name", "Splitter Type" , "Use all data for both training and testing ",
+        labelerTypeName = "Subset splitter"
+        params.append(("name", "Splitter Type" , "Use a smaller subset as train set and the remaining data as test set ",
                                                 labelerTypeName , "header"))
+
+        parameter_trainsubset = self.get_trainsubset()
+        description_trainsubset = "Train subset : The subset that shall be used for training. Must be smaller than the initialized subset. "
+        params.append(("trainsubset", "Train subset", description_trainsubset, parameter_trainsubset, "select", [value for value in self.__subsetSizes]))
 
         return params
 
     def set_param_list(self, params: list=[]) -> np.matrix:
-        pass
+        for param in params:
+            if param[0] == "trainsubset":
+                self.set_trainsubset(int(param[3]))
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass

@@ -1240,7 +1240,7 @@ def start_calculating():
             valid_entities = entities[app.entitySimilarities.get_valid_entity_index()]
 
             labels, dict_label_class = app.labeler.get_labels(pos, valid_entities, similarities)
-            train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels, similarities)
+            train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels, valid_entities, similarities)
             decision_fun, support_vectors = app.classification.create_classifier(train_data, train_labels, similarities)
             params.append(("decision_fun" , "Decision boundary" , "description" , decision_fun , "header"))
         except Exception as error:
