@@ -188,6 +188,7 @@ class qkeQiskitSVM(Classification):
         self,
         backend=QuantumBackends.aer_statevector_simulator,
         ibmq_token="",
+        ibmq_custom_backend = "",
         featuremap="ZFeatureMap",
         entanglement="linear",
         reps=2,
@@ -199,22 +200,14 @@ class qkeQiskitSVM(Classification):
         self.__reps = reps
         self.__shots = shots
         self.__ibmq_token = ibmq_token
+        self.__ibmq_custom_backend = ibmq_custom_backend
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
         labels = np.where(labels==-1, 0, labels) # relabeling
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
-        if self.__backend.name.startswith("aer"):
-            # Use local AER backend
-            aer_backend_name = self.__backend.name[4:]
-            backend = Aer.get_backend(aer_backend_name)
-        elif self.__backend.name.startswith("ibmq"):
-            # Use IBMQ backend
-            provider = IBMQ.enable_account(self.__ibmq_token)
-            backend = provider.get_backend(self.__backend.value)
-        else:
-            Logger.error("Unknown quantum backend specified!")
+        backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
 
         dimension = position_matrix.shape[1]
         feature_map = self.instanciate_featuremap(feature_dimension=dimension)
@@ -292,6 +285,13 @@ class qkeQiskitSVM(Classification):
     def set_reps(self, reps):
         self.__reps = reps
 
+    def get_ibmq_custom_backend(self):
+        return self.__ibmq_custom_backend
+
+    def set_ibmq_custom_backend(self, ibmq_custom_backend):
+        self.__ibmq_custom_backend = ibmq_custom_backend
+        return
+
     def get_param_list(self) -> list:
         """
         # each tuple has informations as follows
@@ -324,15 +324,20 @@ class qkeQiskitSVM(Classification):
                             +"Number of repetitions of each circuit, for sampling."
         params.append(("shots", "Shots" , description_shots, parameter_shots, "number", 1, 1))
 
-        parameter_ibmqtoken = self.get_ibmq_token()
-        description_ibmqtoken = "IBMQ-Token : str, (default='')\n"\
-                            +"IBMQ-Token for access to IBMQ online service"
-        params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
-
         parameter_backend = self.get_backend().value
         description_backend = "Backend : Enum default(aer_statevector_simulator)\n"\
             +" A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
         params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
+
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") "\
+            + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend, str(parameter_ibmq_custom_backend), "text", "", ""))
+
+        parameter_ibmqtoken = self.get_ibmq_token()
+        description_ibmqtoken = "IBMQ-Token : str, (default='')\n"\
+                            +"IBMQ-Token for access to IBMQ online service"
+        params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
 
         return params
 
@@ -350,6 +355,8 @@ class qkeQiskitSVM(Classification):
                 self.set_ibmq_token(param[3])
             if param[0] == "quantumBackend":
                 self.set_backend(QuantumBackends[param[3]])
+            if param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
@@ -361,6 +368,7 @@ class variationalQiskitSVM(Classification):
         self,
         backend=QuantumBackends.aer_statevector_simulator,
         ibmq_token="",
+        ibmq_custom_backend = "",
         featuremap="ZFeatureMap",
         entanglement="linear",
         reps=2,
@@ -376,6 +384,7 @@ class variationalQiskitSVM(Classification):
         self.__reps = reps
         self.__shots = shots
         self.__ibmq_token = ibmq_token
+        self.__ibmq_custom_backend = ibmq_custom_backend
         self.__var_form = var_form
         self.__reps_varform = reps_varform
         self.__optimizer = optimizer
@@ -386,17 +395,7 @@ class variationalQiskitSVM(Classification):
         labels = np.where(labels==-1, 0, labels) # relabeling
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
-        backend = None
-        if self.__backend.name.startswith("aer"):
-            # Use local AER backend
-            aer_backend_name = self.__backend.name[4:]
-            backend = Aer.get_backend(aer_backend_name)
-        elif self.__backend.name.startswith("ibmq"):
-            # Use IBMQ backend
-            provider = IBMQ.enable_account(self.__ibmq_token)
-            backend = provider.get_backend(self.__backend.value)
-        else:
-            Logger.error("Unknown quantum backend specified!")
+        backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
 
         dimension = position_matrix.shape[1]
         feature_map = self.instanciate_featuremap(feature_dimension=dimension)
@@ -531,6 +530,13 @@ class variationalQiskitSVM(Classification):
     def set_maxiter(self, maxiter):
         self.__maxiter = maxiter
 
+    def get_ibmq_custom_backend(self):
+        return self.__ibmq_custom_backend
+
+    def set_ibmq_custom_backend(self, ibmq_custom_backend):
+        self.__ibmq_custom_backend = ibmq_custom_backend
+        return
+
     def get_param_list(self) -> list:
         """
         # each tuple has informations as follows
@@ -563,15 +569,20 @@ class variationalQiskitSVM(Classification):
                             +"Number of repetitions of each circuit, for sampling."
         params.append(("shots", "Shots" , description_shots, parameter_shots, "number", 1, 1))
 
-        parameter_ibmqtoken = self.get_ibmq_token()
-        description_ibmqtoken = "IBMQ-Token : str, (default='')\n"\
-                            +"IBMQ-Token for access to IBMQ online service"
-        params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
-
         parameter_backend = self.get_backend().value
         description_backend = "Backend : Enum default(aer_statevector_simulator)\n"\
             +" A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
         params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
+
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") "\
+            + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend, str(parameter_ibmq_custom_backend), "text", "", ""))
+
+        parameter_ibmqtoken = self.get_ibmq_token()
+        description_ibmqtoken = "IBMQ-Token : str, (default='')\n"\
+                            +"IBMQ-Token for access to IBMQ online service"
+        params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
 
         parameter_varform = self.get_var_form()
         description_varform = "Variational Form : {'RealAmplitudes', 'ExcitationPreserving', 'EfficientSU2', 'RyRz'}, (default='RyRz')\n"\
@@ -618,6 +629,8 @@ class variationalQiskitSVM(Classification):
                 self.set_optimizer(param[3])
             if param[0] == "maxiter":
                 self.set_maxiter(param[3])
+            if param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
