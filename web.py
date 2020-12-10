@@ -24,7 +24,7 @@ import matplotlib
 from backend.classification import ClassificationTypes, ClassificationFactory, Classification
 from tkinter.constants import NO
 from backend.plotsForClassification import PlotsForClassification
-from backend.labeler import LabelerTypes, Labeler, LabelerFactory
+from backend.labeler import LabelerTypes, Labeler, LabelerFactory, clustersLabeler
 from backend.splitter import SplitterTypes, Splitter, SplitterFactory
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
@@ -1244,7 +1244,15 @@ def start_calculating():
             entities = np.array(entities)
             valid_entities = entities[app.entitySimilarities.get_valid_entity_index()]
 
-            labels, dict_label_class = app.labeler.get_labels(pos, valid_entities, similarities)
+            if not isinstance(app.labeler, clustersLabeler):
+                labels, dict_label_class = app.labeler.get_labels(pos, valid_entities, similarities)
+            elif labels is None:
+                raise Exception("Data labeler is '"+ LabelerTypes.get_name(LabelerTypes.clusters) +
+                                "' but labels are not set. Select clustering type and try again. ")
+            else: # labels as provided from clustering are used, only the label -> class dictionary is missing
+                for label in set(labels):
+                    dict_label_class[label] = str(label)
+
             train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels, valid_entities, similarities)
             decision_fun, support_vectors = app.classification.create_classifier(train_data, train_labels, similarities)
             params.append(("decision_fun" , "Decision boundary" , "description" , decision_fun , "header"))

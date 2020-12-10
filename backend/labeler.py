@@ -16,6 +16,7 @@ Enum for Labelers
 class LabelerTypes(enum.Enum):
     fixedSubset = 0  # labeler based on subsets' positive/negative classes
     attribute = 1 # labeler that uses an attribute to label data
+    clusters = 2 # labeler based on the clusters from clustering
 
     @staticmethod
     def get_name(labelerType) -> str:
@@ -24,6 +25,8 @@ class LabelerTypes(enum.Enum):
             name = "fixedSubset"
         elif labelerType == LabelerTypes.attribute:
             name = "attribute"
+        elif labelerType == LabelerTypes.clusters:
+            name = "clusters"
         else:
             Logger.error("No name for labeler \"" + str(labelerType))
             raise ValueError("No name for labeler \"" + str(labelerType))
@@ -40,6 +43,8 @@ class LabelerTypes(enum.Enum):
             description = ("labeler based on subsets' positive/negative classes")
         elif labelerType == LabelerTypes.attribute:
             description = ("labeler based on an attribute")
+        elif labelerType == LabelerTypes.clusters:
+            description = ("Labeler based on clusters determined in clustering")
         else:
             Logger.error("No description for labeler \"" + str(labelerType) + "\" specified")
             raise ValueError("No description for labeler \"" + str(labelerType) + "\" specified")
@@ -79,6 +84,8 @@ class LabelerFactory:
             return fixedSubsetLabeler()
         elif type == LabelerTypes.attribute:
             return attributeLabeler()
+        elif type == LabelerTypes.clusters:
+            return clustersLabeler()
         else:
             Logger.error("Unknown type of labeler. The application will quit know.")
             raise Exception("Unknown type of labeler.")
@@ -194,4 +201,39 @@ class attributeLabeler(Labeler):
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
 
+class clustersLabeler(Labeler):
+
+    def __init__(
+        self,
+        attribute = Attribute.geschlecht
+    ):
+        self.__attribute = attribute
+        return
+
+    def get_labels(self, position_matrix : np.matrix, entities: List, similarity_matrix : np.matrix) -> (list, dict):
+        raise Exception("Wrong usage of clusters labeler type: Labels need to be passed from clustering step instead of calling the get_labels method")
+
+    def get_attribute(self):
+        return self.__attribute
+
+    def set_attribute(self, attribute):
+        self.__attribute = attribute
+
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        labelerTypeName = "labeler by clusters"
+        params.append(("name", "Labeler Type" , "Generates the labels based on clusters determined during clustering ",
+                                labelerTypeName , "header"))
+        return params
+
+    def set_param_list(self, params: list=[]) -> np.matrix:
+        pass
+
+    def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
+        pass
 
