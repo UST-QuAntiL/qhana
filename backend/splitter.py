@@ -192,7 +192,7 @@ class randomSplitter(Splitter):
         labelerTypeName = "Random splitter"
         params.append(("name", "Splitter Type" , "Custom made random splitter: Selects a number of random items from the data set "\
                                                 +"as train data and the rest as test data "\
-                                                +"half of the train data will be in the +1 class, the rest in the -1 class.", 
+                                                +"half of the train data will be in the positive class, the rest in the negative class.",
                                                 labelerTypeName , "header"))
 
         parameter_trainsetsize = self.get_train_set_size()

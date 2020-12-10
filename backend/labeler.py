@@ -104,12 +104,12 @@ class fixedSubsetLabeler(Labeler):
 
         rawLabels = [1 for _ in range(n_samples)]
         for i in range(math.ceil(n_samples / 2), n_samples):
-            rawLabels[i] = -1
+            rawLabels[i] = 0
 
         validLabels = np.array(rawLabels)[validIds]
 
         labels = validLabels
-        dict_label_class = {1: 'positive', -1: 'negative'}
+        dict_label_class = {1: 'positive', 0: 'negative'}
         return labels, dict_label_class
 
     def get_param_list(self) -> list:
@@ -121,9 +121,9 @@ class fixedSubsetLabeler(Labeler):
         params = []
         labelerTypeName = "Fixed subset labeler"
         params.append(("name", "Labeler Type" , "Generates the labels for pre-defined subsets based on the order of data points "\
-                                                +"The first half of data points is associated with the +1 class, the second half "\
-                                                +"with the -1 class. If number of data points is uneven, then the +1 class has "\
-                                                +"one more data point than -1 class.", labelerTypeName , "header"))
+                                                +"The first half of data points is associated with the positive class, the second half "\
+                                                +"with the negative class. If number of data points is uneven, then the positive class has "\
+                                                +"one more data point than negative class.", labelerTypeName , "header"))
 
         return params
 
@@ -156,11 +156,7 @@ class attributeLabeler(Labeler):
         for i in range(n_classes):
             dict_label_class[i] = classes[i]
             
-        """ if there are only 2 classes: use -1 and 1 as labels"""
         labels = np.array(labels)
-        if n_classes == 2:
-            labels = np.where(labels==0, -1, labels)
-            dict_label_class[-1] = dict_label_class[0]
 
         return labels, dict_label_class
 

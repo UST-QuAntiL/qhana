@@ -204,8 +204,6 @@ class qkeQiskitSVM(Classification):
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
-        labels = np.where(labels==-1, 0, labels) # relabeling
-
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
 
@@ -219,23 +217,8 @@ class qkeQiskitSVM(Classification):
 #         kernel_matrix = qsvm.construct_kernel_matrix(x1_vec=position_matrix, quantum_instance=quantum_instance)
 #         print(kernel_matrix)
 
-        pred_wrapper = self.prediction_wrapper(qsvm.predict)
+        return qsvm.predict, qsvm.ret['svm']['support_vectors']
 
-        #print(pred_wrapper.predict(data=position_matrix))
-        return pred_wrapper.predict, qsvm.ret['svm']['support_vectors']
-
-    """ this wrapper replaces labels 0 by -1.
-    """
-    class prediction_wrapper():
-
-        def __init__(self, pred_func):
-            self.pred_func = pred_func
-
-        def predict(self, data):
-            result = self.pred_func(data)
-            labels = np.array(result)#[1]
-            labels = np.where(labels==0, -1, labels)
-            return labels
 
     def instanciate_featuremap(self, feature_dimension):
         if self.__featuremap == "ZFeatureMap":
@@ -421,7 +404,7 @@ class variationalQiskitSVM(Classification):
 
     """ this wrapper takes the prediction function and strips off unnecessary
         data from the returned results, so it fits the form of other prediction
-        functions. It also replaces labels 0 by -1.
+        functions.
     """
     class prediction_wrapper():
 
@@ -431,7 +414,6 @@ class variationalQiskitSVM(Classification):
         def predict(self, data):
             result = self.pred_func(data)
             labels = result[1]
-            labels = np.where(labels==0, -1, labels)
             return labels
 
     def instanciate_featuremap(self, feature_dimension):
