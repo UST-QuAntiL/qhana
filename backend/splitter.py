@@ -9,6 +9,7 @@ import random
 from numpy import setdiff1d
 from sklearn.model_selection._split import train_test_split
 from random import randrange
+from classification import get_dict_dataset
 
 """
 Enum for Splitters
@@ -27,7 +28,7 @@ class SplitterTypes(enum.Enum):
         if splitterType == SplitterTypes.none:
             name = "none"
         elif splitterType == SplitterTypes.random:
-            name = "random"
+            name = "proportionalRandom"
         elif splitterType == SplitterTypes.sklearn:
             name = "sklearn"
         elif splitterType == SplitterTypes.subset:
@@ -142,33 +143,51 @@ class randomSplitter(Splitter):
         return
 
     matrix_hash = None
-    train_indices = []
+    train_set = []
+    train_labels = []
+    test_set = []
+    test_labels = []
 
     def get_train_test_set(self, position_matrix : np.matrix, labels: list, entities: List, similarity_matrix : np.matrix) -> (np.matrix, list, np.matrix, list):
         n_samples = position_matrix.shape[0]
+        n_classes = len(set(labels))
+
+        dict_class_data = get_dict_dataset(position_matrix, labels)
+        # determine how many training samples to get from each class, this should be proportional to the overall selected data
+        n_train_per_class = [math.ceil(len(dict_class_data[_class])*self.train_set_size/n_samples) for _class in set(labels)]
 
         if n_samples <= self.train_set_size:
-            self.train_indices = []
             Logger.error("Train set size in splitter is larger than number of samples.")
             raise Exception("Train set size in splitter is larger than number of samples.")
+        elif n_samples <= sum(n_train_per_class):
+            Logger.error("Failed to compute a reasonable splitting with train set proportinal to the selected data set.")
+            raise Exception("Failed to compute a reasonable splitting with train set proportinal to the selected data set.")
 
         current_hash = hash(str(position_matrix)+str(self.train_set_size))
         if not (self.reuse and current_hash == self.matrix_hash):
             self.matrix_hash = current_hash
-    
-            # select positive samples' indices
-            train_set = []
-            while len(set(train_set)) < math.ceil(self.train_set_size/2):
-                train_set.append(random.randrange(0, math.ceil(n_samples / 2)))
+            self.train_set = []
+            self.test_set = []
+            self.train_labels = []
+            self.test_labels = []
+
+            for i in range(n_classes):
+                lbl = (list(set(labels)))[i]
+                # get n_train_per_class random items from current class and add to train set
+                class_data = np.array(dict_class_data[lbl])
                 
-            # add negative samples' indices
-            while len(set(train_set)) < self.train_set_size:
-                train_set.append(random.randrange(math.ceil(n_samples / 2), n_samples))
-            self.train_indices = sorted(list(set(train_set)))
+                i_train_indices = random.sample(range(len(class_data)), n_train_per_class[i])
+                i_train = class_data[i_train_indices]
+                i_test_indices = setdiff1d(range(len(class_data)), i_train_indices)
+                i_test = class_data[i_test_indices]
 
-        test_indices = setdiff1d(range(n_samples), self.train_indices, assume_unique=True)
+                self.train_set.extend(i_train)
+                self.test_set.extend(i_test)
+                self.train_labels.extend([lbl for _ in range(len(i_train_indices))])
+                self.test_labels.extend([lbl for _ in range(len(i_test_indices))])
 
-        return position_matrix[self.train_indices], labels[self.train_indices], position_matrix[test_indices], labels[test_indices]
+        return np.array(self.train_set), np.array(self.train_labels),\
+                np.array(self.test_set), np.array(self.test_labels)
 
     def get_train_set_size(self):
         return self.train_set_size
@@ -191,8 +210,8 @@ class randomSplitter(Splitter):
         params = []
         labelerTypeName = "Random splitter"
         params.append(("name", "Splitter Type" , "Custom made random splitter: Selects a number of random items from the data set "\
-                                                +"as train data and the rest as test data "\
-                                                +"half of the train data will be in the positive class, the rest in the negative class.",
+                                                +"as train data and the rest as test data. "\
+                                                +"Aims at choosing train data approx. proportionally to the data set.",
                                                 labelerTypeName , "header"))
 
         parameter_trainsetsize = self.get_train_set_size()
