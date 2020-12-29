@@ -22,6 +22,8 @@ from qiskit.circuit.library.n_local.two_local import TwoLocal
 import random
 from numpy import setdiff1d
 from qiskit.aqua.components.multiclass_extensions import ErrorCorrectingCode, OneAgainstRest, AllPairs
+from sklearn.neural_network import MLPClassifier
+from ast import literal_eval as make_tuple
 
 """
 Enum for Classifications
@@ -32,6 +34,7 @@ class ClassificationTypes(enum.Enum):
     classicSklearnSVM = 0  # classical implementation of SVMs in scikit learn module
     qkeQiskitSVM = 1  # quantum kernel estimation method QSVM
     variationalQiskitSVM = 2  # variational SVM method
+    classicSklearnNN = 3 # classical implementation based on neutral networks (from sklearn)
 
     @staticmethod
     def get_name(classificationType) -> str:
@@ -42,6 +45,8 @@ class ClassificationTypes(enum.Enum):
             name = "qkeQiskitSVM"
         elif classificationType == ClassificationTypes.variationalQiskitSVM:
             name = "variationalQiskitSVM"
+        elif classificationType == ClassificationTypes.classicSklearnNN:
+            name = "classicSklearnNN"
         else:
             Logger.error("No name for classification \"" + str(classificationType))
             raise ValueError("No name for classification \"" + str(classificationType))
@@ -98,6 +103,8 @@ class ClassificationFactory:
             return qkeQiskitSVM()
         if type == ClassificationTypes.variationalQiskitSVM:
             return variationalQiskitSVM()
+        if type == ClassificationTypes.classicSklearnNN:
+            return ClassicSklearnNN()
         else:
             Logger.error("Unknown type of clustering. The application will quit know.")
             raise Exception("Unknown type of clustering.")
@@ -701,6 +708,87 @@ class variationalQiskitSVM(Classification):
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
+
+
+class ClassicSklearnNN(Classification):
+
+    def __init__(
+        self,
+        alpha=1e-4,
+        solver="adam",
+        hidden_layer_sizes=(100,),
+    ):
+        self.__solver = solver
+        self.__alpha = alpha
+        self.__hiddenlayersizes = hidden_layer_sizes
+        return
+
+    def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
+        classifier = MLPClassifier(alpha=self.__alpha, hidden_layer_sizes=self.__hiddenlayersizes, solver=self.__solver)
+        classifier.fit(position_matrix, labels)
+
+        return classifier.predict, []
+
+    # getter and setter params
+    def get_solver(self):
+        return self.__solver
+
+    def set_solver(self, solver):
+        self.__solver = solver
+        return
+
+    def get_alpha(self):
+        return self.__alpha
+
+    def set_alpha(self, alpha):
+        self.__alpha = alpha
+
+    def get_hiddenlayersizes(self):
+        return self.__hiddenlayersizes
+
+    def set_hiddenlayersizes(self, hiddenlayersizes):
+        self.__hiddenlayersizes = hiddenlayersizes
+
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        classificationTypeName = "Classical SVM (sklearn)"
+        params.append(("name", "ClassificationType" , "Name of choosen classification type", classificationTypeName , "header"))
+
+        parameter_solver = self.get_solver()
+        description_solver = "solver : {'lbfgs', 'sgd', 'adam'}, (default='adam')\n"\
+                            +"The solver for weight optimization."
+        params.append(("solver", "Solver" , description_solver, parameter_solver, "select",
+                       ['lbfgs', 'sgd', 'adam']))
+
+        parameter_alpha = self.get_alpha()
+        description_alpha = "alpha : float, (default=1e-4)\n"\
+                            +"L2 penalty (regularization term) parameter."
+        params.append(("alpha", "Alpha" , description_alpha, parameter_alpha, "number", 0, 0.0001))
+
+        parameter_hiddenlayersizes = str(self.get_hiddenlayersizes())
+        description_hiddenlayersizes = "Hidden layer sizes : tuple, (default=(100,))\n"\
+                            +"The ith element represents the number of neurons in the ith hidden layer."
+        params.append(("hiddenlayersizes", "Hidden layer sizes" , description_hiddenlayersizes, parameter_hiddenlayersizes, "text", "", ""))
+
+        return params
+
+    def set_param_list(self, params: list=[]) -> np.matrix:
+        for param in params:
+            if param[0] == "solver":
+                self.set_solver(param[3])
+            if param[0] == "alpha":
+                self.set_alpha(param[3])
+            if param[0] == "hiddenlayersizes":
+                self.set_hiddenlayersizes(make_tuple(param[3]))
+
+    def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
+        pass
+
 
 """ transforms data into a dictionary of the form
     {'A': np.ndarray, 'B': np.ndarray, ...}.
