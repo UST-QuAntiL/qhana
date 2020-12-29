@@ -21,6 +21,7 @@ from qiskit.circuit.library.n_local import RealAmplitudes, ExcitationPreserving,
 from qiskit.circuit.library.n_local.two_local import TwoLocal
 import random
 from numpy import setdiff1d
+from qiskit.aqua.components.multiclass_extensions import ErrorCorrectingCode, OneAgainstRest, AllPairs
 
 """
 Enum for Classifications
@@ -192,7 +193,8 @@ class qkeQiskitSVM(Classification):
         featuremap="ZFeatureMap",
         entanglement="linear",
         reps=2,
-        shots=1024
+        shots=1024,
+        multiclass_ext = "binary" # i.e. standard binary
     ):
         self.__featuremap = featuremap
         self.__backend = backend
@@ -201,6 +203,7 @@ class qkeQiskitSVM(Classification):
         self.__shots = shots
         self.__ibmq_token = ibmq_token
         self.__ibmq_custom_backend = ibmq_custom_backend
+        self.__multiclass_extension = multiclass_ext
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
@@ -209,16 +212,17 @@ class qkeQiskitSVM(Classification):
 
         dimension = position_matrix.shape[1]
         feature_map = self.instanciate_featuremap(feature_dimension=dimension)
+        multiclass_ext = self.instanciate_multiclas_extension()
 
-        qsvm = QSVM(feature_map)
+        qsvm = QSVM(feature_map, multiclass_extension=multiclass_ext)
         quantum_instance = QuantumInstance(backend, seed_simulator=9283712, seed_transpiler=9283712, shots=self.__shots)
         qsvm.train(position_matrix, labels, quantum_instance)
 
 #         kernel_matrix = qsvm.construct_kernel_matrix(x1_vec=position_matrix, quantum_instance=quantum_instance)
 #         print(kernel_matrix)
 
-        return qsvm.predict, qsvm.ret['svm']['support_vectors']
-
+        return qsvm.predict, \
+            qsvm.ret['svm']['support_vectors'] if self.__multiclass_extension == "binary" else [] # the support vectors if applicable
 
     def instanciate_featuremap(self, feature_dimension):
         if self.__featuremap == "ZFeatureMap":
@@ -229,6 +233,15 @@ class qkeQiskitSVM(Classification):
             return PauliFeatureMap(feature_dimension=feature_dimension, entanglement=self.__entanglement, reps=self.__reps)
         else:
             Logger.error("No such feature map available: {}".format(self.__featuremap))
+
+    def instanciate_multiclas_extension(self):
+        if self.__multiclass_extension == "allPairs":
+            return AllPairs()
+        elif self.__multiclass_extension == "oneAgainstRest":
+            return OneAgainstRest()
+        elif self.__multiclass_extension == "errorCorrectingCode":
+            return ErrorCorrectingCode()
+        return None
 
     # getter and setter params
     def get_featuremap(self):
@@ -274,6 +287,12 @@ class qkeQiskitSVM(Classification):
     def set_ibmq_custom_backend(self, ibmq_custom_backend):
         self.__ibmq_custom_backend = ibmq_custom_backend
         return
+
+    def get_multiclassext(self):
+        return self.__multiclass_extension
+
+    def set_multiclassext(self, multiclass_ext):
+        self.__multiclass_extension = multiclass_ext
 
     def get_param_list(self) -> list:
         """
@@ -322,6 +341,12 @@ class qkeQiskitSVM(Classification):
                             +"IBMQ-Token for access to IBMQ online service"
         params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
 
+        parameter_multiclassext = self.get_multiclassext()
+        description_multiclassext = "Multiclass extension : {'allPairs', 'oneAgainstRest', 'errorCorrectingCode', 'binary'} (default='binary')\n "\
+                            +"If number of classes is greater than 2 then a multiclass scheme "\
+                            +"must be supplied, in the form of a multiclass extension."
+        params.append(("multiclassext", "Multiclass extension" , description_multiclassext, parameter_multiclassext, "select", ["allPairs", "oneAgainstRest", "errorCorrectingCode", "binary"]))
+
         return params
 
     def set_param_list(self, params: list=[]) -> np.matrix:
@@ -340,6 +365,8 @@ class qkeQiskitSVM(Classification):
                 self.set_backend(QuantumBackends[param[3]])
             if param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
+            if param[0] == "multiclassext":
+                self.set_multiclassext(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
@@ -393,7 +420,9 @@ class variationalQiskitSVM(Classification):
         optimizer = self.instanciate_optimizer()
         var_form = self.instanciate_veriational_form(dimension)
 
-        vqc = VQC(feature_map=feature_map, optimizer=optimizer, training_dataset=get_dict_dataset(position_matrix, labels), var_form=var_form)
+        vqc = VQC(feature_map=feature_map, optimizer=optimizer, \
+                  training_dataset=get_dict_dataset(position_matrix, labels), \
+                  var_form=var_form)
         quantum_instance = QuantumInstance(backend, seed_simulator=9283712, seed_transpiler=9283712, shots=self.__shots)
 
         vqc.train(position_matrix, labels, quantum_instance)
