@@ -9,7 +9,7 @@ import random
 from numpy import setdiff1d
 from sklearn.model_selection._split import train_test_split
 from random import randrange
-from classification import get_dict_dataset
+from backend.classification import get_dict_dataset
 
 """
 Enum for Splitters
