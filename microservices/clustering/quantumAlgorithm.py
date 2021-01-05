@@ -1,16 +1,11 @@
 from abc import *
-from clusteringAlgorithm import ClusteringAlgorithm
 import numpy as np
 
 
-class QuantumClusteringAlgorithm(ABC, ClusteringAlgorithm):
+class QuantumAlgorithm(ABC):
     """
     A base class for quantum algorithms that run on IBMQ.
     """
-
-    @abstractmethod
-    async def perform_clustering(self):
-        pass
 
     def __init__(self, backend, max_qubits, shots_per_circuit):
         self.backend = backend
@@ -23,7 +18,7 @@ class QuantumClusteringAlgorithm(ABC, ClusteringAlgorithm):
 
     @backend.setter
     def backend(self, value):
-        self._backend = value
+        self.__backend = value
 
     @property
     def max_qubits(self):
@@ -31,7 +26,7 @@ class QuantumClusteringAlgorithm(ABC, ClusteringAlgorithm):
 
     @max_qubits.setter
     def max_qubits(self, value):
-        self._max_qubits = value
+        self.__max_qubits = value
 
     @property
     def shots_per_circuit(self):
@@ -39,7 +34,7 @@ class QuantumClusteringAlgorithm(ABC, ClusteringAlgorithm):
 
     @shots_per_circuit.setter
     def shots_per_circuit(self, value):
-        self._shots_per_circuit = value
+        self.__shots_per_circuit = value
 
     @staticmethod
     def _map_histogram_to_qubit_hits(histogram):
@@ -62,20 +57,38 @@ class QuantumClusteringAlgorithm(ABC, ClusteringAlgorithm):
         return qubit_hits
 
     @classmethod
-    def _calculate_odd_qubits_1_hits(cls, histogram):
+    def _calculate_qubits_0_hits(cls, histogram):
         """
-        Calculates for all odd qubits how often they hit the
-        |1> state. We use the format [odd_qubit_i, #hits|1>].
+        Calculates for all qubits how often they hit the
+        |0> state. We use the format [qubit_i, #hits|0>].
         """
 
-        # the length is half the amount of qubits, that can be read out from the
+        # the length can be read out from the
         # string of any arbitrary (e.g. the 0th) bitstring
-        length = int(len(list(histogram.keys())[0]) / 2)
+        length = int(len(list(histogram.keys())[0]))
         hits = np.zeros(length)
 
         qubit_hits_map = cls._map_histogram_to_qubit_hits(histogram)
-        for i in range(0, int(qubit_hits_map.shape[0] / 2)):
-            hits[i] = int(qubit_hits_map[i * 2][1])
+        for i in range(0, int(qubit_hits_map.shape[0])):
+            hits[i] = int(qubit_hits_map[i][0])
+
+        return hits
+
+    @classmethod
+    def _calculate_qubits_1_hits(cls, histogram):
+        """
+        Calculates for all qubits how often they hit the
+        |1> state. We use the format [qubit_i, #hits|1>].
+        """
+
+        # the length can be read out from the
+        # string of any arbitrary (e.g. the 0th) bitstring
+        length = int(len(list(histogram.keys())[0]))
+        hits = np.zeros(length)
+
+        qubit_hits_map = cls._map_histogram_to_qubit_hits(histogram)
+        for i in range(0, int(qubit_hits_map.shape[0])):
+            hits[i] = int(qubit_hits_map[i][1])
 
         return hits
 
@@ -94,5 +107,23 @@ class QuantumClusteringAlgorithm(ABC, ClusteringAlgorithm):
         qubit_hits_map = cls._map_histogram_to_qubit_hits(histogram)
         for i in range(0, int(qubit_hits_map.shape[0] / 2)):
             hits[i] = int(qubit_hits_map[i * 2][0])
+
+        return hits
+
+    @classmethod
+    def _calculate_odd_qubits_1_hits(cls, histogram):
+        """
+        Calculates for all odd qubits how often they hit the
+        |1> state. We use the format [odd_qubit_i, #hits|1>].
+        """
+
+        # the length is half the amount of qubits, that can be read out from the
+        # string of any arbitrary (e.g. the 0th) bitstring
+        length = int(len(list(histogram.keys())[0]) / 2)
+        hits = np.zeros(length)
+
+        qubit_hits_map = cls._map_histogram_to_qubit_hits(histogram)
+        for i in range(0, int(qubit_hits_map.shape[0] / 2)):
+            hits[i] = int(qubit_hits_map[i * 2][1])
 
         return hits

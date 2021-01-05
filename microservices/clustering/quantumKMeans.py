@@ -748,7 +748,12 @@ class NegativeRotationQuantumKMeans(BaseQuantumKMeans):
         data vector with index 1 -> mapped to cluster 0
         data vector with index 2 -> mapped to cluster 1
         """
-        clusterMapping = self.ExecuteNegativeRotation(data, self.k, self.maxQubits, self.shotsEach, self.maxRuns, self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "negrot")
+        clusterMapping = self.ExecuteNegativeRotation(data,
+                                                      self.k,
+                                                      self.maxQubits,
+                                                      self.shotsEach,
+                                                      self.maxRuns,
+                                                      self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "negrot")
         return clusterMapping
 
 class DestructiveInterferenceQuantumKMeans(BaseQuantumKMeans):
@@ -771,7 +776,12 @@ class DestructiveInterferenceQuantumKMeans(BaseQuantumKMeans):
         data vector with index 1 -> mapped to cluster 0
         data vector with index 2 -> mapped to cluster 1
         """
-        clusterMapping = self.ExecuteNegativeRotation(data, self.k, self.maxQubits, self.shotsEach, self.maxRuns, self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "inter")
+        clusterMapping = self.ExecuteNegativeRotation(data,
+                                                      self.k,
+                                                      self.maxQubits,
+                                                      self.shotsEach,
+                                                      self.maxRuns,
+                                                      self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "inter")
         return clusterMapping
 
 class StatePreparationQuantumKMeans(BaseQuantumKMeans):

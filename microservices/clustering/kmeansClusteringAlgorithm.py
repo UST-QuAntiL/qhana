@@ -2,95 +2,113 @@ from abc import *
 from math import *
 from clusteringAlgorithm import ClusteringAlgorithm
 import numpy as np
+import random
 
 
-class KMeansClusteringAlgorithm(ABC, ClusteringAlgorithm):
+def generate_random_data(amount):
+    """
+    Generate amount many random 2D data points and store
+    it as np.array with shape = (amount, 2).
+    """
+
+    data = np.zeros((amount, 2))
+
+    # create random float numbers per coordinate
+    for i in range(0, amount):
+        data[i][0] = random.uniform(-1.0, 1.0)
+        data[i][1] = random.uniform(-1.0, 1.0)
+
+    return data
+
+
+def standardize(data):
+    """
+    Standardize all the points given in the data np.array,
+    i.e. all the points will have zero mean and unit variance.
+    We expect the np.array to represent a matrix with the
+    coordinates of point i being data[i] = [x, y].
+    Note that a copy of the data points will be created.
+    """
+
+    # create empty arrays
+    data_x = np.zeros(data.shape[0])
+    data_y = np.zeros(data.shape[0])
+    preprocessed_data = np.zeros_like(data)
+
+    # create x and y coordinate arrays
+    for i in range(0, len(data)):
+        data_x[i] = data[i][0]
+        data_y[i] = data[i][1]
+
+    # make zero mean and unit variance, i.e. standardize
+    temp_data_x = (data_x - np.mean(data_x)) / np.std(data_x)
+    temp_data_y = (data_y - np.mean(data_y)) / np.std(data_y)
+
+    # create tuples to return
+    for i in range(0, data.shape[0]):
+        preprocessed_data[i][0] = temp_data_x[i]
+        preprocessed_data[i][1] = temp_data_y[i]
+
+    return preprocessed_data
+
+
+def normalize(data):
+    """
+    Normalize the data, i.e. every entry of data has length 1.
+    We expect the np.array to represent a matrix with the
+    coordinates of point i being data[i] = [x, y].
+    Note that a copy of the data points will be created.
+    """
+
+    preprocessed_data = np.zeros_like(data)
+
+    # create tuples and normalize
+    for i in range(0, data.shape[0]):
+        norm = sqrt(pow(data[i][0], 2) + pow(data[i][1], 2))
+        preprocessed_data[i][0] = data[i][0] / norm
+        preprocessed_data[i][1] = data[i][1] / norm
+
+    return preprocessed_data
+
+
+class KMeansClusteringAlgorithm(ClusteringAlgorithm):
     """
     A base class for KMeans clustering algorithms.
     """
 
     @abstractmethod
-    async def perform_clustering(self):
+    async def perform_clustering(self, data):
         pass
 
     def __init__(self, k, max_runs, eps):
+        ClusteringAlgorithm.__init__(self)
         self.k = k
         self.max_runs = max_runs
         self.eps = eps
 
     @property
     def k(self):
-        return self.k
+        return self.__k
 
     @k.setter
     def k(self, value):
-        self._k = value
+        self.__k = value
 
     @property
     def max_runs(self):
-        return self.max_runs
+        return self.__max_runs
 
     @max_runs.setter
     def max_runs(self, value):
-        self._max_runs = value
+        self.__max_runs = value
 
     @property
     def eps(self):
-        return self.eps
+        return self.__eps
 
     @eps.setter
     def eps(self, value):
-        self._eps = value
-
-    @staticmethod
-    def _standardize(data):
-        """
-        Standardize all the points given in the data np.array,
-        i.e. all the points will have zero mean and unit variance.
-        We expect the np.array to represent a matrix with the
-        coordinates of point i being data[i] = [x, y].
-        Note that a copy of the data points will be created.
-        """
-
-        # create empty arrays
-        data_x = np.zeros(data.shape[0])
-        data_y = np.zeros(data.shape[1])
-        preprocessed_data = np.zeros_like(data)
-
-        # create x and y coordinate arrays
-        for i in range(0, len(data)):
-            data_x[i] = data[i][0]
-            data_y[i] = data[i][1]
-
-        # make zero mean and unit variance, i.e. standardize
-        temp_data_x = (data_x - data_x.mean(axis=0)) / data_x.std(axis=0)
-        temp_data_y = (data_y - data_y.mean(axis=0)) / data_y.std(axis=0)
-
-        # create tuples to return
-        for i in range(0, data.shape[0]):
-            preprocessed_data[i][0] = temp_data_x[i]
-            preprocessed_data[i][1] = temp_data_y[i]
-
-        return preprocessed_data
-
-    @staticmethod
-    def _normalize(data):
-        """
-        Normalize the data, i.e. every entry of data has length 1.
-        We expect the np.array to represent a matrix with the
-        coordinates of point i being data[i] = [x, y].
-        Note that a copy of the data points will be created.
-        """
-
-        preprocessed_data = np.zeros_like(data)
-
-        # create tuples and normalize
-        for i in range(0, data.shape[0]):
-            norm = sqrt(pow(data[i][0], 2) + pow(data[i][1], 2))
-            preprocessed_data[i][0] = data[i][0] / norm
-            preprocessed_data[i][1] = data[i][1] / norm
-
-        return preprocessed_data
+        self.__eps = value
 
     @staticmethod
     def _calculate_centroids(centroid_mapping, old_centroids, data):
@@ -143,7 +161,7 @@ class KMeansClusteringAlgorithm(ABC, ClusteringAlgorithm):
         count_of_different_labels = 0
         amount_of_data_points = new_centroid_mapping.shape[0]
 
-        for i in range(0, len(old_centroid_mapping)):
+        for i in range(0, old_centroid_mapping.shape[0]):
             if old_centroid_mapping[i] != new_centroid_mapping[i]:
                 count_of_different_labels += 1
 
