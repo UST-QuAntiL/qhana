@@ -6,12 +6,12 @@ from typing import List
 from backend.entity import Costume
 from sklearn import svm
 import math
+import qiskit
 from qiskit import Aer
 from qiskit.aqua.algorithms import QSVM
 from qiskit.aqua.quantum_instance import QuantumInstance
 from backend.clustering import QuantumBackends  # TODO: separate from clustering
 from qiskit.circuit.library import ZZFeatureMap, PauliFeatureMap, ZFeatureMap
-
 from qiskit import IBMQ
 from qiskit.aqua.algorithms.classifiers.vqc import VQC
 from qiskit.aqua.components.optimizers import ADAM, AQGD, BOBYQA, COBYLA, NELDER_MEAD, SPSA, POWELL, NFT, TNC
@@ -25,6 +25,12 @@ from qiskit.aqua.components.multiclass_extensions import ErrorCorrectingCode, On
 from sklearn.neural_network import MLPClassifier
 from ast import literal_eval as make_tuple
 
+import torch
+from torch.autograd import Function
+import torch.optim as optim
+import torch.nn as nn
+import torch.nn.functional as F
+
 """
 Enum for Classifications
 """
@@ -35,6 +41,7 @@ class ClassificationTypes(enum.Enum):
     qkeQiskitSVM = 1  # quantum kernel estimation method QSVM
     variationalQiskitSVM = 2  # variational SVM method
     classicSklearnNN = 3 # classical implementation based on neutral networks (from sklearn)
+    HybridQNN = 4
 
     @staticmethod
     def get_name(classificationType) -> str:
@@ -47,6 +54,8 @@ class ClassificationTypes(enum.Enum):
             name = "variationalQiskitSVM"
         elif classificationType == ClassificationTypes.classicSklearnNN:
             name = "classicSklearnNN"
+        elif classificationType == ClassificationTypes.HybridQNN:
+            name = "HybridQNN"
         else:
             Logger.error("No name for classification \"" + str(classificationType))
             raise ValueError("No name for classification \"" + str(classificationType))
@@ -105,6 +114,8 @@ class ClassificationFactory:
             return variationalQiskitSVM()
         if type == ClassificationTypes.classicSklearnNN:
             return ClassicSklearnNN()
+        if type == ClassificationTypes.HybridQNN:
+            return HybridQNN()
         else:
             Logger.error("Unknown type of clustering. The application will quit know.")
             raise Exception("Unknown type of clustering.")
@@ -789,6 +800,324 @@ class ClassicSklearnNN(Classification):
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
 
+
+class HybridQNN(Classification):
+    def __init__(
+        self,
+        backend=QuantumBackends.aer_qasm_simulator,
+        ibmq_token="",
+        ibmq_custom_backend = "",
+        shots = 1024,
+        epochs = 10,
+        learning_rate = 0.01,
+        batch_size = 1,
+        shuffle = True
+    ):
+        self.__backend = backend
+        self.__ibmq_token = ibmq_token
+        self.__ibmq_custom_backend = ibmq_custom_backend
+        self.__shuffle = shuffle
+        self.__shots = shots
+        self.__epochs = epochs
+        self.__learning_rate = learning_rate
+        self.__batch_size = batch_size
+        return
+
+    def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
+        n_samples = len(labels)
+        n_classes = len(list(set(labels)))
+        if n_classes > 2:
+            raise Exception("Multi-class support for "+ str(type(self)) +" not implemented, yet.")
+
+        # shuffle
+        if self.__shuffle:
+            zipped = list(zip(position_matrix, labels))
+            random.shuffle(zipped)
+            position_matrix, labels = zip(*zipped)
+
+        # Conversion of labels to int necessary for tensorization
+        position_matrix, labels = list(position_matrix), [int(i) for i in labels]
+
+        # convert labels to one-hot
+        #labels = [np.eye(n_classes).astype(int)[label] for label in labels]
+
+        # tensorize and floatify
+        position_matrix = torch.tensor([item for item in position_matrix]).float()
+        labels = torch.tensor(labels)
+        labels = torch.tensor([item for item in labels])
+        labels = labels.long()
+
+        backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
+        model = Net(backend, self.__shots)
+        optimizer = optim.Adam(model.parameters(), lr=self.__learning_rate)
+
+        loss_func = nn.NLLLoss()
+
+        loss_list = []
+
+        model.train()
+        for epoch in range(self.__epochs):
+            total_loss = []
+            for batch_idx, (data, target) in enumerate(zip(chunk(position_matrix, self.__batch_size), chunk(labels, self.__batch_size))): # this implies batch size 1
+                optimizer.zero_grad()
+                # Forward pass
+                output = model(data)
+                # Calculating loss
+                loss = loss_func(output, target)
+                # Backward pass
+                loss.backward()
+                # Optimize the weights
+                optimizer.step()
+
+                total_loss.append(loss.item())
+            loss_list.append(sum(total_loss)/len(total_loss))
+            print('Training [{:.0f}%]\tLoss: {:.4f}'.format(
+                100. * (epoch + 1) / self.__epochs, loss_list[-1]))
+        model.eval()
+
+        def prediction_fun(test_data):
+            result = []
+            for data_point in test_data:
+                data_tensor = torch.tensor([data_point]).float()
+                data_res = model(data_tensor)
+                result.append(data_res)
+            lbls = [int(torch.argmax(res)) for res in result]
+            return np.array(lbls)
+
+        return prediction_fun, []
+
+    # getter and setter params
+    def get_shots(self):
+        return self.__shots
+
+    def set_shots(self, shots):
+        self.__shots = shots
+
+    def get_backend(self):
+        return self.__backend
+
+    def set_backend(self, backend):
+        self.__backend = backend
+
+    def get_ibmq_token(self):
+        return self.__ibmq_token
+
+    def set_ibmq_token(self, ibmq_token):
+        self.__ibmq_token = ibmq_token
+
+    def get_ibmq_custom_backend(self):
+        return self.__ibmq_custom_backend
+
+    def set_ibmq_custom_backend(self, ibmq_custom_backend):
+        self.__ibmq_custom_backend = ibmq_custom_backend
+        return
+
+    def get_epochs(self):
+        return self.__epochs
+
+    def set_epochs(self, epochs):
+        self.__epochs = epochs
+
+    def get_learningrate(self):
+        return self.__learning_rate
+
+    def set_learningrate(self, learningrate):
+        self.__learning_rate = learningrate
+
+    def get_batchsize(self):
+        return self.__batch_size
+
+    def set_batchsize(self, batch_size):
+        self.__batch_size = batch_size
+
+    def get_shuffle(self):
+        return self.__shuffle
+
+    def set_shuffle(self, shuffle):
+        self.__shuffle = shuffle
+
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        classificationTypeName = "Hybrid quantum-classical neural network"
+        params.append(("name", "ClassificationType" , "Name of choosen classification type", classificationTypeName , "header"))
+
+        parameter_backend = self.get_backend().value
+        description_backend = "Backend : Enum default(aer_statevector_simulator)\n"\
+            +" A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
+        params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select", [qb.value for qb in QuantumBackends]))
+
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") "\
+            + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend, str(parameter_ibmq_custom_backend), "text", "", ""))
+
+        parameter_ibmqtoken = self.get_ibmq_token()
+        description_ibmqtoken = "IBMQ-Token : str, (default='')\n"\
+                            +"IBMQ-Token for access to IBMQ online service"
+        params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
+
+        parameter_shots = self.get_shots()
+        description_shots = "Shots : int, (default=1024)\n"\
+                            +"Number of repetitions of each circuit, for sampling."
+        params.append(("shots", "Shots" , description_shots, parameter_shots, "number", 1, 1))
+
+        parameter_epochs = self.get_epochs()
+        description_epochs = "Epochs : int, (default=10)\n"\
+                            +"Number of learning epochs."
+        params.append(("epochs", "Epochs" , description_epochs, parameter_epochs, "number", 1, 1))
+
+        parameter_learningrate = self.get_learningrate()
+        description_learningrate = "Learning rate parameter"
+        params.append(("learningrate", "Learning rate", description_learningrate, parameter_learningrate, "number", 0, 1e-3))
+
+        parameter_batchsize = self.get_batchsize()
+        description_batchsize = "Batch size : int, (default=1)\n"\
+                            +"Batch size for training"
+        params.append(("batchsize", "Batchsize" , description_batchsize, parameter_batchsize, "number", 1, 1))
+
+        parameter_shuffle = self.get_shuffle()
+        description_shuffle = "shuffle: bool, (default=True)\n If True: randomly shuffle data before training"
+        params.append(("shuffle", "Shuffle" , description_shuffle, parameter_shuffle, "checkbox"))
+
+        return params
+
+    def set_param_list(self, params: list=[]) -> np.matrix:
+        for param in params:
+            if param[0] == "shots":
+                self.set_shots(param[3])
+            if param[0] == "ibmqtoken":
+                self.set_ibmq_token(param[3])
+            if param[0] == "quantumBackend":
+                self.set_backend(QuantumBackends[param[3]])
+            if param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
+            if param[0] == "epochs":
+                self.set_epochs(param[3])
+            if param[0] == "learningrate":
+                self.set_learningrate(param[3])
+            if param[0] == "batchsize":
+                self.set_batchsize(param[3])
+            if param[0] == "shuffle":
+                self.set_shuffle(param[3])
+
+
+    def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
+        pass
+
+# source https://qiskit.org/textbook/ch-machine-learning/machine-learning-qiskit-pytorch.html
+# Some classes for the hybrid neural network approach
+class NNQuantumCircuit:
+    """
+    This class provides a simple interface for interaction
+    with the quantum circuit
+    """
+
+    def __init__(self, n_qubits, backend, shots):
+        # --- Circuit definition ---
+        self._circuit = qiskit.QuantumCircuit(n_qubits)
+
+        all_qubits = [i for i in range(n_qubits)]
+        self.theta = qiskit.circuit.Parameter('theta')
+
+        self._circuit.h(all_qubits)
+        self._circuit.barrier()
+        self._circuit.ry(self.theta, all_qubits)
+
+        self._circuit.measure_all()
+        # ---------------------------
+
+        self.backend = backend
+        self.shots = shots
+
+    def run(self, thetas):
+        job = qiskit.execute(self._circuit,
+                             self.backend,
+                             shots = self.shots,
+                             parameter_binds = [{self.theta: theta} for theta in thetas])
+        result = job.result().get_counts(self._circuit)
+
+        counts = np.array(list(result.values()))
+        states = np.array(list(result.keys())).astype(float)
+
+        # Compute probabilities for each state
+        probabilities = counts / self.shots
+        # Get state expectation
+        expectation = np.sum(states * probabilities)
+
+        return np.array([expectation])
+
+    def draw_circuit(self):
+        self ._circuit.draw()
+
+class HybridFunction1(Function):
+    """ Hybrid quantum - classical function definition """
+
+    @staticmethod
+    def forward(ctx, input, quantum_circuit, shift):
+        """ Forward pass computation """
+        ctx.shift = shift
+        ctx.quantum_circuit = quantum_circuit
+
+        expectation_z = [ctx.quantum_circuit.run(input[i].tolist()) for i in range(len(input))]
+        result = torch.tensor(expectation_z)
+        ctx.save_for_backward(input, result)
+        return result
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        """ Backward pass computation """
+        input, expectation_z = ctx.saved_tensors
+        input_list = np.array(input.tolist())
+        shift_right = input_list + np.ones(input_list.shape) * ctx.shift
+        shift_left = input_list - np.ones(input_list.shape) * ctx.shift
+
+        gradients = []
+        for i in range(len(input_list)):
+            expectation_right = ctx.quantum_circuit.run(shift_right[i])
+            expectation_left  = ctx.quantum_circuit.run(shift_left[i])
+
+            gradient = torch.tensor([expectation_right]) - torch.tensor([expectation_left])
+            gradients.append(gradient)
+        gradients = np.array([gradients]).T
+
+        result_gradient = (torch.tensor([gradients]).float() * grad_output.float())
+
+        return result_gradient.view(len(input), 1), None, None
+
+class Hybrid(nn.Module):
+    """ Hybrid quantum - classical layer definition """
+
+    def __init__(self, backend, shots, shift):
+        super(Hybrid, self).__init__()
+        self.quantum_circuit = NNQuantumCircuit(1, backend, shots)
+        self.shift = shift
+
+    def forward(self, input):
+        return HybridFunction1.apply(input, self.quantum_circuit, self.shift)
+
+class Net(nn.Module):
+    def __init__(self, backend, shots):
+        super(Net, self).__init__()
+        self.fc1 = nn.Linear(2, 32)
+        self.fc2 = nn.Linear(32, 1)
+        self.hybrid = Hybrid(backend, shots, np.pi / 2)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        x = self.hybrid(x)
+        return torch.cat((x, 1 - x), -1)
+
+def chunk(data, batch_size):
+    chunks = []
+    for i in range(0, len(data), batch_size):
+        chunks.append(data[i:i+batch_size])
+    return chunks
 
 """ transforms data into a dictionary of the form
     {'A': np.ndarray, 'B': np.ndarray, ...}.
