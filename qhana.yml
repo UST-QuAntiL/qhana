@@ -16,5 +16,6 @@ dependencies:
   - pip
   - cvxpy
   - pylatexenc
+  - pytorch
   - pip:
     - qiskit
