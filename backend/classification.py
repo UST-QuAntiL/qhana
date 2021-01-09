@@ -225,6 +225,11 @@ class qkeQiskitSVM(Classification):
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
+        n_samples = len(labels)
+        n_classes = len(list(set(labels)))
+        if n_classes > 2 and self.__multiclass_extension == "binary":
+            raise Exception("Select a multiclass extension for "+ str(type(self)))
+
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
 
@@ -428,7 +433,11 @@ class variationalQiskitSVM(Classification):
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
-        labels = np.where(labels==-1, 0, labels) # relabeling
+        n_samples = len(labels)
+        n_classes = len(list(set(labels)))
+        if n_classes > 2:
+            raise Exception("Multi-class support for "+ str(type(self)) +" not implemented, yet.")
+
 
         """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
