@@ -5,8 +5,8 @@ Email: daniel-fink@outlook.com
 
 from quart import Quart, request, jsonify
 import os
-from negativeRotation import NegativeRotation
-from destructiveInterference import DestructiveInterference
+from negativeRotationClustering import NegativeRotationClustering
+from destructiveInterferenceClustering import DestructiveInterferenceClustering
 from sklearnClustering import SklearnClustering
 from statePreparationClustering import StatePreparationClustering
 import asyncio
@@ -56,7 +56,7 @@ def run_negative_rotation_clustering(
         backend = QuantumBackendFactory.create_backend(backend_name)
 
         # run the clustering
-        algorithm = NegativeRotation(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
+        algorithm = NegativeRotationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
         result = algorithm.perform_clustering(data)
 
         # serialize the output data
@@ -83,7 +83,7 @@ def run_destructive_interference_clustering(
         backend = QuantumBackendFactory.create_backend(backend_name)
 
         # run the clustering
-        algorithm = DestructiveInterference(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
+        algorithm = DestructiveInterferenceClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
         result = algorithm.perform_clustering(data)
 
         # serialize the output data
@@ -148,7 +148,7 @@ async def index():
     return 'QHana Clustering Microservice'
 
 
-@app.route('/api/negative-rotation', methods=['GET'])
+@app.route('/api/negative-rotation-clustering', methods=['GET'])
 async def perform_negative_rotation_clustering():
     """
     Trigger the negative rotation clustering algorithm.
@@ -215,7 +215,7 @@ async def perform_negative_rotation_clustering():
     return jsonify(message=message, status_code=status_code)
 
 
-@app.route('/api/destructive-interference', methods=['GET'])
+@app.route('/api/destructive-interference-clustering', methods=['GET'])
 async def perform_destructive_interference_clustering():
     """
     Trigger the destructive interference clustering algorithm.
@@ -282,7 +282,7 @@ async def perform_destructive_interference_clustering():
     return jsonify(message=message, status_code=status_code)
 
 
-@app.route('/api/state-preparation', methods=['GET'])
+@app.route('/api/state-preparation-clustering', methods=['GET'])
 async def perform_state_preparation_clustering():
     """
     Trigger the state preparation clustering algorithm.
@@ -349,7 +349,7 @@ async def perform_state_preparation_clustering():
     return jsonify(message=message, status_code=status_code)
 
 
-@app.route('/api/sklearn', methods=['GET'])
+@app.route('/api/sklearn-clustering', methods=['GET'])
 async def perform_sklearn_clustering():
     """
     Trigger the sklearn clustering algorithm.

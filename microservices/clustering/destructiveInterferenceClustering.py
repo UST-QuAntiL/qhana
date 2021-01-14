@@ -9,7 +9,7 @@ from qiskit import *
 import numpy as np
 
 
-class DestructiveInterference(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
+class DestructiveInterferenceClustering(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
     """
     The implementation for the destructive interference quantum KMeans algorithm
     described in https://arxiv.org/abs/1909.12183.

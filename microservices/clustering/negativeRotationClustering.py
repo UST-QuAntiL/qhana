@@ -9,7 +9,7 @@ from qiskit import *
 import numpy as np
 
 
-class NegativeRotation(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
+class NegativeRotationClustering(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
     """
     The implementation for the negative rotation quantum KMeans algorithm
     described in https://arxiv.org/abs/1909.12183.

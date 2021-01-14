@@ -4,8 +4,8 @@ Email: daniel-fink@outlook.com
 """
 
 from qiskit import Aer
-from negativeRotation import NegativeRotation
-from destructiveInterference import DestructiveInterference
+from negativeRotationClustering import NegativeRotationClustering
+from destructiveInterferenceClustering import DestructiveInterferenceClustering
 from statePreparationClustering import StatePreparationClustering
 from sklearnClustering import SklearnClustering
 from kmeansClusteringAlgorithm import standardize, normalize, generate_random_data
@@ -113,8 +113,8 @@ async def main():
 
     data = generate_random_data(amount_of_fake_data)
     data_preprocessed = normalize(standardize(data))
-    # algorithm = NegativeRotation(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
-    # algorithm = DestructiveInterference(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
+    # algorithm = NegativeRotationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
+    # algorithm = DestructiveInterferenceClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
     # algorithm = SklearnClustering(k, max_runs, eps)
     algorithm = StatePreparationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
     result = algorithm.perform_clustering(data)
