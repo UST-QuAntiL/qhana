@@ -117,7 +117,7 @@ def run_sklearn_clustering(
 
 @app.route('/')
 async def index():
-    return 'Hello World'
+    return 'QHana Clustering Microservice'
 
 
 @app.route('/api/negative-rotation', methods=['GET'])
