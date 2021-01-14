@@ -1,3 +1,8 @@
+"""
+Author: Daniel Fink
+Email: daniel-fink@outlook.com
+"""
+
 from abc import *
 from math import *
 from clusteringAlgorithm import ClusteringAlgorithm
@@ -77,7 +82,7 @@ class KMeansClusteringAlgorithm(ClusteringAlgorithm):
     """
 
     @abstractmethod
-    async def perform_clustering(self, data):
+    def perform_clustering(self, data):
         pass
 
     def __init__(self, k, max_runs, eps):

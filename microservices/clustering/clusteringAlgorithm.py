@@ -1,3 +1,8 @@
+"""
+Author: Daniel Fink
+Email: daniel-fink@outlook.com
+"""
+
 from abc import *
 
 
@@ -10,5 +15,5 @@ class ClusteringAlgorithm(ABC):
         pass
 
     @abstractmethod
-    async def perform_clustering(self, data):
+    def perform_clustering(self, data):
         pass

@@ -1,3 +1,8 @@
+"""
+Author: Daniel Fink
+Email: daniel-fink@outlook.com
+"""
+
 import enum
 
 
@@ -18,4 +23,3 @@ class ClusteringType(enum.Enum):
     NegativeRotationQuantumKMeans = 22
     DestructiveInterferenceQuantumKMeans = 23
     StatePreparationQuantumKMeans = 24
-

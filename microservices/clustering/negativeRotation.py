@@ -1,3 +1,8 @@
+"""
+Author: Daniel Fink
+Email: daniel-fink@outlook.com
+"""
+
 from rotationalKMeansClusteringAlgorithm import RotationalKMeansClusteringAlgorithm
 from quantumAlgorithm import QuantumAlgorithm
 from qiskit import *
@@ -14,7 +19,7 @@ class NegativeRotation(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
         QuantumAlgorithm.__init__(self, backend, max_qubits, shots_per_circuit)
         RotationalKMeansClusteringAlgorithm.__init__(self, k, max_runs, eps, base_vector)
 
-    async def _perform_rotational_clustering(self, centroid_angles, data_angles):
+    def _perform_rotational_clustering(self, centroid_angles, data_angles):
         """
         Perform the negative rotation clustering circuit.
 

@@ -1,3 +1,8 @@
+"""
+Author: Daniel Fink
+Email: daniel-fink@outlook.com
+"""
+
 from kmeansClusteringAlgorithm import *
 import numpy as np
 
@@ -21,10 +26,10 @@ class RotationalKMeansClusteringAlgorithm(KMeansClusteringAlgorithm):
         self.__base_vector = value
 
     @abstractmethod
-    async def _perform_rotational_clustering(self, centroid_angles, data_angles):
+    def _perform_rotational_clustering(self, centroid_angles, data_angles):
         pass
 
-    async def perform_clustering(self, data):
+    def perform_clustering(self, data):
         """
         Executes a quantum k means cluster algorithm with using the
         abstract perform_rotational_clustering method.
@@ -60,7 +65,7 @@ class RotationalKMeansClusteringAlgorithm(KMeansClusteringAlgorithm):
             centroid_angles = self._calculate_angles(centroids)
             old_centroid_mapping = np.copy(new_centroid_mapping)
 
-            new_centroid_mapping = await self._perform_rotational_clustering(centroid_angles, data_angles)
+            new_centroid_mapping = self._perform_rotational_clustering(centroid_angles, data_angles)
 
             relative_residual = self._calculate_relative_residual(old_centroid_mapping, new_centroid_mapping)
             converged = relative_residual < self.eps
