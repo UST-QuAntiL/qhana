@@ -9,9 +9,9 @@ from qiskit import *
 import numpy as np
 
 
-class NegativeRotation(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
+class DestructiveInterference(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
     """
-    The implementation for the negative rotation quantum KMeans algorithm
+    The implementation for the destructive interference quantum KMeans algorithm
     described in https://arxiv.org/abs/1909.12183.
     """
 
@@ -31,10 +31,10 @@ class NegativeRotation(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
         data vector with index 2 -> mapped to centroid 1
         ...
 
-        We need for each data angle centroid_angles.shape[0] qubits.
+        We need for each centroid-data pair two qubits.
         We do this in a chained fashion, i.e. we take the first
         data angle and use centroid_angles.shape[0] qubits.
-        If we still have free qubits, we take the next data angle
+        If we still have free qubits, we take the next test angle
         and do the same. If we reach the max_qubits limit, we execute the
         circuit and safe the result. If we are not able to test all centroids
         in one run, we just use the next run for the remaining centroids.
@@ -51,7 +51,7 @@ class NegativeRotation(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
         distances = np.zeros(global_work_amount)
 
         # create tuples of parameters corresponding for each qubit,
-        # i.e. create [[t1,c1], [t1,c2], ..., [t1,cn], [t2,c1], ..., [tm,cn]]
+        # i.e. create [t1,c1, t1,c2, ..., t1,cn, t2,c1, ..., tm,cn]
         # now with ti = data_angle_i and cj = centroid_angle_j
         parameters = []
         for i in range(0, data_angles.shape[0]):
@@ -66,24 +66,35 @@ class NegativeRotation(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
 
         # create the circuit(s)
         while queue_not_empty:
-            max_qubits_for_circuit = global_work_amount - index
+            max_qubits_for_circuit = (global_work_amount - index) * 2
 
             if self.max_qubits < max_qubits_for_circuit:
                 qubits_for_circuit = self.max_qubits
             else:
                 qubits_for_circuit = max_qubits_for_circuit
 
+            if qubits_for_circuit % 2 != 0:
+                qubits_for_circuit -= 1
+
             qc = QuantumCircuit(qubits_for_circuit, qubits_for_circuit)
 
-            for i in range(0, qubits_for_circuit):
-                # test_angle rotation
-                qc.ry(parameters[index][0], i)
+            for i in range(0, qubits_for_circuit, 2):
+                qc.h(i)
+                qc.cx(i, i+1)
 
-                # negative centroid_angle rotation
-                qc.ry(-parameters[index][1], i)
+                relative_angular = abs(parameters[index][0] - parameters[index][1])
 
-                # measure
+                # relative angular difference rotation
+                qc.ry(-relative_angular, i+1)
+
+                qc.cx(i, i+1)
+
+                # relative angular difference rotation
+                qc.ry(relative_angular, i+1)
+
+                qc.h(i)
                 qc.measure(i, i)
+                qc.measure(i+1, i+1)
 
                 index += 1
                 if index == global_work_amount:
@@ -98,20 +109,13 @@ class NegativeRotation(RotationalKMeansClusteringAlgorithm, QuantumAlgorithm):
             # store the result for this sub circuit run
             amount_executed_circuits += 1
             histogram = job.result().get_counts()
-            hits = self.calculate_qubits_0_hits(histogram)
+            hits = self.calculate_even_qubits_1_hits(histogram)
 
-            # We will assign the data point to the centroid
-            # with more 0 hits. E.g. if k = 2 we have hits
-            # for the comparison with the first and second
-            # centroid. The higher the hits, the closer we
-            # are, i.e. the lower the distance. I.e. the
-            # hit amount is anti proportional to the distance.
-            # Hence, we add a small amount to each hit (to avoid
-            # zero division) and take the inverse of it and
-            # let the super class calculate the mapping, which
-            # will assign to the centroid with minimal distance.
-            safe_delta = 50
+            # the amount of hits for the |1> state is proportional
+            # to the distance. Using 1 data point and one centroid,
+            # i.e. 2 qubits, P|11> + P|10> is proportional to the
+            # distance (but not normed)
             for i in range(0, hits.shape[0]):
-                distances[index - qubits_for_circuit + i] = 1.0 / (hits[i] + safe_delta)
+                distances[index - int(qubits_for_circuit / 2) + i] = hits[i]
 
         return self._calculate_centroid_mapping(data_angles.shape[0], centroid_angles.shape[0], distances)

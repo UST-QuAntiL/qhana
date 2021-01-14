@@ -115,8 +115,8 @@ class KMeansClusteringAlgorithm(ClusteringAlgorithm):
     def eps(self, value):
         self.__eps = value
 
-    @staticmethod
-    def _calculate_centroids(centroid_mapping, old_centroids, data):
+    @classmethod
+    def _calculate_centroids(cls, centroid_mapping, old_centroids, data):
         """
         Calculates the new cartesian positions of the
         given centroids in the centroid mapping.
@@ -151,8 +151,8 @@ class KMeansClusteringAlgorithm(ClusteringAlgorithm):
 
         return centroids
 
-    @staticmethod
-    def _calculate_relative_residual(old_centroid_mapping, new_centroid_mapping):
+    @classmethod
+    def _calculate_relative_residual(cls, old_centroid_mapping, new_centroid_mapping):
         """
         Check whether two centroid mappings are different and how different they are
         i.e. this is the convergence condition. The relative residual is the
@@ -170,4 +170,37 @@ class KMeansClusteringAlgorithm(ClusteringAlgorithm):
             if old_centroid_mapping[i] != new_centroid_mapping[i]:
                 count_of_different_labels += 1
 
-        return (count_of_different_labels / amount_of_data_points) * 100
+        relative_residual = (count_of_different_labels / amount_of_data_points) * 100
+
+        print('Relative Residual: ' + str(relative_residual))
+
+        return relative_residual
+
+    @classmethod
+    def _calculate_centroid_mapping(cls, amount_of_data, k, distances):
+        """
+        Calculates the centroid mapping given the distances.
+        I.e. we take the amount of data, k and the distances and create the
+        mapping from data point to centroid, i.e. per data point we associate
+        the centroid with the shortest distance. We suppose the distances
+        to be in the format distance_i = [dist i to c1, dist i to c2, ...]
+
+        We return a list with a mapping from data point indices to centroid indices,
+        i.e. if we return a list [2, 0, 1, ...] this means:
+
+        data vector with index 0 -> mapped to centroid with index 2
+        data vector with index 1 -> mapped to centroid 0
+        data vector with index 2 -> mapped to centroid 1
+        ...
+        """
+
+        centroid_mapping = np.zeros(amount_of_data)
+        for i in range(0, amount_of_data):
+            lowest_distance = distances[i * k + 0]
+            lowest_distance_centroid_index = 0
+            for j in range(1, k):
+                if distances[i * k + j] < lowest_distance:
+                    lowest_distance_centroid_index = j
+            centroid_mapping[i] = lowest_distance_centroid_index
+
+        return centroid_mapping
