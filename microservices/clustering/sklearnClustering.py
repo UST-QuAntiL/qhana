@@ -1,3 +1,8 @@
+"""
+Author: Daniel Fink
+Email: daniel-fink@outlook.com
+"""
+
 import numpy as np
 from sklearn.cluster import KMeans
 from kmeansClusteringAlgorithm import KMeansClusteringAlgorithm

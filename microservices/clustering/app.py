@@ -8,6 +8,7 @@ import os
 from negativeRotation import NegativeRotation
 from destructiveInterference import DestructiveInterference
 from sklearnClustering import SklearnClustering
+from statePreparationClustering import StatePreparationClustering
 import asyncio
 import aiohttp
 from numpySerializer import NumpySerializer
@@ -83,6 +84,33 @@ def run_destructive_interference_clustering(
 
         # run the clustering
         algorithm = DestructiveInterference(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
+        result = algorithm.perform_clustering(data)
+
+        # serialize the output data
+        NumpySerializer.serialize(result, output_file_path)
+
+    except Exception as ex:
+        file = open(output_file_path, 'w')
+        file.write(str(ex))
+        file.close()
+
+
+def run_state_preparation_clustering(
+        data,
+        output_file_path,
+        max_qubits=5,
+        shots_per_circuit=8192,
+        k=2,
+        max_runs=100,
+        eps=5,
+        backend_name='aer_qasm_simulator'):
+
+    try:
+        # get parameters
+        backend = QuantumBackendFactory.create_backend(backend_name)
+
+        # run the clustering
+        algorithm = StatePreparationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
         result = algorithm.perform_clustering(data)
 
         # serialize the output data
@@ -235,6 +263,73 @@ async def perform_destructive_interference_clustering():
         # perform the real clustering, i.e. start
         # a fire and forget the clustering task
         thread = Thread(target=run_destructive_interference_clustering,
+                        kwargs={
+                            'data': data,
+                            'output_file_path': output_file_path,
+                            'backend_name': backend_name,
+                            'max_qubits': max_qubits,
+                            'shots_per_circuit': shots_per_circuit,
+                            'k': k,
+                            'max_runs': max_runs,
+                            'eps': eps
+                        })
+        thread.start()
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+
+    return jsonify(message=message, status_code=status_code)
+
+
+@app.route('/api/state-preparation', methods=['GET'])
+async def perform_state_preparation_clustering():
+    """
+    Trigger the state preparation clustering algorithm.
+    We have the following parameters (name : type : default : description):
+    input_data_url : string : : download location of the input data
+    job_id : int : : the id of the job
+    backend_name : string : aer_qasm_simulator : the name for the quantum backend
+    max_qubits : int : 5 : the maximum amount of qubits used in parallel
+    shots_per_circuit : 8192 : int - how many shots per circuit
+    k : int : 2 : amount of clusters
+    max_runs : int : 100 : how many runs for the iterative procedure
+    eps : float : 5 : convergence condition
+    """
+
+    # load the data from url
+    input_data_url = request.args.get('input_data_url', type=str)
+    job_id = request.args.get('job_id', type=int)
+    backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
+    max_qubits = request.args.get('max_qubits', type=int, default=5)
+    shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
+    k = request.args.get('k', type=int, default=2)
+    max_runs = request.args.get('max_runs', type=int, default=100)
+    eps = request.args.get('eps', type=float, default=5.0)
+
+    input_file_path = './static/input' + str(job_id)
+    output_file_path = './static/output' + str(job_id)
+
+    # response parameters
+    message = "success"
+    status_code = 200
+
+    try:
+        # delete old files if exist
+        if os.path.exists(input_file_path):
+            os.remove(input_file_path)
+        if os.path.exists(output_file_path):
+            os.remove(output_file_path)
+
+        # download the input data and store it locally
+        await download_to_file(input_data_url, input_file_path)
+
+        # deserialize the input data
+        data = NumpySerializer.deserialize(input_file_path)
+
+        # perform the real clustering, i.e. start
+        # a fire and forget the clustering task
+        thread = Thread(target=run_state_preparation_clustering,
                         kwargs={
                             'data': data,
                             'output_file_path': output_file_path,
