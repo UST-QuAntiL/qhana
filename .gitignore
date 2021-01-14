@@ -9,7 +9,6 @@ plots/*
 *.pyc
 *.plk
 sessions/*
-test.py
 debug.log
 clustering.png
 scaling.png
