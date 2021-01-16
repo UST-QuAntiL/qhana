@@ -9,45 +9,45 @@ from networkx.readwrite import json_graph
 import simplejson as json
 
 
-# we store the mapping between attributes and
-# their taxonomy names with the format
-# [Attribute, taxonomy_name]
+# we store the mapping between attribute names
+# and their taxonomy names with the format
+# [attribute_name, taxonomy_name]
 attribute_taxonomy_mapping = {
-    Attribute.Location: 'Ortsbegebenheit',
-    Attribute.DominantColor: 'Farbe',
-    Attribute.StereotypeRelevant: 'StereotypRelevant',
-    Attribute.DominantFunction: 'Funktion',
-    Attribute.DominantCondition: 'Zustand',
-    Attribute.DominantCharacterTrait: 'Typus',
-    Attribute.Stereotyp: 'Stereotyp',
-    Attribute.Gender: 'Geschlecht',
-    Attribute.DominantAgeImpression: 'Alterseindruck',
-    Attribute.Genre: 'Genre',
-    Attribute.Profession: 'Rollenberuf',
-    Attribute.RoleRelevance: 'Rollenrelevanz',
-    Attribute.TimeOfSetting: 'Spielzeit',
-    Attribute.TimeOfDay: 'Tageszeit',
-    Attribute.BodyModification: 'Koerpermodifikation',
-    Attribute.MaritalStatus: 'Familienstand',
-    Attribute.CharacterTrait: 'Charaktereigenschaft',
-    Attribute.Venue: 'Spielort',
-    Attribute.VenueDetail: 'SpielortDetail',
-    Attribute.AgeImpression: 'Alterseindruck',
-    Attribute.BaseElement: 'Basiselement',
-    Attribute.Design: 'Design',
-    Attribute.Form: 'Form',
-    Attribute.WayOfWearing: 'Trageweise',
-    Attribute.Condition: 'Zustand',
-    Attribute.Function: 'Funktion',
-    Attribute.Material: 'Material',
-    Attribute.MaterialImpression: 'Materialeindruck',
-    Attribute.Color: 'Farbe',
-    Attribute.ColorImpression: 'Farbeindruck',
-    Attribute.ColorConcept: 'Farbkonzept'
+    'Location': 'Ortsbegebenheit',
+    'DominantColor': 'Farbe',
+    'StereotypeRelevant': 'StereotypRelevant',
+    'DominantFunction': 'Funktion',
+    'DominantCondition': 'Zustand',
+    'DominantCharacterTrait': 'Typus',
+    'Stereotyp': 'Stereotyp',
+    'Gender': 'Geschlecht',
+    'DominantAgeImpression': 'Alterseindruck',
+    'Genre': 'Genre',
+    'Profession': 'Rollenberuf',
+    'RoleRelevance': 'Rollenrelevanz',
+    'TimeOfSetting': 'Spielzeit',
+    'TimeOfDay': 'Tageszeit',
+    'BodyModification': 'Koerpermodifikation',
+    'MaritalStatus': 'Familienstand',
+    'CharacterTrait': 'Charaktereigenschaft',
+    'Venue': 'Spielort',
+    'VenueDetail': 'SpielortDetail',
+    'AgeImpression': 'Alterseindruck',
+    'BaseElement': 'Basiselement',
+    'Design': 'Design',
+    'Form': 'Form',
+    'WayOfWearing': 'Trageweise',
+    'Condition': 'Zustand',
+    'Function': 'Funktion',
+    'Material': 'Material',
+    'MaterialImpression': 'Materialeindruck',
+    'Color': 'Farbe',
+    'ColorImpression': 'Farbeindruck',
+    'ColorConcept': 'Farbkonzept'
 }
 
 
-class TaxonomyService:
+class TaxonomyLoadingService:
     """
     A service class loading taxonomies for the muse repository.
     Moreover, this service encapsulates the logic which attribute
