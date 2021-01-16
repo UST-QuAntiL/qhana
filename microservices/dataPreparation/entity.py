@@ -9,8 +9,7 @@ class Entity:
     Represents an entity for which machine learning techniques can be applied onto.
     """
 
-    def __init__(self, name, uid):
-        self.name = name
+    def __init__(self, uid):
         self.uid = uid
 
         # we store the attributes and the
@@ -19,20 +18,12 @@ class Entity:
         self.__attributes = dict()
 
     @property
-    def name(self):
-        return self.__name
-
-    @name.setter
-    def name(self, value):
-        self.__name = value
-
-    @property
     def uid(self):
-        return self.__id
+        return self.__uid
 
     @uid.setter
     def uid(self, value):
-        self.__id = value
+        self.__uid = value
 
     @property
     def attributes(self):
@@ -42,8 +33,7 @@ class Entity:
         """
         Returns the entity in a single string.
         """
-        output = 'Entity[' + str(self.uid) + '] '
-        output += 'name: ' + str(self.name) + ', '
-        for (attribute, value) in self.attributes:
+        output = 'Entity[' + str(self.uid) + '] = '
+        for attribute, value in self.attributes.items():
             output += str(attribute) + ": " + str(value) + ", "
         return output[:-2]

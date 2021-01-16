@@ -4,7 +4,6 @@ Email: daniel-fink@outlook.com
 """
 
 from taxonomy import Taxonomy
-from attribute import Attribute
 from networkx.readwrite import json_graph
 import simplejson as json
 
@@ -87,4 +86,4 @@ class TaxonomyLoadingService:
         Loads the taxonomy that correspond to the given attribute name.
         """
 
-        return self._load_from_json(attribute_taxonomy_mapping[attribute])
+        return self._load_from_json(attribute_taxonomy_mapping[str(attribute)])

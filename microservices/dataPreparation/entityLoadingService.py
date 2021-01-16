@@ -13,7 +13,7 @@ class EntityLoadingService:
     """
 
     @classmethod
-    def load_entities(cls, csv_file_name):
+    def load_entities(cls, file_path):
         """
         Load all entities from the given csv file.
         We always load all attributes we find in the file.
@@ -21,20 +21,18 @@ class EntityLoadingService:
         """
 
         entities = []
-        with open(csv_file_name, newline=' ') as file:
-            reader = csv.reader(file, delimiter=' ', quotechar='|')
+        with open(file_path, encoding='utf-8') as file:
+            reader = csv.reader(file)
 
             # read first row to get attributes
-            header = next(reader)
-            header = header.replace(' ', '')
-            attributes = header.split(',')
+            attributes = next(reader)
 
             # read the data and add entities
             index = 0
             for row in reader:
-                entity = Entity(str(index), str(index))
-                for attribute in attributes:
-                    entity.attributes[attribute] = row[attribute]
+                entity = Entity(index)
+                for i in range(0, len(attributes)):
+                    entity.attributes[attributes[i]] = row[i]
                 entities.append(entity)
                 index += 1
 
