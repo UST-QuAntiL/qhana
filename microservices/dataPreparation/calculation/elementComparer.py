@@ -7,7 +7,6 @@ from abc import ABCMeta
 from abc import abstractmethod
 from enum import Enum
 import networkx as nx
-from backend.logger import Logger
 import os
 import json
 import math
@@ -35,7 +34,7 @@ class ElementComparerFactory:
         if element_comparer_type == ElementComparerType.wuPalmer:
             return WuPalmer()
         else:
-            raise Exception("Unknown type of element comparer")
+            raise Exception('Unknown type of element comparer')
 
 
 class ElementComparer(metaclass=ABCMeta):
@@ -112,7 +111,7 @@ class WuPalmer(ElementComparer):
                 cache[(first, second)] = self.__compare_inner(first, second, base)
                 index += 1
                 if index % every_n_steps == 0:
-                    Logger.debug(str(index) + " from " + str(amount))
+                    Logger.debug(str(index) + ' from ' + str(amount))
 
         if not os.path.isdir('cache'):
             os.mkdir('cache')
