@@ -40,6 +40,9 @@ app = Flask(__name__)
 app.secret_key = "super secret key"
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.entitySimilarities: EntitySimilarities = None
+app.distance_matrix = None
+app.embedding = None
+app.cluster_mapping = None
 app.scaling: Scaling = None
 app.clustering: Clustering = None
 app.classification: Classification = None
@@ -86,6 +89,7 @@ def reset_all():
     ###### initialize pages ##########
     session["saveload"] = ""
     app.entitySimilarities: EntitySimilarities = None
+    app.distance_matrix = None
     app.scaling: Scaling = None
     app.clustering: Clustering = None
     app.classification: Classification = None
@@ -1191,6 +1195,7 @@ def start_calculating():
     similarities: np.matrix
     try:
         similarities = app.entitySimilarities.create_matrix_limited(min_value,max_value)
+        app.distance_matrix = similarities
         sequenz = app.entitySimilarities.get_last_sequenz_id()
         params.append(("similarityMatrix" , "Similarity Matrix" , "description" , similarities , "header"))
         params.append(("lastSequenzID" , "Last Sequenz ID" , "description" , sequenz , "header"))
@@ -1201,6 +1206,7 @@ def start_calculating():
     try:
         pos: np.matrix 
         pos = app.scaling.scaling(similarities)
+        app.embedding = pos
         stress = app.scaling.stress_level()
         ###################TZest#############
         
@@ -1222,6 +1228,7 @@ def start_calculating():
     if isinstance(app.clustering, Clustering):
         try:
             labels = app.clustering.create_cluster(pos,similarities)
+            app.cluster_mapping = labels
             params.append(("labels" , "Label Matrix" , "description" , labels , "header"))
         except Exception as error:
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
@@ -1330,6 +1337,18 @@ def view_result(value):
 
     if value == "decision_fun":
         return "<img src=" + url_for("static", filename="classification.png") + " object-fit: contain' >"
+
+@app.route("/export_<value>")
+def export(value):
+    if value == "distance_matrix":
+        np.savetxt('./static/distance_matrix.txt', app.distance_matrix)
+        return redirect(url_for("static", filename="distance_matrix.txt"), code=302)
+    if value == "embedding":
+        np.savetxt('./static/embedding.txt', app.embedding)
+        return redirect(url_for("static", filename="embedding.txt"), code=302)
+    if value == "cluster_mapping":
+        np.savetxt('./static/cluster_mapping.txt', app.cluster_mapping)
+        return redirect(url_for("static", filename="cluster_mapping.txt"), code=302)
 
 @app.route("/result_value_similarity", methods = ['POST', 'GET'])
 def result_value_similarity():

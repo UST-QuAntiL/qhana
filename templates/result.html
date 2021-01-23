@@ -31,7 +31,10 @@
                 <td style="border: 1px solid"><span >{{param[1]}}</span></td>
                 <td style="border: 1px solid"><span >{{param[2]}}</span></td>
                 <td style="border: 1px solid"><img src="/static/similarities.png" alt="image" style="width:200px"></td>
-                <td style="border: 1px solid"><a href="/view_result_{{param[0]}}" target="_blank"><input type="button" value="View similarity plot"></a>
+                <td style="border: 1px solid">
+                    <a href="/view_result_{{param[0]}}" target="_blank"><input type="button" value="View similarity plot"></a>
+                    <br>
+                    <a href="/export_distance_matrix" target="_blank"><input type="button" value="Export Distance Matrix"></a>
                     <br />
                     <form  action = "/result_value_similarity" method = "POST">
                         <br /> 
@@ -67,6 +70,8 @@
                 <td style="border: 1px solid"><img src="/static/scaling.png" alt="image" style="width:200px"></td>
                 <td style="border: 1px solid"><a href="/view_result_{{param[0]}}" target="_blank"><input type="button" value="View scaling plot"></a>
                     <br />
+                    <a href="/export_embedding" target="_blank"><input type="button" value="Export Embedding"></a>
+                    <br>
                     <form  action = "/result_coordinates" method = "POST">
                         <br /><span > 
                         N-Dim Coordinates of Entities:</span>
@@ -98,6 +103,8 @@
                 <td style="border: 1px solid"><img src="/static/clustering.png" alt="image" style="width:200px"></td>
                 <td style="border: 1px solid"><a href="/view_result_{{param[0]}}" target="_blank"><input type="button" value="View clustering plot"></a>
                     <br />
+                    <a href="/export_cluster_mapping" target="_blank"><input type="button" value="Export Cluster Mapping"></a>
+                    <br>
                     <form  action = "/result_cluster" method = "POST">
                         <br /><span >
                         Cluster of Entities:</span>
