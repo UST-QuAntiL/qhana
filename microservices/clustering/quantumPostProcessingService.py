@@ -7,39 +7,10 @@ from abc import *
 import numpy as np
 
 
-class QuantumAlgorithm(ABC):
+class QuantumPostProcessingService:
     """
-    A base class for quantum algorithms that run on Qiskit.
+    A service class for post processing of quantum experiments.
     """
-
-    def __init__(self, backend, max_qubits, shots_per_circuit):
-        self.backend = backend
-        self.max_qubits = max_qubits
-        self.shots_per_circuit = shots_per_circuit
-
-    @property
-    def backend(self):
-        return self.__backend
-
-    @backend.setter
-    def backend(self, value):
-        self.__backend = value
-
-    @property
-    def max_qubits(self):
-        return self.__max_qubits
-
-    @max_qubits.setter
-    def max_qubits(self, value):
-        self.__max_qubits = value
-
-    @property
-    def shots_per_circuit(self):
-        return self.__shots_per_circuit
-
-    @shots_per_circuit.setter
-    def shots_per_circuit(self, value):
-        self.__shots_per_circuit = value
 
     @classmethod
     def map_histogram_to_qubit_hits(cls, histogram):

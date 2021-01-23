@@ -3,14 +3,13 @@ Author: Daniel Fink
 Email: daniel-fink@outlook.com
 """
 
-from qiskit import Aer
-from negativeRotationClustering import NegativeRotationClustering
-from destructiveInterferenceClustering import DestructiveInterferenceClustering
-from statePreparationClustering import StatePreparationClustering
-from sklearnClustering import SklearnClustering
-from kmeansClusteringAlgorithm import standardize, normalize, generate_random_data
 import matplotlib.pyplot as plt
 import asyncio
+from dataProcessingService import DataProcessingService
+from fileService import FileService
+from numpySerializer import NumpySerializer
+import requests
+import json
 
 
 def get_colors(k):
@@ -60,7 +59,7 @@ def plot_data(data_lists, data_names, title, circle=False):
     return
 
 
-def plot(data_raw, data, centroid_mapping, k):
+def plot(data_raw, data, cluster_mapping, k):
     """
     Prepare data in order to plot.
     """
@@ -69,8 +68,8 @@ def plot(data_raw, data, centroid_mapping, k):
     clusters = dict()
     clusters_raw = dict()
 
-    for i in range(0, centroid_mapping.shape[0]):
-        cluster_number = int(centroid_mapping[i])
+    for i in range(0, cluster_mapping.shape[0]):
+        cluster_number = int(cluster_mapping[i])
         if cluster_number not in clusters:
             clusters[cluster_number] = []
             clusters_raw[cluster_number] = []
@@ -100,26 +99,158 @@ def plot(data_raw, data, centroid_mapping, k):
     plot_data(clusters_raw_plot, data_texts, "Raw Data")
 
 
+async def plot_data_from_urls(data_url, cluster_mapping_url, k):
+    # create paths
+    plot_folder_path = './static/test/plot/'
+    data_file_path = plot_folder_path + 'data.txt'
+    cluster_mapping_file_path = plot_folder_path + 'cluster_mapping.txt'
+
+    # create folder and delete old files
+    FileService.create_folder_if_not_exist(plot_folder_path)
+    FileService.delete_if_exist(data_file_path, cluster_mapping_file_path)
+
+    # download data
+    await FileService.download_to_file(data_url, data_file_path)
+    await FileService.download_to_file(cluster_mapping_url, cluster_mapping_file_path)
+
+    # deserialize data
+    data = NumpySerializer.deserialize(data_file_path)
+    cluster_mapping = NumpySerializer.deserialize(cluster_mapping_file_path)
+
+    # prepare plot data
+    data_preprocessed = DataProcessingService.normalize(DataProcessingService.standardize(data))
+
+    plot(data, data_preprocessed, cluster_mapping, k)
+
+
+async def initialize_centroids(root_url, job_id, k):
+    request_url = str(root_url) + '/api/centroid-calculation/initialization/' + str(job_id) + '?k=' + str(k)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['centroids_url']
+
+
+async def calculate_angles(root_url, job_id, data_url, centroids_url):
+    request_url = str(root_url) + '/api/angle-calculation/rotational-clustering/' + str(job_id) + '?' + \
+                  'data_url=' + str(data_url) + '&' + \
+                  'centroids_url=' + str(centroids_url)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['data_angles_url'], response['centroid_angles_url']
+
+
+async def generate_quantum_circuits(root_url, job_id, data_angles_url, centroid_angles_url):
+    request_url = str(root_url) + '/api/circuit-generation/negative-rotation-clustering/' + str(job_id) + '?' \
+                  'data_angles_url=' + str(data_angles_url) + '&' + \
+                  'centroid_angles_url=' + str(centroid_angles_url)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['circuits_url']
+
+
+async def execute_quantum_circuits(root_url, job_id, circuits_url, k):
+    request_url = str(root_url) + '/api/circuit-execution/negative-rotation-clustering/' + str(job_id) + '?' + \
+                  'circuits_url=' + str(circuits_url) + '&' + \
+                  'k=' + str(k)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['cluster_mapping_url']
+
+
+async def calculate_centroids(root_url, job_id, data_url, cluster_mapping_url, old_centroids_url):
+    request_url = str(root_url) + '/api/centroid-calculation/rotational-clustering/' + str(job_id) + '?' + \
+                  'data_url=' + str(data_url) + '&' + \
+                  'cluster_mapping_url=' + str(cluster_mapping_url) + '&' + \
+                  'old_centroids_url=' + str(old_centroids_url)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['centroids_url']
+
+
+async def check_convergence(root_url, job_id, new_centroids_url, old_centroids_url, eps):
+    request_url = str(root_url) + '/api/convergence-check/' + str(job_id) + '?' + \
+                  'new_centroids_url=' + str(new_centroids_url) + '&' + \
+                  'old_centroids_url=' + str(old_centroids_url) + '&' + \
+                  'eps=' + str(eps)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['convergence'], response['distance']
+
+
+async def download_url_and_generate_temp_url(url_root, file_url, file_name):
+    """
+    Downloads the file on the given url and stores it locally.
+    Also create for the locally stored file a url to access it.
+    """
+
+    test_folder_path = './static/test/'
+    test_file_path = test_folder_path + str(file_name) + '.txt'
+    FileService.create_folder_if_not_exist(test_folder_path)
+    FileService.delete_if_exist(test_file_path)
+    await FileService.download_to_file(file_url, test_file_path)
+    return url_root + '/static/test/' + file_name + '.txt'
+
+
 async def main():
-    # define parameters
-    amount_of_fake_data = 100
+    """
+    This method tests the entire workflow within a python script.
+    """
 
-    backend = Aer.get_backend("qasm_simulator")
-    max_qubits = 13
-    shots_per_circuit = 8192
+    # define main parameters
     k = 2
+    job_id = 1
+    eps = 0.001
     max_runs = 10
-    eps = 5
+    url_root = 'http://127.0.0.1:5000'
+    data_url = url_root + '/static/0_base/subset40.txt'
 
-    data = generate_random_data(amount_of_fake_data)
-    data_preprocessed = normalize(standardize(data))
-    # algorithm = NegativeRotationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
-    # algorithm = DestructiveInterferenceClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
-    # algorithm = SklearnClustering(k, max_runs, eps)
-    algorithm = StatePreparationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps, base_vector=[.5, .5])
-    result = algorithm.perform_clustering(data)
-    plot(data, data_preprocessed, result, k)
+    # use later as plot result
+    cluster_mapping_local_url = ''
 
+    # call the task
+    old_centroids_url = await initialize_centroids(url_root, job_id, k)
+    # safe the result from task locally
+    old_centroids_local_url = await download_url_and_generate_temp_url(url_root, old_centroids_url, 'old_centroids')
+
+    for i in range(1, max_runs + 1):
+
+        # call the task
+        data_angles_url, centroid_angles_url = await calculate_angles(
+            url_root, job_id, data_url, old_centroids_local_url)
+
+        # safe the result from task locally
+        data_angles_local_url = await download_url_and_generate_temp_url(url_root, data_angles_url, 'data_angles')
+        centroid_angles_local_url = await download_url_and_generate_temp_url(url_root, centroid_angles_url, 'centroid_angles')
+
+        # call the task
+        circuits_url = await generate_quantum_circuits(
+            url_root, job_id, data_angles_local_url, centroid_angles_local_url)
+
+        # safe the result from task locally
+        circuits_local_url = await download_url_and_generate_temp_url(url_root, circuits_url, 'circuits')
+
+        # call the task
+        cluster_mapping_url = await execute_quantum_circuits(
+            url_root, job_id, circuits_local_url, k)
+
+        # safe the result from task locally
+        cluster_mapping_local_url = await download_url_and_generate_temp_url(url_root, cluster_mapping_url, 'cluster_mapping')
+
+        # call the task
+        new_centroids_url = await calculate_centroids(
+            url_root, job_id, data_url, cluster_mapping_local_url, old_centroids_local_url)
+
+        # safe the result from task locally
+        new_centroids_local_url = await download_url_and_generate_temp_url(url_root, new_centroids_url, 'new_centroids')
+
+        # call the task
+        convergence, distance = await check_convergence(
+            url_root, job_id, new_centroids_local_url, old_centroids_local_url, eps)
+
+        # replace old centroids with new centroids
+        old_centroids_local_url = new_centroids_local_url
+
+        print('Iteration ' + str(i) + ' / ' + str(max_runs) + ' Distance = ' + str(distance))
+        if convergence:
+            print('Converged!')
+            break
+
+    # plot the results
+    await plot_data_from_urls(data_url, cluster_mapping_local_url, k)
 
 if __name__ == "__main__":
     asyncio.run(main())
