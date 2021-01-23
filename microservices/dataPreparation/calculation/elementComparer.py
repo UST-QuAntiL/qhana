@@ -26,13 +26,13 @@ class ElementComparerFactory:
     """
 
     @classmethod
-    def create(cls, element_comparer_type):
+    def create(cls, element_comparer_type, base):
         """
-        creates an element comparer instance given the type.
+        Creates an element comparer instance given the type.
         """
 
         if element_comparer_type == ElementComparerType.wuPalmer:
-            return WuPalmer()
+            return WuPalmer(base)
         else:
             raise Exception('Unknown type of element comparer')
 
@@ -42,8 +42,11 @@ class ElementComparer(metaclass=ABCMeta):
     Represents the abstract element comparer base class.
     """
 
+    def __init__(self, base):
+        self._base = base
+
     @abstractmethod
-    def compare(self, first, second, base):
+    def compare(self, first, second):
         """
         Returns the comparison value of first and second
         element based on the given base.
@@ -61,10 +64,11 @@ class ElementComparer(metaclass=ABCMeta):
 
 
 class WuPalmer(ElementComparer):
-    def __init__(self):
+    def __init__(self, base):
+        super().__init__(base)
         self.__cache = None
 
-    def compare(self, first, second, base):
+    def compare(self, first, second):
         """
         Applies try to use cache first if available, if not,
         run compare_inner.

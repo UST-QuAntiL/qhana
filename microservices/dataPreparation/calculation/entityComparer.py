@@ -4,6 +4,7 @@ Email: daniel-fink@outlook.com
 """
 
 import enum
+import numpy as np
 from aggregator import AggregatorType, AggregatorFactory
 from transformer import TransformerType, TransformerFactory
 from elementComparer import ElementComparerType, ElementComparerFactory
@@ -86,6 +87,7 @@ class EntityComparer:
 
     def add_attribute_comparer(self,
                                attribute,
+                               base,
                                attribute_comparer_type=AttributeComparerType.symMaxMean,
                                empty_attribute_action=EmptyAttributeAction.ignore):
         """
@@ -197,9 +199,29 @@ class EntityComparer:
 
         return self.__attribute_aggregator.aggregate(aggregation_values)
 
+    def calculate_pairwise_similarity(self, entities):
+        """
+        Calculates the pairwise similarity and returns the similarity matrix.
+        """
+
+        result = np.array((len(entities), len(entities)))
+        for i in range(0, result.shape[0]):
+            for j in range(0, result.shape[1]):
+                result[i][j] = self.calculate_similarity(entities[i], entities[j])
+
     def calculate_distance(self, first, second) -> float:
         """
         Returns the distance between the two given entities based on the
         defined similarity transformer and attribute comparer.
         """
         return self.__similarity_transformer.transform(self.calculate_similarity(first, second))
+
+    def calculate_pairwise_distance(self, entities):
+        """
+        Calculates the pairwise distance and returns the distance matrix.
+        """
+
+        result = np.array((len(entities), len(entities)))
+        for i in range(0, result.shape[0]):
+            for j in range(0, result.shape[1]):
+                result[i][j] = self.calculate_distance(entities[i], entities[j])
