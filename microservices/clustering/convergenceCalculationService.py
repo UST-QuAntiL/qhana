@@ -3,8 +3,7 @@ Author: Daniel Fink
 Email: daniel-fink@outlook.com
 """
 
-import numpy as np
-from math import acos, sqrt, pow
+from math import sqrt, pow
 
 
 class ConvergenceCalculationService:

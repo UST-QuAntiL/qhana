@@ -6,7 +6,6 @@ Email: daniel-fink@outlook.com
 from quart import Quart, request, jsonify
 import os
 import asyncio
-import aiohttp
 import numpy as np
 from numpySerializer import NumpySerializer
 from qiskitSerializer import QiskitSerializer
