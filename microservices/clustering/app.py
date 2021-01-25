@@ -298,8 +298,14 @@ async def execute_negative_rotation_circuits(job_id):
 
     # load the data from url
     circuits_url = request.args.get('circuits_url', type=str)
+    if circuits_url is None:
+        circuits_url = (await request.get_json())['circuits_url']
     k = request.args.get('k', type=int)
-    backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
+    if k is None:
+        k = (await request.get_json())['k']
+    backend_name = request.args.get('backend_name', type=str)
+    if backend_name is None:
+        backend_name = (await request.get_json())['backend_name']
     shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
 
     circuits_file_path = './static/circuit-execution/negative-rotation-clustering/circuits' \
