@@ -1,0 +1,16 @@
+name: clustering
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+dependencies:
+  - python=3.7
+  - numpy
+  - matplotlib
+  - simplejson
+  - scikit-learn
+  - quart
+  - aiohttp
+  - pip
+  - pip:
+    - qiskit
