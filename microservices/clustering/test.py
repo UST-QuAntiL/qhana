@@ -12,6 +12,10 @@ import requests
 import json
 
 
+# clustering_algorithm = 'negative-rotation'
+clustering_algorithm = 'destructive-interference'
+
+
 def get_colors(k):
     """
     Return k colors in a list. We choose from 7 different colors.
@@ -138,7 +142,8 @@ async def calculate_angles(root_url, job_id, data_url, centroids_url):
 
 
 async def generate_quantum_circuits(root_url, job_id, data_angles_url, centroid_angles_url):
-    request_url = str(root_url) + '/api/circuit-generation/negative-rotation-clustering/' + str(job_id) + '?' \
+    request_url = str(root_url) + '/api/circuit-generation/' \
+                  + str(clustering_algorithm) + '-clustering/' + str(job_id) + '?' \
                   'data_angles_url=' + str(data_angles_url) + '&' + \
                   'centroid_angles_url=' + str(centroid_angles_url)
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
@@ -146,7 +151,8 @@ async def generate_quantum_circuits(root_url, job_id, data_angles_url, centroid_
 
 
 async def execute_quantum_circuits(root_url, job_id, circuits_url, k):
-    request_url = str(root_url) + '/api/circuit-execution/negative-rotation-clustering/' + str(job_id) + '?' + \
+    request_url = str(root_url) + '/api/circuit-execution/' \
+                  + str(clustering_algorithm) + '-clustering/' + str(job_id) + '?' + \
                   'circuits_url=' + str(circuits_url) + '&' + \
                   'k=' + str(k)
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
@@ -196,7 +202,7 @@ async def main():
     eps = 0.001
     max_runs = 10
     url_root = 'http://127.0.0.1:5000'
-    data_url = url_root + '/static/0_base/subset40.txt'
+    data_url = url_root + '/static/0_base/embedding.txt'
 
     # use later as plot result
     cluster_mapping_local_url = ''
