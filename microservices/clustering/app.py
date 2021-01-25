@@ -21,9 +21,6 @@ app = Quart(__name__)
 app.config["DEBUG"] = True
 loop = asyncio.get_event_loop()
 
-if __name__ == "__main__":
-    loop.run_until_complete(app.run_task())
-
 
 def generate_url(url_root, route, file_name):
     return url_root + '/static/' + route + '/' + file_name + '.txt'
@@ -88,9 +85,13 @@ async def calculate_angles(job_id):
     We take the data and centroids and calculate the centroid and data angles.
     """
 
-    # load the data from url
+    # load the data from url or json body
     data_url = request.args.get('data_url', type=str)
+    if data_url is None:
+        data_url = (await request.get_json())['data_url']
     centroids_url = request.args.get('centroids_url', type=str)
+    if centroids_url is None:
+        centroids_url = (await request.get_json())['centroids_url']
     base_vector_x = request.args.get('base_vector_x', type=float, default=1.0)
     base_vector_y = request.args.get('base_vector_y', type=float, default=0.0)
 
@@ -169,9 +170,13 @@ async def generate_negative_rotation_circuits(job_id):
     quantum circuits as qasm strings.
     """
 
-    # load the data from url
+    # load the data from url or json body
     data_angles_url = request.args.get('data_angles_url', type=str)
+    if data_angles_url is None:
+        data_angles_url = (await request.get_json())['data_angles_url']
     centroid_angles_url = request.args.get('centroid_angles_url', type=str)
+    if centroid_angles_url is None:
+        centroid_angles_url = (await request.get_json())['centroid_angles_url']
     max_qubits = request.args.get('max_qubits', type=int, default=5)
 
     data_angles_file_path = './static/circuit-generation/negative-rotation-clustering/data_angles' \
@@ -912,3 +917,7 @@ async def perform_sklearn_clustering():
         status_code = 500
 
     return jsonify(message=message, status_code=status_code)
+
+
+if __name__ == "__main__":
+    loop.run_until_complete(app.run_task())
