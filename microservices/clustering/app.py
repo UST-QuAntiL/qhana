@@ -430,8 +430,14 @@ async def calculate_centroids(job_id):
 
     # load the data from url
     data_url = request.args.get('data_url', type=str)
+    if data_url is None:
+        data_url = (await request.get_json())['data_url']
     cluster_mapping_url = request.args.get('cluster_mapping_url', type=str)
+    if cluster_mapping_url is None:
+        cluster_mapping_url = (await request.get_json())['cluster_mapping_url']
     old_centroids_url = request.args.get('old_centroids_url', type=str)
+    if old_centroids_url is None:
+        old_centroids_url = (await request.get_json())['old_centroids_url']
 
     data_file_path = './static/centroid-calculation/rotational-clustering/data' \
                      + str(job_id) + '.txt'
