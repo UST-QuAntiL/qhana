@@ -14,7 +14,8 @@ import json
 
 # clustering_algorithm = 'negative-rotation'
 # clustering_algorithm = 'destructive-interference'
-clustering_algorithm = 'state-preparation'
+# clustering_algorithm = 'state-preparation'
+clustering_algorithm = 'sklearn'
 
 
 def get_colors(k):
@@ -160,6 +161,15 @@ async def execute_quantum_circuits(root_url, job_id, circuits_url, k):
     return response['cluster_mapping_url']
 
 
+async def perform_sklearn_clustering(root_url, job_id, data_url, centroids_url):
+    request_url = str(root_url) + '/api/classical-clustering/' \
+                  + str(clustering_algorithm) + '-clustering/' + str(job_id) + '?' + \
+                  'data_url=' + str(data_url) + '&' + \
+                  'centroids_url=' + str(centroids_url)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['cluster_mapping_url']
+
+
 async def calculate_centroids(root_url, job_id, data_url, cluster_mapping_url, old_centroids_url):
     request_url = str(root_url) + '/api/centroid-calculation/rotational-clustering/' + str(job_id) + '?' + \
                   'data_url=' + str(data_url) + '&' + \
@@ -224,15 +234,20 @@ async def main():
         centroid_angles_local_url = await download_url_and_generate_temp_url(url_root, centroid_angles_url, 'centroid_angles')
 
         # call the task
-        circuits_url = await generate_quantum_circuits(
-            url_root, job_id, data_angles_local_url, centroid_angles_local_url)
+        if clustering_algorithm is not 'sklearn':
+            circuits_url = await generate_quantum_circuits(
+                url_root, job_id, data_angles_local_url, centroid_angles_local_url)
 
-        # safe the result from task locally
-        circuits_local_url = await download_url_and_generate_temp_url(url_root, circuits_url, 'circuits')
+            # safe the result from task locally
+            circuits_local_url = await download_url_and_generate_temp_url(url_root, circuits_url, 'circuits')
 
-        # call the task
-        cluster_mapping_url = await execute_quantum_circuits(
-            url_root, job_id, circuits_local_url, k)
+        if clustering_algorithm is 'sklearn':
+            cluster_mapping_url = await perform_sklearn_clustering(
+                url_root, job_id, data_url, old_centroids_local_url)
+        else:
+            # call the task
+            cluster_mapping_url = await execute_quantum_circuits(
+                url_root, job_id, circuits_local_url, k)
 
         # safe the result from task locally
         cluster_mapping_local_url = await download_url_and_generate_temp_url(url_root, cluster_mapping_url, 'cluster_mapping')

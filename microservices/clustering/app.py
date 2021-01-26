@@ -7,6 +7,7 @@ from quart import Quart, request, jsonify
 import os
 import asyncio
 import numpy as np
+from sklearn.cluster import KMeans
 from numpySerializer import NumpySerializer
 from qiskitSerializer import QiskitSerializer
 from quantumBackendFactory import QuantumBackendFactory
@@ -535,6 +536,64 @@ async def execute_state_preparation_circuits(job_id):
         url_root = request.host_url
         cluster_mapping_url = generate_url(url_root,
                                            'circuit-execution/state-preparation-clustering',
+                                           'cluster_mapping' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+
+    return jsonify(message=message, status_code=status_code, cluster_mapping_url=cluster_mapping_url)
+
+
+@app.route('/api/classical-clustering/sklearn-clustering/<int:job_id>', methods=['POST'])
+async def perform_sklearn_clustering(job_id):
+    """
+    Executes one iteration of sklearn clustering algorithm.
+    """
+
+    # load the data from url
+    data_url = request.args.get('data_url', type=str)
+    centroids_url = request.args.get('centroids_url', type=str)
+
+    data_file_path = './static/classical-clustering/sklearn-clustering/data' \
+                     + str(job_id) + '.txt'
+    centroids_file_path = './static/classical-clustering/sklearn-clustering/centroids' \
+                          + str(job_id) + '.txt'
+    cluster_mapping_file_path = './static/classical-clustering/sklearn-clustering/cluster_mapping' \
+                                + str(job_id) + '.txt'
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+    cluster_mapping_url = ''
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/classical-clustering/sklearn-clustering/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(data_file_path, centroids_file_path, cluster_mapping_file_path)
+
+        # download the data, centroids and store it locally
+        await FileService.download_to_file(data_url, data_file_path)
+        await FileService.download_to_file(centroids_url, centroids_file_path)
+
+        # deserialize the data
+        data = NumpySerializer.deserialize(data_file_path)
+        centroids = NumpySerializer.deserialize(centroids_file_path)
+        k = centroids.shape[0]
+
+        # execute the sklearn clustering
+        kmeans_algorithm = KMeans(n_clusters=k, random_state=0, max_iter=1, tol=0.0000001, init=centroids)
+        cluster_mapping = kmeans_algorithm.fit(data).labels_.astype(np.int)
+
+        # serialize the data
+        NumpySerializer.serialize(cluster_mapping, cluster_mapping_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        cluster_mapping_url = generate_url(url_root,
+                                           'classical-clustering/sklearn-clustering',
                                            'cluster_mapping' + str(job_id))
 
     except Exception as ex:
