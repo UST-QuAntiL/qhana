@@ -16,6 +16,7 @@ from dataProcessingService import DataProcessingService
 from clusteringCircuitExecutor import ClusteringCircuitExecutor
 from convergenceCalculationService import ConvergenceCalculationService
 from fileService import FileService
+import sys
 
 app = Quart(__name__)
 app.config["DEBUG"] = True
@@ -926,4 +927,9 @@ async def perform_sklearn_clustering():
 
 
 if __name__ == "__main__":
-    loop.run_until_complete(app.run_task())
+    try:
+        port = int(sys.argv[1])
+    except Exception as ex:
+        print("Usage: {} <port>".format(sys.argv[0]))
+        exit()
+    loop.run_until_complete(app.run_task(port=port))
