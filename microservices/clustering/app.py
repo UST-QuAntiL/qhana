@@ -305,6 +305,7 @@ async def execute_negative_rotation_circuits(job_id):
     backend_name = request.args.get('backend_name', type=str)
     if backend_name is None:
         backend_name = (await request.get_json())['backend_name']
+    token = request.args.get('token', type=str, defaul='')
     shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
 
     circuits_file_path = './static/circuit-execution/negative-rotation-clustering/circuits' \
@@ -331,7 +332,7 @@ async def execute_negative_rotation_circuits(job_id):
         circuits = QiskitSerializer.deserialize(circuits_file_path)
 
         # create the quantum backend
-        backend = QuantumBackendFactory.create_backend(backend_name)
+        backend = QuantumBackendFactory.create_backend(backend_name, token)
 
         # execute the circuits
         cluster_mapping = ClusteringCircuitExecutor.execute_negative_rotation_clustering(circuits,
@@ -366,6 +367,7 @@ async def execute_destructive_interference_circuits(job_id):
     circuits_url = request.args.get('circuits_url', type=str)
     k = request.args.get('k', type=int)
     backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
+    token = request.args.get('token', type=str, defaul='')
     shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
 
     circuits_file_path = './static/circuit-execution/destructive-interference-clustering/circuits' \
@@ -392,7 +394,7 @@ async def execute_destructive_interference_circuits(job_id):
         circuits = QiskitSerializer.deserialize(circuits_file_path)
 
         # create the quantum backend
-        backend = QuantumBackendFactory.create_backend(backend_name)
+        backend = QuantumBackendFactory.create_backend(backend_name, token)
 
         # execute the circuits
         cluster_mapping = ClusteringCircuitExecutor \
