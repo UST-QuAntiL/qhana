@@ -12,10 +12,10 @@ import requests
 import json
 
 
-# clustering_algorithm = 'negative-rotation'
+clustering_algorithm = 'negative-rotation'
 # clustering_algorithm = 'destructive-interference'
 # clustering_algorithm = 'state-preparation'
-clustering_algorithm = 'sklearn'
+# clustering_algorithm = 'sklearn'
 
 
 def get_colors(k):
@@ -152,11 +152,12 @@ async def generate_quantum_circuits(root_url, job_id, data_angles_url, centroid_
     return response['circuits_url']
 
 
-async def execute_quantum_circuits(root_url, job_id, circuits_url, k):
+async def execute_quantum_circuits(root_url, job_id, circuits_url, k, backend_name):
     request_url = str(root_url) + '/api/circuit-execution/' \
                   + str(clustering_algorithm) + '-clustering/' + str(job_id) + '?' + \
                   'circuits_url=' + str(circuits_url) + '&' + \
-                  'k=' + str(k)
+                  'k=' + str(k) + '&' + \
+                  'backend_name=' + str(backend_name)
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
     return response['cluster_mapping_url']
 
@@ -214,6 +215,7 @@ async def main():
     max_runs = 10
     url_root = 'http://127.0.0.1:5000'
     data_url = url_root + '/static/0_base/embedding.txt'
+    backend_name = 'aer_qasm_simulator'
 
     # use later as plot result
     cluster_mapping_local_url = ''
@@ -247,7 +249,7 @@ async def main():
         else:
             # call the task
             cluster_mapping_url = await execute_quantum_circuits(
-                url_root, job_id, circuits_local_url, k)
+                url_root, job_id, circuits_local_url, k, backend_name)
 
         # safe the result from task locally
         cluster_mapping_local_url = await download_url_and_generate_temp_url(url_root, cluster_mapping_url, 'cluster_mapping')
