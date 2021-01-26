@@ -288,6 +288,68 @@ async def generate_destructive_interference_circuits(job_id):
     return jsonify(message=message, status_code=status_code, circuits_url=circuits_url)
 
 
+@app.route('/api/circuit-generation/state-preparation-clustering/<int:job_id>', methods=['POST'])
+async def generate_state_preparation_circuits(job_id):
+    """
+    Generates the state preparation clustering quantum circuits.
+
+    We take the data and centroid angles and return a url to a file with the
+    quantum circuits as qasm strings.
+    """
+
+    # load the data from url
+    data_angles_url = request.args.get('data_angles_url', type=str)
+    centroid_angles_url = request.args.get('centroid_angles_url', type=str)
+    max_qubits = request.args.get('max_qubits', type=int, default=5)
+
+    data_angles_file_path = './static/circuit-generation/state-preparation-clustering/data_angles' \
+                            + str(job_id) + '.txt'
+    centroid_angles_file_path = './static/circuit-generation/state-preparation-clustering/centroid_angles' \
+                                + str(job_id) + '.txt'
+    circuits_file_path = './static/circuit-generation/state-preparation-clustering/circuits' \
+                         + str(job_id) + '.txt'
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+    circuits_url = ''
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/circuit-generation/state-preparation-clustering/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(data_angles_file_path, centroid_angles_file_path, circuits_file_path)
+
+        # download the data and store it locally
+        await FileService.download_to_file(data_angles_url, data_angles_file_path)
+        await FileService.download_to_file(centroid_angles_url, centroid_angles_file_path)
+
+        # deserialize the data and centroid angles
+        data_angles = NumpySerializer.deserialize(data_angles_file_path)
+        centroid_angles = NumpySerializer.deserialize(centroid_angles_file_path)
+
+        # perform circuit generation
+        circuits = ClusteringCircuitGenerator.generate_state_preparation_clustering(max_qubits,
+                                                                                    data_angles,
+                                                                                    centroid_angles)
+
+        # serialize the quantum circuits
+        QiskitSerializer.serialize(circuits, circuits_file_path)
+
+        # generate url
+        url_root = request.host_url
+        circuits_url = generate_url(url_root,
+                                    'circuit-generation/state-preparation-clustering',
+                                    'circuits' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+
+    return jsonify(message=message, status_code=status_code, circuits_url=circuits_url)
+
+
 @app.route('/api/circuit-execution/negative-rotation-clustering/<int:job_id>', methods=['POST'])
 async def execute_negative_rotation_circuits(job_id):
     """
@@ -410,6 +472,69 @@ async def execute_destructive_interference_circuits(job_id):
         url_root = request.host_url
         cluster_mapping_url = generate_url(url_root,
                                            'circuit-execution/destructive-interference-clustering',
+                                           'cluster_mapping' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+
+    return jsonify(message=message, status_code=status_code, cluster_mapping_url=cluster_mapping_url)
+
+
+@app.route('/api/circuit-execution/state-preparation-clustering/<int:job_id>', methods=['POST'])
+async def execute_state_preparation_circuits(job_id):
+    """
+    Executes the state preparation clustering algorithm given the generated
+    quantum circuits.
+    """
+
+    # load the data from url
+    circuits_url = request.args.get('circuits_url', type=str)
+    k = request.args.get('k', type=int)
+    backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
+    token = request.args.get('token', type=str, default='')
+    shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
+
+    circuits_file_path = './static/circuit-execution/state-preparation-clustering/circuits' \
+                         + str(job_id) + '.txt'
+    cluster_mapping_file_path = './static/circuit-execution/state-preparation-clustering/cluster_mapping' \
+                                + str(job_id) + '.txt'
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+    cluster_mapping_url = ''
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/circuit-execution/state-preparation-clustering/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(circuits_file_path)
+
+        # download the circuits and store it locally
+        await FileService.download_to_file(circuits_url, circuits_file_path)
+
+        # deserialize the circuits
+        circuits = QiskitSerializer.deserialize(circuits_file_path)
+
+        # create the quantum backend
+        backend = QuantumBackendFactory.create_backend(backend_name, token)
+
+        # execute the circuits
+        cluster_mapping = ClusteringCircuitExecutor \
+            .execute_state_preparation_clustering(circuits,
+                                                  k,
+                                                  backend,
+                                                  shots_per_circuit)
+
+        # serialize the data
+        NumpySerializer.serialize(cluster_mapping, cluster_mapping_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        cluster_mapping_url = generate_url(url_root,
+                                           'circuit-execution/state-preparation-clustering',
                                            'cluster_mapping' + str(job_id))
 
     except Exception as ex:

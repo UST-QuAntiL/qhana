@@ -13,7 +13,8 @@ import json
 
 
 # clustering_algorithm = 'negative-rotation'
-clustering_algorithm = 'destructive-interference'
+# clustering_algorithm = 'destructive-interference'
+clustering_algorithm = 'state-preparation'
 
 
 def get_colors(k):
