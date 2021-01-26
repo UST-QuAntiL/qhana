@@ -17,7 +17,7 @@ from convergenceCalculationService import ConvergenceCalculationService
 from fileService import FileService
 
 app = Quart(__name__)
-app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 loop = asyncio.get_event_loop()
 
 
