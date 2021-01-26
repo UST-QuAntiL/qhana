@@ -12,5 +12,6 @@ dependencies:
   - quart
   - aiohttp
   - pip
+  - hypercorn
   - pip:
     - qiskit
