@@ -368,7 +368,9 @@ async def execute_negative_rotation_circuits(job_id):
     backend_name = request.args.get('backend_name', type=str)
     if backend_name is None:
         backend_name = (await request.get_json())['backend_name']
-    token = request.args.get('token', type=str, default='')
+    token = request.args.get('token', type=str)
+    if token is None:
+        token = (await request.get_json())['token']
     shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
 
     circuits_file_path = './static/circuit-execution/negative-rotation-clustering/circuits' \
@@ -693,7 +695,11 @@ async def check_convergence(job_id):
 
     # load the data from url
     new_centroids_url = request.args.get('new_centroids_url', type=str)
+    if new_centroids_url is None:
+        new_centroids_url = (await request.get_json())['new_centroids_url']
     old_centroids_url = request.args.get('old_centroids_url', type=str)
+    if old_centroids_url is None:
+        old_centroids_url = (await request.get_json())['old_centroids_url']
     eps = request.args.get('eps', type=float, default=0.0001)
 
     old_centroids_file_path = './static/convergence-check/old_centroids' + str(job_id) + '.txt'
