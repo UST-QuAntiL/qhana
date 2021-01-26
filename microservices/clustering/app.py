@@ -7,9 +7,9 @@ from quart import Quart, request, jsonify
 import os
 import asyncio
 import numpy as np
+from sklearn.cluster import KMeans
 from numpySerializer import NumpySerializer
 from qiskitSerializer import QiskitSerializer
-from threading import Thread
 from quantumBackendFactory import QuantumBackendFactory
 from clusteringCircuitGenerator import ClusteringCircuitGenerator
 from dataProcessingService import DataProcessingService
@@ -19,7 +19,7 @@ from fileService import FileService
 import sys
 
 app = Quart(__name__)
-app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 loop = asyncio.get_event_loop()
 
 
@@ -290,6 +290,68 @@ async def generate_destructive_interference_circuits(job_id):
     return jsonify(message=message, status_code=status_code, circuits_url=circuits_url)
 
 
+@app.route('/api/circuit-generation/state-preparation-clustering/<int:job_id>', methods=['POST'])
+async def generate_state_preparation_circuits(job_id):
+    """
+    Generates the state preparation clustering quantum circuits.
+
+    We take the data and centroid angles and return a url to a file with the
+    quantum circuits as qasm strings.
+    """
+
+    # load the data from url
+    data_angles_url = request.args.get('data_angles_url', type=str)
+    centroid_angles_url = request.args.get('centroid_angles_url', type=str)
+    max_qubits = request.args.get('max_qubits', type=int, default=5)
+
+    data_angles_file_path = './static/circuit-generation/state-preparation-clustering/data_angles' \
+                            + str(job_id) + '.txt'
+    centroid_angles_file_path = './static/circuit-generation/state-preparation-clustering/centroid_angles' \
+                                + str(job_id) + '.txt'
+    circuits_file_path = './static/circuit-generation/state-preparation-clustering/circuits' \
+                         + str(job_id) + '.txt'
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+    circuits_url = ''
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/circuit-generation/state-preparation-clustering/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(data_angles_file_path, centroid_angles_file_path, circuits_file_path)
+
+        # download the data and store it locally
+        await FileService.download_to_file(data_angles_url, data_angles_file_path)
+        await FileService.download_to_file(centroid_angles_url, centroid_angles_file_path)
+
+        # deserialize the data and centroid angles
+        data_angles = NumpySerializer.deserialize(data_angles_file_path)
+        centroid_angles = NumpySerializer.deserialize(centroid_angles_file_path)
+
+        # perform circuit generation
+        circuits = ClusteringCircuitGenerator.generate_state_preparation_clustering(max_qubits,
+                                                                                    data_angles,
+                                                                                    centroid_angles)
+
+        # serialize the quantum circuits
+        QiskitSerializer.serialize(circuits, circuits_file_path)
+
+        # generate url
+        url_root = request.host_url
+        circuits_url = generate_url(url_root,
+                                    'circuit-generation/state-preparation-clustering',
+                                    'circuits' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+
+    return jsonify(message=message, status_code=status_code, circuits_url=circuits_url)
+
+
 @app.route('/api/circuit-execution/negative-rotation-clustering/<int:job_id>', methods=['POST'])
 async def execute_negative_rotation_circuits(job_id):
     """
@@ -307,6 +369,9 @@ async def execute_negative_rotation_circuits(job_id):
     backend_name = request.args.get('backend_name', type=str)
     if backend_name is None:
         backend_name = (await request.get_json())['backend_name']
+    token = request.args.get('token', type=str)
+    if token is None:
+        token = (await request.get_json())['token']
     shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
 
     circuits_file_path = './static/circuit-execution/negative-rotation-clustering/circuits' \
@@ -333,7 +398,7 @@ async def execute_negative_rotation_circuits(job_id):
         circuits = QiskitSerializer.deserialize(circuits_file_path)
 
         # create the quantum backend
-        backend = QuantumBackendFactory.create_backend(backend_name)
+        backend = QuantumBackendFactory.create_backend(backend_name, token)
 
         # execute the circuits
         cluster_mapping = ClusteringCircuitExecutor.execute_negative_rotation_clustering(circuits,
@@ -368,6 +433,7 @@ async def execute_destructive_interference_circuits(job_id):
     circuits_url = request.args.get('circuits_url', type=str)
     k = request.args.get('k', type=int)
     backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
+    token = request.args.get('token', type=str, default='')
     shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
 
     circuits_file_path = './static/circuit-execution/destructive-interference-clustering/circuits' \
@@ -394,7 +460,7 @@ async def execute_destructive_interference_circuits(job_id):
         circuits = QiskitSerializer.deserialize(circuits_file_path)
 
         # create the quantum backend
-        backend = QuantumBackendFactory.create_backend(backend_name)
+        backend = QuantumBackendFactory.create_backend(backend_name, token)
 
         # execute the circuits
         cluster_mapping = ClusteringCircuitExecutor \
@@ -419,6 +485,127 @@ async def execute_destructive_interference_circuits(job_id):
     return jsonify(message=message, status_code=status_code, cluster_mapping_url=cluster_mapping_url)
 
 
+@app.route('/api/circuit-execution/state-preparation-clustering/<int:job_id>', methods=['POST'])
+async def execute_state_preparation_circuits(job_id):
+    """
+    Executes the state preparation clustering algorithm given the generated
+    quantum circuits.
+    """
+
+    # load the data from url
+    circuits_url = request.args.get('circuits_url', type=str)
+    k = request.args.get('k', type=int)
+    backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
+    token = request.args.get('token', type=str, default='')
+    shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
+
+    circuits_file_path = './static/circuit-execution/state-preparation-clustering/circuits' \
+                         + str(job_id) + '.txt'
+    cluster_mapping_file_path = './static/circuit-execution/state-preparation-clustering/cluster_mapping' \
+                                + str(job_id) + '.txt'
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+    cluster_mapping_url = ''
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/circuit-execution/state-preparation-clustering/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(circuits_file_path)
+
+        # download the circuits and store it locally
+        await FileService.download_to_file(circuits_url, circuits_file_path)
+
+        # deserialize the circuits
+        circuits = QiskitSerializer.deserialize(circuits_file_path)
+
+        # create the quantum backend
+        backend = QuantumBackendFactory.create_backend(backend_name, token)
+
+        # execute the circuits
+        cluster_mapping = ClusteringCircuitExecutor \
+            .execute_state_preparation_clustering(circuits,
+                                                  k,
+                                                  backend,
+                                                  shots_per_circuit)
+
+        # serialize the data
+        NumpySerializer.serialize(cluster_mapping, cluster_mapping_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        cluster_mapping_url = generate_url(url_root,
+                                           'circuit-execution/state-preparation-clustering',
+                                           'cluster_mapping' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+
+    return jsonify(message=message, status_code=status_code, cluster_mapping_url=cluster_mapping_url)
+
+
+@app.route('/api/classical-clustering/sklearn-clustering/<int:job_id>', methods=['POST'])
+async def perform_sklearn_clustering(job_id):
+    """
+    Executes one iteration of sklearn clustering algorithm.
+    """
+
+    # load the data from url
+    data_url = request.args.get('data_url', type=str)
+    centroids_url = request.args.get('centroids_url', type=str)
+
+    data_file_path = './static/classical-clustering/sklearn-clustering/data' \
+                     + str(job_id) + '.txt'
+    centroids_file_path = './static/classical-clustering/sklearn-clustering/centroids' \
+                          + str(job_id) + '.txt'
+    cluster_mapping_file_path = './static/classical-clustering/sklearn-clustering/cluster_mapping' \
+                                + str(job_id) + '.txt'
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+    cluster_mapping_url = ''
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/classical-clustering/sklearn-clustering/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(data_file_path, centroids_file_path, cluster_mapping_file_path)
+
+        # download the data, centroids and store it locally
+        await FileService.download_to_file(data_url, data_file_path)
+        await FileService.download_to_file(centroids_url, centroids_file_path)
+
+        # deserialize the data
+        data = NumpySerializer.deserialize(data_file_path)
+        centroids = NumpySerializer.deserialize(centroids_file_path)
+        k = centroids.shape[0]
+
+        # execute the sklearn clustering
+        kmeans_algorithm = KMeans(n_clusters=k, random_state=0, max_iter=1, tol=0.0000001, init=centroids)
+        cluster_mapping = kmeans_algorithm.fit(data).labels_.astype(np.int)
+
+        # serialize the data
+        NumpySerializer.serialize(cluster_mapping, cluster_mapping_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        cluster_mapping_url = generate_url(url_root,
+                                           'classical-clustering/sklearn-clustering',
+                                           'cluster_mapping' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+
+    return jsonify(message=message, status_code=status_code, cluster_mapping_url=cluster_mapping_url)
+
+
 @app.route('/api/centroid-calculation/rotational-clustering/<int:job_id>', methods=['POST'])
 async def calculate_centroids(job_id):
     """
@@ -431,8 +618,14 @@ async def calculate_centroids(job_id):
 
     # load the data from url
     data_url = request.args.get('data_url', type=str)
+    if data_url is None:
+        data_url = (await request.get_json())['data_url']
     cluster_mapping_url = request.args.get('cluster_mapping_url', type=str)
+    if cluster_mapping_url is None:
+        cluster_mapping_url = (await request.get_json())['cluster_mapping_url']
     old_centroids_url = request.args.get('old_centroids_url', type=str)
+    if old_centroids_url is None:
+        old_centroids_url = (await request.get_json())['old_centroids_url']
 
     data_file_path = './static/centroid-calculation/rotational-clustering/data' \
                      + str(job_id) + '.txt'
@@ -503,7 +696,11 @@ async def check_convergence(job_id):
 
     # load the data from url
     new_centroids_url = request.args.get('new_centroids_url', type=str)
+    if new_centroids_url is None:
+        new_centroids_url = (await request.get_json())['new_centroids_url']
     old_centroids_url = request.args.get('old_centroids_url', type=str)
+    if old_centroids_url is None:
+        old_centroids_url = (await request.get_json())['old_centroids_url']
     eps = request.args.get('eps', type=float, default=0.0001)
 
     old_centroids_file_path = './static/convergence-check/old_centroids' + str(job_id) + '.txt'
@@ -567,363 +764,6 @@ def get_negative_rotation_circuits(job_id):
             circuits_url = request.url_root[:-4] + 'static/negative_rotation_circuits' + str(job_id) + '.txt'
 
         return jsonify(message=message, status_code=status_code, circuits_url=circuits_url)
-
-
-def run_negative_rotation_clustering(
-        data,
-        output_file_path,
-        max_qubits=5,
-        shots_per_circuit=8192,
-        k=2,
-        max_runs=100,
-        eps=5,
-        backend_name='aer_qasm_simulator'):
-    try:
-        # get parameters
-        backend = QuantumBackendFactory.create_backend(backend_name)
-
-        # run the clustering
-        algorithm = NegativeRotationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
-        result = algorithm.perform_clustering(data)
-
-        # serialize the output data
-        NumpySerializer.serialize(result, output_file_path)
-
-    except Exception as ex:
-        file = open(output_file_path, 'w')
-        file.write(str(ex))
-        file.close()
-
-
-def run_destructive_interference_clustering(
-        data,
-        output_file_path,
-        max_qubits=5,
-        shots_per_circuit=8192,
-        k=2,
-        max_runs=100,
-        eps=5,
-        backend_name='aer_qasm_simulator'):
-    try:
-        # get parameters
-        backend = QuantumBackendFactory.create_backend(backend_name)
-
-        # run the clustering
-        algorithm = DestructiveInterferenceClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
-        result = algorithm.perform_clustering(data)
-
-        # serialize the output data
-        NumpySerializer.serialize(result, output_file_path)
-
-    except Exception as ex:
-        file = open(output_file_path, 'w')
-        file.write(str(ex))
-        file.close()
-
-
-def run_state_preparation_clustering(
-        data,
-        output_file_path,
-        max_qubits=5,
-        shots_per_circuit=8192,
-        k=2,
-        max_runs=100,
-        eps=5,
-        backend_name='aer_qasm_simulator'):
-    try:
-        # get parameters
-        backend = QuantumBackendFactory.create_backend(backend_name)
-
-        # run the clustering
-        algorithm = StatePreparationClustering(backend, max_qubits, shots_per_circuit, k, max_runs, eps)
-        result = algorithm.perform_clustering(data)
-
-        # serialize the output data
-        NumpySerializer.serialize(result, output_file_path)
-
-    except Exception as ex:
-        file = open(output_file_path, 'w')
-        file.write(str(ex))
-        file.close()
-
-
-def run_sklearn_clustering(
-        data,
-        output_file_path,
-        k=2,
-        max_runs=100,
-        eps=10e-4):
-    try:
-        # run the clustering
-        algorithm = SklearnClustering(k, max_runs, eps)
-        result = algorithm.perform_clustering(data)
-
-        # serialize the output data
-        NumpySerializer.serialize(result, output_file_path)
-
-    except Exception as ex:
-        file = open(output_file_path, 'w')
-        file.write(str(ex))
-        file.close()
-
-
-@app.route('/api/negative-rotation-clustering', methods=['GET'])
-async def perform_negative_rotation_clustering():
-    """
-    Trigger the negative rotation clustering algorithm.
-    We have the following parameters (name : type : default : description):
-    input_data_url : string : : download location of the input data
-    job_id : int : : the id of the job
-    backend_name : string : aer_qasm_simulator : the name for the quantum backend
-    max_qubits : int : 5 : the maximum amount of qubits used in parallel
-    shots_per_circuit : 8192 : int - how many shots per circuit
-    k : int : 2 : amount of clusters
-    max_runs : int : 100 : how many runs for the iterative procedure
-    eps : float : 5 : convergence condition
-    """
-
-    # load the data from url
-    input_data_url = request.args.get('input_data_url', type=str)
-    job_id = request.args.get('job_id', type=int)
-    backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
-    max_qubits = request.args.get('max_qubits', type=int, default=5)
-    shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
-    k = request.args.get('k', type=int, default=2)
-    max_runs = request.args.get('max_runs', type=int, default=100)
-    eps = request.args.get('eps', type=float, default=5.0)
-
-    input_file_path = './static/input' + str(job_id)
-    output_file_path = './static/output' + str(job_id)
-
-    # response parameters
-    message = "success"
-    status_code = 200
-
-    try:
-        # delete old files if exist
-        if os.path.exists(input_file_path):
-            os.remove(input_file_path)
-        if os.path.exists(output_file_path):
-            os.remove(output_file_path)
-
-        # download the input data and store it locally
-        await download_to_file(input_data_url, input_file_path)
-
-        # deserialize the input data
-        data = NumpySerializer.deserialize(input_file_path)
-
-        # perform the real clustering, i.e. start
-        # a fire and forget the clustering task
-        thread = Thread(target=run_negative_rotation_clustering,
-                        kwargs={
-                            'data': data,
-                            'output_file_path': output_file_path,
-                            'backend_name': backend_name,
-                            'max_qubits': max_qubits,
-                            'shots_per_circuit': shots_per_circuit,
-                            'k': k,
-                            'max_runs': max_runs,
-                            'eps': eps
-                        })
-        thread.start()
-
-    except Exception as ex:
-        message = str(ex)
-        status_code = 500
-
-    return jsonify(message=message, status_code=status_code)
-
-
-@app.route('/api/destructive-interference-clustering', methods=['GET'])
-async def perform_destructive_interference_clustering():
-    """
-    Trigger the destructive interference clustering algorithm.
-    We have the following parameters (name : type : default : description):
-    input_data_url : string : : download location of the input data
-    job_id : int : : the id of the job
-    backend_name : string : aer_qasm_simulator : the name for the quantum backend
-    max_qubits : int : 5 : the maximum amount of qubits used in parallel
-    shots_per_circuit : 8192 : int - how many shots per circuit
-    k : int : 2 : amount of clusters
-    max_runs : int : 100 : how many runs for the iterative procedure
-    eps : float : 5 : convergence condition
-    """
-
-    # load the data from url
-    input_data_url = request.args.get('input_data_url', type=str)
-    job_id = request.args.get('job_id', type=int)
-    backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
-    max_qubits = request.args.get('max_qubits', type=int, default=5)
-    shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
-    k = request.args.get('k', type=int, default=2)
-    max_runs = request.args.get('max_runs', type=int, default=100)
-    eps = request.args.get('eps', type=float, default=5.0)
-
-    input_file_path = './static/input' + str(job_id)
-    output_file_path = './static/output' + str(job_id)
-
-    # response parameters
-    message = "success"
-    status_code = 200
-
-    try:
-        # delete old files if exist
-        if os.path.exists(input_file_path):
-            os.remove(input_file_path)
-        if os.path.exists(output_file_path):
-            os.remove(output_file_path)
-
-        # download the input data and store it locally
-        await download_to_file(input_data_url, input_file_path)
-
-        # deserialize the input data
-        data = NumpySerializer.deserialize(input_file_path)
-
-        # perform the real clustering, i.e. start
-        # a fire and forget the clustering task
-        thread = Thread(target=run_destructive_interference_clustering,
-                        kwargs={
-                            'data': data,
-                            'output_file_path': output_file_path,
-                            'backend_name': backend_name,
-                            'max_qubits': max_qubits,
-                            'shots_per_circuit': shots_per_circuit,
-                            'k': k,
-                            'max_runs': max_runs,
-                            'eps': eps
-                        })
-        thread.start()
-
-    except Exception as ex:
-        message = str(ex)
-        status_code = 500
-
-    return jsonify(message=message, status_code=status_code)
-
-
-@app.route('/api/state-preparation-clustering', methods=['GET'])
-async def perform_state_preparation_clustering():
-    """
-    Trigger the state preparation clustering algorithm.
-    We have the following parameters (name : type : default : description):
-    input_data_url : string : : download location of the input data
-    job_id : int : : the id of the job
-    backend_name : string : aer_qasm_simulator : the name for the quantum backend
-    max_qubits : int : 5 : the maximum amount of qubits used in parallel
-    shots_per_circuit : 8192 : int - how many shots per circuit
-    k : int : 2 : amount of clusters
-    max_runs : int : 100 : how many runs for the iterative procedure
-    eps : float : 5 : convergence condition
-    """
-
-    # load the data from url
-    input_data_url = request.args.get('input_data_url', type=str)
-    job_id = request.args.get('job_id', type=int)
-    backend_name = request.args.get('backend_name', type=str, default='aer_qasm_simulator')
-    max_qubits = request.args.get('max_qubits', type=int, default=5)
-    shots_per_circuit = request.args.get('shots_per_circuit', type=int, default=8192)
-    k = request.args.get('k', type=int, default=2)
-    max_runs = request.args.get('max_runs', type=int, default=100)
-    eps = request.args.get('eps', type=float, default=5.0)
-
-    input_file_path = './static/input' + str(job_id)
-    output_file_path = './static/output' + str(job_id)
-
-    # response parameters
-    message = "success"
-    status_code = 200
-
-    try:
-        # delete old files if exist
-        if os.path.exists(input_file_path):
-            os.remove(input_file_path)
-        if os.path.exists(output_file_path):
-            os.remove(output_file_path)
-
-        # download the input data and store it locally
-        await download_to_file(input_data_url, input_file_path)
-
-        # deserialize the input data
-        data = NumpySerializer.deserialize(input_file_path)
-
-        # perform the real clustering, i.e. start
-        # a fire and forget the clustering task
-        thread = Thread(target=run_state_preparation_clustering,
-                        kwargs={
-                            'data': data,
-                            'output_file_path': output_file_path,
-                            'backend_name': backend_name,
-                            'max_qubits': max_qubits,
-                            'shots_per_circuit': shots_per_circuit,
-                            'k': k,
-                            'max_runs': max_runs,
-                            'eps': eps
-                        })
-        thread.start()
-
-    except Exception as ex:
-        message = str(ex)
-        status_code = 500
-
-    return jsonify(message=message, status_code=status_code)
-
-
-@app.route('/api/sklearn-clustering', methods=['GET'])
-async def perform_sklearn_clustering():
-    """
-    Trigger the sklearn clustering algorithm.
-    We have the following parameters (name : type : default : description):
-    input_data_url : string : : download location of the input data
-    job_id : int : : the id of the job
-    k : int : 2 : amount of clusters
-    max_runs : int : 100 : how many runs for the iterative procedure
-    eps : float : 10e-4 : convergence condition frobenius norm
-    """
-
-    # load the data from url
-    input_data_url = request.args.get('input_data_url', type=str)
-    job_id = request.args.get('job_id', type=int)
-    k = request.args.get('k', type=int, default=2)
-    max_runs = request.args.get('max_runs', type=int, default=100)
-    eps = request.args.get('eps', type=float, default=10e-4)
-
-    input_file_path = './static/input' + str(job_id)
-    output_file_path = './static/output' + str(job_id)
-
-    # response parameters
-    message = "success"
-    status_code = 200
-
-    try:
-        # delete old files if exist
-        if os.path.exists(input_file_path):
-            os.remove(input_file_path)
-        if os.path.exists(output_file_path):
-            os.remove(output_file_path)
-
-        # download the input data and store it locally
-        await download_to_file(input_data_url, input_file_path)
-
-        # deserialize the input data
-        data = NumpySerializer.deserialize(input_file_path)
-
-        # perform the real clustering, i.e. start
-        # a fire and forget the clustering task
-        thread = Thread(target=run_sklearn_clustering,
-                        kwargs={
-                            'data': data,
-                            'output_file_path': output_file_path,
-                            'k': k,
-                            'max_runs': max_runs,
-                            'eps': eps
-                        })
-        thread.start()
-
-    except Exception as ex:
-        message = str(ex)
-        status_code = 500
-
-    return jsonify(message=message, status_code=status_code)
 
 
 if __name__ == "__main__":
