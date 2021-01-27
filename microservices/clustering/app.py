@@ -17,6 +17,7 @@ from clusteringCircuitExecutor import ClusteringCircuitExecutor
 from convergenceCalculationService import ConvergenceCalculationService
 from fileService import FileService
 import sys
+from math import sqrt
 
 app = Quart(__name__)
 app.config["DEBUG"] = False
@@ -93,8 +94,8 @@ async def calculate_angles(job_id):
     centroids_url = request.args.get('centroids_url', type=str)
     if centroids_url is None:
         centroids_url = (await request.get_json())['centroids_url']
-    base_vector_x = request.args.get('base_vector_x', type=float, default=1.0)
-    base_vector_y = request.args.get('base_vector_y', type=float, default=0.0)
+    base_vector_x = request.args.get('base_vector_x', type=float, default=-0.7071)
+    base_vector_y = request.args.get('base_vector_y', type=float, default=0.7071)
 
     data_file_path = './static/angle-calculation/rotational-clustering/data' \
                      + str(job_id) + '.txt'
