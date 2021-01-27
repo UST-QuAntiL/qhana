@@ -1,11 +1,13 @@
-from quart import Quart, request, jsonify
+import sys
+from quart import Quart, request, jsonify, Response
 import asyncio
 from fileService import FileService
 from numpySerializer import NumpySerializer
 from variationalSVMCircuitGenerator import VariationalSVMCircuitGenerator
 from qiskitSerializer import QiskitSerializer
 from SPSAOptimizer import SPSAOptimizer
-import sys
+from microservices.classification.pickleSerializer import PickleSerializer
+from microservices.classification.circuitExecutor import CircuitExecutor
 
 app = Quart(__name__)
 app.config["DEBUG"] = True
@@ -27,6 +29,11 @@ async def initialize_classification(job_id):
         * generates circuit template
         * initializes optimization parameters
     """
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+
     # load the data from url or json body
     data_url = request.args.get('data-url', type=str)
     if data_url is None:
@@ -39,10 +46,6 @@ async def initialize_classification(job_id):
     entanglement = request.args.get('entanglement', type=str, default='full')
     feature_map_reps = request.args.get('feature-map-reps', type=int, default=1)
     variational_form_reps = request.args.get('variational-form-reps', type=int, default=3)
-
-    # response parameters
-    message = 'success'
-    status_code = 200
 
     # file paths (inputs)
     data_file_path = './static/variational-svm-classification/initialization/data' \
@@ -87,8 +90,11 @@ async def initialize_classification(job_id):
         circuit_template, feature_map_parameters, var_form_parameters = \
                 VariationalSVMCircuitGenerator.generateCircuitTemplate(n_dimensions, feature_map_reps, variational_form_reps, entanglement)
 
-        # store circuit template and parameter lists
-        QiskitSerializer.serialize([circuit_template], circuit_template_file_path)
+        # store circuit template
+        # TODO: Fix problems with deserialization, then use
+        # circuit_template = QiskitSerializer.deserialize(circuit_template_file_path)
+        # WORKAROUND until https://github.com/Qiskit/qiskit-terra/issues/5710 is fixed
+        PickleSerializer.serialize(circuit_template, circuit_template_file_path)
 
         # TODO: Optimizer initialization is still specific to SPSA optimizer -> generalize
         # deserialize optimizer parameters
@@ -190,6 +196,14 @@ async def generate_circuit_parameterizations(job_id):
         # create working folder if not exist
         FileService.create_folder_if_not_exist('./static/variational-svm-classification/circuit-generation/')
 
+        # delete old files if exist
+        FileService.delete_if_exist(data_file_path,
+                                    circuit_template_file_path,
+                                    thetas_file_path,
+                                    thetas_plus_file_path,
+                                    thetas_minus_file_path,
+                                    parameterizations_file_path)
+
         # download and store locally
         await FileService.download_to_file(data_url, data_file_path)
         await FileService.download_to_file(circuit_template_url, circuit_template_file_path)
@@ -199,17 +213,22 @@ async def generate_circuit_parameterizations(job_id):
 
         # deserialize inputs
         data = NumpySerializer.deserialize(data_file_path)
-        # TODO: Fix problems with deserialization
-        circuit = QiskitSerializer.deserialize(circuit_template_file_path)
+
+        # TODO: Fix problems with deserialization, then use
+        # circuit_template = QiskitSerializer.deserialize(circuit_template_file_path)
+        # WORKAROUND until https://github.com/Qiskit/qiskit-terra/issues/5710 is fixed
+        circuit_template = PickleSerializer.deserialize(circuit_template_file_path)
+
         thetas = NumpySerializer.deserialize(thetas_file_path)
         thetas_plus = NumpySerializer.deserialize(thetas_plus_file_path)
         thetas_minus = NumpySerializer.deserialize(thetas_minus_file_path)
 
         # generate parameterizations
-        parameterizations = VariationalSVMCircuitGenerator.generateCircuitParameterizations(circuit, data, [thetas, thetas_plus, thetas_minus])
+        parameterizations = VariationalSVMCircuitGenerator.generateCircuitParameterizations(circuit_template, data, [thetas, thetas_plus, thetas_minus])
 
         # serialize outputs
-        NumpySerializer.serialize(parameterizations, parameterizations_file_path)
+        # TODO: Use a more specific serializer without security issues
+        PickleSerializer.serialize(parameterizations, parameterizations_file_path)
 
         url_root = request.host_url
         parameterizations_url = generate_url(url_root,
@@ -227,11 +246,223 @@ async def generate_circuit_parameterizations(job_id):
 
 @app.route('/api/variational-svm-classification/circuit-execution/<int:job_id>', methods=['POST'])
 async def execute_circuits(job_id):
-    pass
+    """
+        Execute circuits
+        * assigns parameters of circuit template for each parameterization
+        * runs the circuit for each parameterization
+        * returns results as a list
+    """
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+
+    # load the data from url or json body
+    circuit_template_url = request.args.get('circuit-template-url', type=str)
+    if circuit_template_url is None:
+        circuit_template_url = (await request.get_json())['circuit-template-url']
+
+    parameterizations_url = request.args.get('parameterizations-url', type=str)
+    if parameterizations_url is None:
+        parameterizations_url = (await request.get_json())['parameterizations-url']
+
+    aer_backend = request.args.get('aer-backend', type=str, default='statevector_simulator')
+    shots = request.args.get('shots', type=int, default=1024)
+
+    # file paths (inputs)
+    circuit_template_file_path = './static/variational-svm-classification/circuit-execution/circuit-template' \
+                     + str(job_id) + '.txt'
+    parameterizations_file_path = './static/variational-svm-classification/circuit-execution/parameterizations' \
+                     + str(job_id) + '.txt'
+
+    # file paths (outputs)
+    results_file_path = './static/variational-svm-classification/circuit-execution/results' \
+                     + str(job_id) + '.txt'
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/variational-svm-classification/circuit-execution/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(circuit_template_file_path,
+                                    parameterizations_file_path,
+                                    results_file_path)
+
+        # download and store locally
+        await FileService.download_to_file(circuit_template_url, circuit_template_file_path)
+        await FileService.download_to_file(parameterizations_url, parameterizations_file_path)
+
+        # deserialize inputs
+
+        # TODO: Fix problems with deserialization, then use
+        # circuit_template = QiskitSerializer.deserialize(circuit_template_file_path)
+        # WORKAROUND until https://github.com/Qiskit/qiskit-terra/issues/5710 is fixed
+        circuit_template = PickleSerializer.deserialize(circuit_template_file_path)
+
+        parameterizations = PickleSerializer.deserialize(parameterizations_file_path)
+
+        results, is_statevector = CircuitExecutor.runCircuit(circuit_template, parameterizations, aer_backend, shots, add_measurements=True)
+
+        PickleSerializer.serialize(results, results_file_path)
+        url_root = request.host_url
+        results_url = generate_url(url_root,
+                                  'variational-svm-classification/circuit-execution',
+                                  'results' + str(job_id))
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+        return jsonify(message=message, status_code=status_code)
+
+
+    return jsonify(message=message,
+                   status_code=status_code,
+                   results_url=results_url,
+                   is_statevector=is_statevector)
 
 @app.route('/api/variational-svm-classification/optimization/<int:job_id>', methods=['POST'])
 async def optimize(job_id):
-    pass
+    """
+        Optimize parameters
+        * evaluates the results from circuit execution
+        * optimizes thetas using SPSA optimizer
+        * generates thetas and delta for the next round (thetas_plus, thetas_minus)
+    """
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+
+    # load the data from url or json body
+    results_url = request.args.get('results-url', type=str)
+    if results_url is None:
+        results_url = (await request.get_json())['results-url']
+
+    labels_url = request.args.get('labels-url', type=str)
+    if labels_url is None:
+        labels_url = (await request.get_json())['labels-url']
+
+    thetas_in_url = request.args.get('thetas-url', type=str)
+    if thetas_in_url is None:
+        thetas_in_url = (await request.get_json())['thetas-url']
+
+    delta_in_url = request.args.get('delta-url', type=str)
+    if delta_in_url is None:
+        delta_in_url = (await request.get_json())['delta-url']
+
+    optimizer_parameters_url = request.args.get('optimizer-parameters-url', type=str)
+    if optimizer_parameters_url is None:
+        optimizer_parameters_url = (await request.get_json())['optimizer-parameters-url']
+
+    iteration = request.args.get('iteration', type=int, default=0)
+    is_statevector = request.args.get('is-statevector', type=bool, default=False)
+
+    # file paths (inputs)
+    results_file_path = './static/variational-svm-classification/optimization/results' \
+                     + str(job_id) + '.txt'
+    labels_file_path = './static/variational-svm-classification/optimization/labels' \
+                     + str(job_id) + '.txt'
+    thetas_in_file_path = './static/variational-svm-classification/optimization/thetas-in' \
+                     + str(job_id) + '.txt'
+    delta_in_file_path = './static/variational-svm-classification/optimization/delta-in' \
+                     + str(job_id) + '.txt'
+    optimizer_parameters_file_path = './static/variational-svm-classification/optimization/optimizer-parameters' \
+                     + str(job_id) + '.txt'
+
+    # file paths (inputs)
+    thetas_out_file_path = './static/variational-svm-classification/optimization/thetas-out' \
+                     + str(job_id) + '.txt'
+    thetas_plus_file_path = './static/variational-svm-classification/optimization/thetas-plus' \
+                     + str(job_id) + '.txt'
+    thetas_minus_file_path = './static/variational-svm-classification/optimization/thetas-minus' \
+                     + str(job_id) + '.txt'
+    delta_out_file_path = './static/variational-svm-classification/optimization/delta-out' \
+                     + str(job_id) + '.txt'
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/variational-svm-classification/optimization/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(results_file_path,
+                                    labels_file_path,
+                                    thetas_in_file_path,
+                                    delta_in_file_path,
+                                    optimizer_parameters_file_path,
+                                    thetas_out_file_path,
+                                    thetas_plus_file_path,
+                                    thetas_minus_file_path,
+                                    delta_out_file_path)
+
+        # download and store locally
+        await FileService.download_to_file(results_url, results_file_path)
+        await FileService.download_to_file(labels_url, labels_file_path)
+        await FileService.download_to_file(thetas_in_url, thetas_in_file_path)
+        await FileService.download_to_file(delta_in_url, delta_in_file_path)
+        await FileService.download_to_file(optimizer_parameters_url, optimizer_parameters_file_path)
+
+        results = PickleSerializer.deserialize(results_file_path)
+        labels = NumpySerializer.deserialize(labels_file_path)
+        thetas = NumpySerializer.deserialize(thetas_in_file_path)
+        delta = NumpySerializer.deserialize(delta_in_file_path)
+        optimizer_parameters = NumpySerializer.deserialize(optimizer_parameters_file_path)
+
+        # make that sure labels are integers
+        labels = labels.astype(int)
+
+        thetas_out, thetas_plus, thetas_minus, delta_out, costs_curr = \
+                SPSAOptimizer.optimize(results, labels, thetas, delta, iteration, optimizer_parameters, is_statevector)
+
+        NumpySerializer.serialize(thetas_out, thetas_out_file_path)
+        NumpySerializer.serialize(thetas_plus, thetas_plus_file_path)
+        NumpySerializer.serialize(thetas_minus, thetas_minus_file_path)
+        NumpySerializer.serialize(delta_out, delta_out_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        thetas_out_url = generate_url(url_root,
+                                  'variational-svm-classification/optimization',
+                                  'thetas-out' + str(job_id))
+        thetas_plus_url = generate_url(url_root,
+                                  'variational-svm-classification/optimization',
+                                  'thetas-plus' + str(job_id))
+        thetas_minus_url = generate_url(url_root,
+                                  'variational-svm-classification/optimization',
+                                  'thetas-minus' + str(job_id))
+        delta_url = generate_url(url_root,
+                                  'variational-svm-classification/optimization',
+                                  'delta-out' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+        return jsonify(message=message, status_code=status_code)
+
+
+    return jsonify(message=message,
+                   status_code=status_code,
+                   thetas_out_url=thetas_out_url,
+                   thetas_plus_url=thetas_plus_url,
+                   thetas_minus_url=thetas_minus_url,
+                   delta_url=delta_url,
+                   costs_curr=costs_curr)
+
+@app.route('/static/variational-svm-classification/initialization/circuit-template<int:job_id>.txt', methods=['GET'])
+async def get_pickle_circuit(job_id):
+    payload = open('./static/variational-svm-classification/initialization/circuit-template' + str(job_id) + '.txt', 'rb').read()
+    content_type = 'application/python-pickle'
+    return Response(response=payload, mimetype=content_type)
+
+@app.route('/static/variational-svm-classification/circuit-generation/parameterizations<int:job_id>.txt', methods=['GET'])
+async def get_pickle_parameterizations(job_id):
+    payload = open('./static/variational-svm-classification/circuit-generation/parameterizations' + str(job_id) + '.txt', 'rb').read()
+    content_type = 'application/python-pickle'
+    return Response(response=payload, mimetype=content_type)
+
+@app.route('/static/variational-svm-classification/circuit-execution/results<int:job_id>.txt', methods=['GET'])
+async def get_pickle_results(job_id):
+    payload = open('./static/variational-svm-classification/circuit-execution/results' + str(job_id) + '.txt', 'rb').read()
+    content_type = 'application/python-pickle'
+    return Response(response=payload, mimetype=content_type)
 
 if __name__ == "__main__":
     try:

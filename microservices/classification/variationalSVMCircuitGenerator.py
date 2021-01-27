@@ -32,7 +32,7 @@ class VariationalSVMCircuitGenerator():
         return qc, feature_map.parameters, var_form.parameters
 
     @classmethod
-    def generateCircuitParameterizations(circuit, data: list, thetas: list):
+    def generateCircuitParameterizations(cls, circuit, data: list, thetas: list):
         """
             Prepares the circuit parameterizations for the provided data points and thetas
 
@@ -46,6 +46,7 @@ class VariationalSVMCircuitGenerator():
         n_parameterizations = len(data)
         n_dimensions = data.shape[1]
         fm_parameters, var_parameters = circuit[0][0].params, circuit[1][0].params
+        fm_parameters, var_parameters = [param.name for param in fm_parameters], [param.name for param in var_parameters]
 
         parameterizations = []
         for theta in thetas:
