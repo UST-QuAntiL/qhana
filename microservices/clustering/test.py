@@ -157,7 +157,8 @@ async def execute_quantum_circuits(root_url, job_id, circuits_url, k, backend_na
                   + str(clustering_algorithm) + '-clustering/' + str(job_id) + '?' + \
                   'circuits_url=' + str(circuits_url) + '&' + \
                   'k=' + str(k) + '&' + \
-                  'backend_name=' + str(backend_name)
+                  'backend_name=' + str(backend_name) + '&' + \
+                  'token='
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
     return response['cluster_mapping_url']
 
