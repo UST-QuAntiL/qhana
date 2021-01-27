@@ -159,21 +159,21 @@ async def generate_circuit_parameterizations(job_id):
     if data_url is None:
         data_url = (await request.get_json())['data-url']
 
-    circuit_template_url = request.args.get('circuit_template_url', type=str)
+    circuit_template_url = request.args.get('circuit-template-url', type=str)
     if circuit_template_url is None:
-        circuit_template_url = (await request.get_json())['circuit_template_url']
+        circuit_template_url = (await request.get_json())['circuit-template-url']
 
-    thetas_url = request.args.get('thetas_url', type=str)
+    thetas_url = request.args.get('thetas-url', type=str)
     if thetas_url is None:
-        thetas_url = (await request.get_json())['thetas_url']
+        thetas_url = (await request.get_json())['thetas-url']
 
-    thetas_plus_url = request.args.get('thetas_plus_url', type=str)
+    thetas_plus_url = request.args.get('thetas-plus-url', type=str)
     if thetas_plus_url is None:
-        thetas_plus_url = (await request.get_json())['thetas_plus_url']
+        thetas_plus_url = (await request.get_json())['thetas-plus-url']
 
-    thetas_minus_url = request.args.get('thetas_minus_url', type=str)
+    thetas_minus_url = request.args.get('thetas-minus-url', type=str)
     if thetas_minus_url is None:
-        thetas_minus_url = (await request.get_json())['thetas_minus_url']
+        thetas_minus_url = (await request.get_json())['thetas-minus-url']
 
 
     # file paths (inputs)
