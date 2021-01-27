@@ -773,4 +773,4 @@ if __name__ == "__main__":
     except Exception as ex:
         print("Usage: {} <port>".format(sys.argv[0]))
         exit()
-    loop.run_until_complete(app.run_task(port=port))
+    loop.run_until_complete(app.run_task(host="0.0.0.0", port=port))
