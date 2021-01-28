@@ -28,11 +28,13 @@ async def generate_parameterizations_varSVM(url_root, job_id, data_url, circuit_
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
     return response['parameterizations_url']
 
-async def run_circuit_parameterizations(url_root, job_id, circuit_template_url, parameterizations_url):
+async def run_circuit_parameterizations(url_root, job_id, circuit_template_url, parameterizations_url, backend, token):
     request_url = url_root + '/api/variational-svm-classification/circuit-execution/' +\
                                 str(job_id) +\
                                 '?circuit-template-url=' + circuit_template_url +\
-                                '&parameterizations-url=' + parameterizations_url
+                                '&parameterizations-url=' + parameterizations_url +\
+                                '&backend=' + backend +\
+                                '&token=' + token
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
     return response['results_url'],\
             response['is_statevector']
@@ -66,6 +68,8 @@ async def test_varSVM():
     data_url = url_root + '/static/0_base/embedding0.txt'
     labels_url = url_root + '/static/0_base/labels0.txt'
     optimizer_parameters_url = url_root + '/static/0_base/optimizer-parameters.txt'
+    backend = 'aer_qasm_simulator'
+    token = ''
 
     job_id = 0
 
@@ -92,7 +96,9 @@ async def test_varSVM():
                 await run_circuit_parameterizations(url_root,\
                                                     job_id,\
                                                     circuit_template_url,\
-                                                    parameterizations_url)
+                                                    parameterizations_url,\
+                                                    backend,\
+                                                    token)
 
         thetas_url, thetas_plus_url, thetas_minus_url, delta_url, costs_curr = \
                 await optimize_varSVM(url_root,\

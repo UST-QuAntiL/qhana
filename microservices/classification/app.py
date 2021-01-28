@@ -266,7 +266,8 @@ async def execute_circuits(job_id):
     if parameterizations_url is None:
         parameterizations_url = (await request.get_json())['parameterizations-url']
 
-    aer_backend = request.args.get('aer-backend', type=str, default='statevector_simulator')
+    backend = request.args.get('backend', type=str, default='aer_statevector_simulator')
+    token = request.args.get('token', type=str, default='')
     shots = request.args.get('shots', type=int, default=1024)
 
     # file paths (inputs)
@@ -301,7 +302,7 @@ async def execute_circuits(job_id):
 
         parameterizations = PickleSerializer.deserialize(parameterizations_file_path)
 
-        results, is_statevector = CircuitExecutor.runCircuit(circuit_template, parameterizations, aer_backend, shots, add_measurements=True)
+        results, is_statevector = CircuitExecutor.runCircuit(circuit_template, parameterizations, backend, token, shots, add_measurements=True)
 
         PickleSerializer.serialize(results, results_file_path)
         url_root = request.host_url
