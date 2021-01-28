@@ -33,7 +33,7 @@ async def run_circuit_parameterizations(url_root, job_id, circuit_template_url, 
                                 str(job_id) +\
                                 '?circuit-template-url=' + circuit_template_url +\
                                 '&parameterizations-url=' + parameterizations_url +\
-                                '&backend=' + backend +\
+                                '&backend_name=' + backend +\
                                 '&token=' + token
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
     return response['results_url'],\
