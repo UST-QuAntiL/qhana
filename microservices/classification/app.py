@@ -8,6 +8,8 @@ from qiskitSerializer import QiskitSerializer
 from SPSAOptimizer import SPSAOptimizer
 from pickleSerializer import PickleSerializer
 from circuitExecutor import CircuitExecutor
+from listSerializer import ListSerializer
+from resultsSerializer import ResultsSerializer
 
 app = Quart(__name__)
 app.config["DEBUG"] = False
@@ -227,8 +229,7 @@ async def generate_circuit_parameterizations(job_id):
         parameterizations = VariationalSVMCircuitGenerator.generateCircuitParameterizations(circuit_template, data, [thetas, thetas_plus, thetas_minus])
 
         # serialize outputs
-        # TODO: Use a more specific serializer without security issues
-        PickleSerializer.serialize(parameterizations, parameterizations_file_path)
+        ListSerializer.serialize(parameterizations, parameterizations_file_path)
 
         url_root = request.host_url
         parameterizations_url = generate_url(url_root,
@@ -305,11 +306,11 @@ async def execute_circuits(job_id):
         # WORKAROUND until https://github.com/Qiskit/qiskit-terra/issues/5710 is fixed
         circuit_template = PickleSerializer.deserialize(circuit_template_file_path)
 
-        parameterizations = PickleSerializer.deserialize(parameterizations_file_path)
+        parameterizations = ListSerializer.deserialize(parameterizations_file_path)
 
         results, is_statevector = CircuitExecutor.runCircuit(circuit_template, parameterizations, backend_name, token, shots, add_measurements=True)
 
-        PickleSerializer.serialize(results, results_file_path)
+        ResultsSerializer.serialize(results, results_file_path)
         url_root = request.host_url
         results_url = generate_url(url_root,
                                   'variational-svm-classification/circuit-execution',
@@ -407,7 +408,7 @@ async def optimize(job_id):
         await FileService.download_to_file(delta_in_url, delta_in_file_path)
         await FileService.download_to_file(optimizer_parameters_url, optimizer_parameters_file_path)
 
-        results = PickleSerializer.deserialize(results_file_path)
+        results = ResultsSerializer.deserialize(results_file_path)
         labels = NumpySerializer.deserialize(labels_file_path)
         thetas = NumpySerializer.deserialize(thetas_in_file_path)
         delta = NumpySerializer.deserialize(delta_in_file_path)
@@ -456,18 +457,6 @@ async def optimize(job_id):
 @app.route('/static/variational-svm-classification/initialization/circuit-template<int:job_id>.txt', methods=['GET'])
 async def get_pickle_circuit(job_id):
     payload = open('./static/variational-svm-classification/initialization/circuit-template' + str(job_id) + '.txt', 'rb').read()
-    content_type = 'application/python-pickle'
-    return Response(response=payload, mimetype=content_type)
-
-@app.route('/static/variational-svm-classification/circuit-generation/parameterizations<int:job_id>.txt', methods=['GET'])
-async def get_pickle_parameterizations(job_id):
-    payload = open('./static/variational-svm-classification/circuit-generation/parameterizations' + str(job_id) + '.txt', 'rb').read()
-    content_type = 'application/python-pickle'
-    return Response(response=payload, mimetype=content_type)
-
-@app.route('/static/variational-svm-classification/circuit-execution/results<int:job_id>.txt', methods=['GET'])
-async def get_pickle_results(job_id):
-    payload = open('./static/variational-svm-classification/circuit-execution/results' + str(job_id) + '.txt', 'rb').read()
     content_type = 'application/python-pickle'
     return Response(response=payload, mimetype=content_type)
 
