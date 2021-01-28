@@ -6,8 +6,8 @@ from numpySerializer import NumpySerializer
 from variationalSVMCircuitGenerator import VariationalSVMCircuitGenerator
 from qiskitSerializer import QiskitSerializer
 from SPSAOptimizer import SPSAOptimizer
-from microservices.classification.pickleSerializer import PickleSerializer
-from microservices.classification.circuitExecutor import CircuitExecutor
+from pickleSerializer import PickleSerializer
+from circuitExecutor import CircuitExecutor
 
 app = Quart(__name__)
 app.config["DEBUG"] = False
