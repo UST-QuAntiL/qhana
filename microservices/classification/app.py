@@ -354,7 +354,8 @@ async def optimize(job_id):
         optimizer_parameters_url = (await request.get_json())['optimizer-parameters-url']
 
     iteration = request.args.get('iteration', type=int, default=0)
-    is_statevector = request.args.get('is-statevector', type=bool, default=False)
+    is_statevector = request.args.get('is-statevector', type=str, default='False')
+    is_statevector = False if is_statevector in ['False', '', 'No', 'None'] else True
 
     # file paths (inputs)
     results_file_path = './static/variational-svm-classification/optimization/results' \
