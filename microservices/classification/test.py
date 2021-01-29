@@ -16,12 +16,11 @@ async def initialize_varSVM(url_root, job_id, data_url, optimizer_parameters_url
             response['thetas_minus_url'],\
             response['delta_url']
 
-async def generate_parameterizations_varSVM(url_root, job_id, data_url, circuit_template_url, delta_url, thetas_url, thetas_plus_url, thetas_minus_url):
+async def generate_parameterizations_varSVM(url_root, job_id, data_url, circuit_template_url, thetas_url, thetas_plus_url, thetas_minus_url):
     request_url = url_root + '/api/variational-svm-classification/parameterization-generation/' +\
                                 str(job_id) +\
                                 '?data-url=' + data_url +\
                                 '&circuit-template-url=' + circuit_template_url +\
-                                '&delta-url=' + delta_url +\
                                 '&thetas-url=' + thetas_url +\
                                 '&thetas-plus-url=' + thetas_plus_url +\
                                 '&thetas-minus-url=' + thetas_minus_url
@@ -56,6 +55,31 @@ async def optimize_varSVM(url_root, job_id, results_url, labels_url, thetas_url,
             response['delta_url'],\
             response['costs_curr']
 
+async def generate_grid(url_root, data_url, job_id):
+    request_url = url_root + '/api/plots/grid-generation/' +\
+                                str(job_id) +\
+                                '?data-url=' + data_url
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['grid_url']
+
+async def compute_predictions(url_root, job_id, results_url, is_statevector):
+    request_url = url_root + '/api/plots/prediction/' +\
+                                str(job_id) +\
+                                '?results-url=' + results_url +\
+                                '&is-statevector=' + str(is_statevector)
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['labels_url']
+
+async def plot_boundary(url_root, job_id, data_url, labels_url, grid_url, predictions_url):
+    request_url = url_root + '/api/plots/plot/' +\
+                                str(job_id) +\
+                                '?data-url=' + data_url +\
+                                '&labels-url=' + labels_url +\
+                                '&grid-url=' + grid_url +\
+                                '&predictions-url=' + predictions_url
+    response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
+    return response['plot_url']
+
 async def plot_costs(costs):
     plt.plot(costs)
     plt.show()
@@ -68,17 +92,19 @@ async def test_varSVM():
     data_url = url_root + '/static/0_base/embedding0.txt'
     labels_url = url_root + '/static/0_base/labels0.txt'
     optimizer_parameters_url = url_root + '/static/0_base/optimizer-parameters.txt'
-    backend = 'aer_qasm_simulator'
+    backend = 'aer_statevector_simulator'
     token = ''
 
     job_id = 0
 
+    """ Initialize """
     circuit_template_url, thetas_url, thetas_plus_url, thetas_minus_url, delta_url = \
             await initialize_varSVM(url_root,\
                                     job_id,\
                                     data_url,\
                                     optimizer_parameters_url)
 
+    """ Optimize """
     costs = []
     for i in range(maxiter):
         # generate parameterizations
@@ -86,7 +112,6 @@ async def test_varSVM():
                 await generate_parameterizations_varSVM(url_root,\
                                                         job_id, data_url,\
                                                         circuit_template_url,\
-                                                        delta_url,\
                                                         thetas_url,\
                                                         thetas_plus_url,\
                                                         thetas_minus_url)
@@ -116,6 +141,36 @@ async def test_varSVM():
 
         if costs_curr < 0.2:
             break
+
+    """ Create plot(s) """
+    grid_url = await generate_grid(url_root, data_url, job_id)
+
+    parameterizations_url = \
+                await generate_parameterizations_varSVM(url_root,\
+                                                        job_id, grid_url,\
+                                                        circuit_template_url,\
+                                                        thetas_url,\
+                                                        '',\
+                                                        '')
+    results_url, is_statevector = \
+                await run_circuit_parameterizations(url_root,\
+                                                    job_id,\
+                                                    circuit_template_url,\
+                                                    parameterizations_url,\
+                                                    backend,\
+                                                    token)
+
+    predictions_url = await compute_predictions(url_root,\
+                                           job_id,\
+                                           results_url,\
+                                           is_statevector)
+
+    plot_url = await plot_boundary(url_root,\
+                                   job_id,\
+                                   data_url,\
+                                   labels_url,\
+                                   grid_url,\
+                                   predictions_url)
 
     await plot_costs(costs)
 

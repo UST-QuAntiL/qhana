@@ -10,6 +10,7 @@ from pickleSerializer import PickleSerializer
 from circuitExecutor import CircuitExecutor
 from listSerializer import ListSerializer
 from resultsSerializer import ResultsSerializer
+from decisionBoundaryPlotter import DecisionBoundaryPlotter
 
 app = Quart(__name__)
 app.config["DEBUG"] = False
@@ -210,8 +211,10 @@ async def generate_circuit_parameterizations(job_id):
         await FileService.download_to_file(data_url, data_file_path)
         await FileService.download_to_file(circuit_template_url, circuit_template_file_path)
         await FileService.download_to_file(thetas_url, thetas_file_path)
-        await FileService.download_to_file(thetas_plus_url, thetas_plus_file_path)
-        await FileService.download_to_file(thetas_minus_url, thetas_minus_file_path)
+        if (thetas_plus_url != ''):
+            await FileService.download_to_file(thetas_plus_url, thetas_plus_file_path)
+        if (thetas_minus_url != ''):
+            await FileService.download_to_file(thetas_minus_url, thetas_minus_file_path)
 
         # deserialize inputs
         data = NumpySerializer.deserialize(data_file_path)
@@ -221,12 +224,20 @@ async def generate_circuit_parameterizations(job_id):
         # WORKAROUND until https://github.com/Qiskit/qiskit-terra/issues/5710 is fixed
         circuit_template = PickleSerializer.deserialize(circuit_template_file_path)
 
+        thetas_plus, thetas_minus = None, None
         thetas = NumpySerializer.deserialize(thetas_file_path)
-        thetas_plus = NumpySerializer.deserialize(thetas_plus_file_path)
-        thetas_minus = NumpySerializer.deserialize(thetas_minus_file_path)
+        if (thetas_plus_url != ''):
+            thetas_plus = NumpySerializer.deserialize(thetas_plus_file_path)
+        if (thetas_minus_url != ''):
+            thetas_minus = NumpySerializer.deserialize(thetas_minus_file_path)
+
+        thetas_array = []
+        for t in [thetas, thetas_plus, thetas_minus]:
+            if t is not None:
+                thetas_array.append(t)
 
         # generate parameterizations
-        parameterizations = VariationalSVMCircuitGenerator.generateCircuitParameterizations(circuit_template, data, [thetas, thetas_plus, thetas_minus])
+        parameterizations = VariationalSVMCircuitGenerator.generateCircuitParameterizations(circuit_template, data, thetas_array)
 
         # serialize outputs
         ListSerializer.serialize(parameterizations, parameterizations_file_path)
@@ -453,6 +464,211 @@ async def optimize(job_id):
                    thetas_minus_url=thetas_minus_url,
                    delta_url=delta_url,
                    costs_curr=costs_curr)
+
+@app.route('/api/plots/grid-generation/<int:job_id>', methods=['POST'])
+async def generate_grid(job_id):
+    """
+        Takes original data and generates a grid of new data points that surrounds original data
+        - resolution parameter r determines the dimensions of the grid, e.g. r x r for 2 dimensional data 
+    """
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+
+    # load the data from url or json body
+    data_url = request.args.get('data-url', type=str)
+    if data_url is None:
+        data_url = (await request.get_json())['data-url']
+
+    resolution = request.args.get('resolution', type=int, default=20)
+
+    # file paths (inputs)
+    data_file_path = './static/plots/grid-generation/data' \
+                     + str(job_id) + '.txt'
+
+    # file paths (inputs)
+    grid_file_path = './static/plots/grid-generation/grid' \
+                     + str(job_id) + '.txt'
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/plots/grid-generation/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(data_file_path,
+                                    grid_file_path)
+
+        # download the data and store it locally
+        await FileService.download_to_file(data_url, data_file_path)
+
+        # deserialize the data
+        data = NumpySerializer.deserialize(data_file_path)
+
+        grid = DecisionBoundaryPlotter.generate_grid(data, resolution)
+
+        NumpySerializer.serialize(grid, grid_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        grid_url = generate_url(url_root,
+                                  'plots/grid-generation',
+                                  'grid' + str(job_id))
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+        return jsonify(message=message, status_code=status_code)
+
+    return jsonify(message=message,
+               status_code=status_code,
+               grid_url=grid_url)
+
+# TODO: Remove when QuantumCircuit serialization/deserialization is fixed
+
+@app.route('/api/plots/prediction/<int:job_id>', methods=['POST'])
+async def predict(job_id):
+    """
+        Predict
+        * evaluates results and computes predictions from them
+    """
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+
+    # load the data from url or json body
+    results_url = request.args.get('results-url', type=str)
+    if results_url is None:
+        results_url = (await request.get_json())['results-url']
+
+    n_classes = request.args.get('n_classes', type=int, default=2)
+    is_statevector = request.args.get('is-statevector', type=str, default='False')
+    is_statevector = False if is_statevector in ['False', '', 'No', 'None'] else True
+
+    # file paths (inputs)
+    results_file_path = './static/plots/predictions/results' \
+                     + str(job_id) + '.txt'
+
+    # file paths (inputs)
+    labels_file_path = './static/plots/predictions/labels' \
+                     + str(job_id) + '.txt'
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/plots/predictions/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(results_file_path,
+                                    labels_file_path)
+
+        # download and store locally
+        await FileService.download_to_file(results_url, results_file_path)
+
+        results = ResultsSerializer.deserialize(results_file_path)
+
+        labels = DecisionBoundaryPlotter.predict(results, n_classes, is_statevector)
+
+        NumpySerializer.serialize(labels, labels_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        labels_url = generate_url(url_root,
+                                  'plots/predictions',
+                                  'labels' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+        return jsonify(message=message, status_code=status_code)
+
+
+    return jsonify(message=message,
+                   status_code=status_code,
+                   labels_url=labels_url)
+
+@app.route('/api/plots/plot/<int:job_id>', methods=['POST'])
+async def plot_boundary(job_id):
+    """
+        Plots data and decision boundary
+    """
+
+    # response parameters
+    message = 'success'
+    status_code = 200
+
+    # load the data from url or json body
+    data_url = request.args.get('data-url', type=str)
+    if data_url is None:
+        data_url = (await request.get_json())['data-url']
+
+    labels_url = request.args.get('labels-url', type=str)
+    if labels_url is None:
+        labels_url = (await request.get_json())['labels-url']
+
+    grid_url = request.args.get('grid-url', type=str)
+    if grid_url is None:
+        grid_url = (await request.get_json())['grid-url']
+
+    predicitons_url = request.args.get('predictions-url', type=str)
+    if predicitons_url is None:
+        predicitons_url = (await request.get_json())['predictions-url']
+
+    # file paths (inputs)
+    data_file_path = './static/plots/plot/data' \
+                     + str(job_id) + '.txt'
+
+    labels_file_path = './static/plots/plot/labels' \
+                     + str(job_id) + '.txt'
+
+    grid_file_path = './static/plots/plot/grid' \
+                     + str(job_id) + '.txt'
+
+    predictions_file_path = './static/plots/plot/predictions' \
+                     + str(job_id) + '.txt'
+
+    # file paths (outputs)
+    plot_file_path = './static/plots/plot/plot' \
+                         + str(job_id) + '.png'
+
+    try:
+        # create working folder if not exist
+        FileService.create_folder_if_not_exist('./static/plots/plot/')
+
+        # delete old files if exist
+        FileService.delete_if_exist(data_file_path,
+                                    labels_file_path,
+                                    grid_file_path,
+                                    predictions_file_path,
+                                    plot_file_path)
+
+        # download the data and store it locally
+        await FileService.download_to_file(data_url, data_file_path)
+        await FileService.download_to_file(labels_url, labels_file_path)
+        await FileService.download_to_file(grid_url, grid_file_path)
+        await FileService.download_to_file(predicitons_url, predictions_file_path)
+
+        # deserialize the data
+        data = NumpySerializer.deserialize(data_file_path)
+        labels = NumpySerializer.deserialize(labels_file_path)
+        grid = NumpySerializer.deserialize(grid_file_path)
+        predictions = NumpySerializer.deserialize(predictions_file_path)
+
+        DecisionBoundaryPlotter.save_plot(data, labels, grid, predictions, plot_file_path)
+
+        # generate urls
+        url_root = request.host_url
+        plot_url = generate_url(url_root,
+                                  'plots/plot',
+                                  'plot' + str(job_id))
+
+    except Exception as ex:
+        message = str(ex)
+        status_code = 500
+        return jsonify(message=message, status_code=status_code)
+
+    return jsonify(message=message,
+                   status_code=status_code,
+                   plot_url=plot_url)
 
 @app.route('/static/variational-svm-classification/initialization/circuit-template<int:job_id>.txt', methods=['GET'])
 async def get_pickle_circuit(job_id):
