@@ -69,7 +69,7 @@ async def compute_predictions(url_root, job_id, results_url, is_statevector):
                                 '?results-url=' + results_url +\
                                 '&is-statevector=' + str(is_statevector)
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
-    return response['labels_url']
+    return response['predictions_url']
 
 async def plot_boundary(url_root, job_id, data_url, labels_url, grid_url, predictions_url):
     request_url = url_root + '/api/plots/plot/' +\

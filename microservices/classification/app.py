@@ -572,7 +572,7 @@ async def predict(job_id):
 
         # generate urls
         url_root = request.host_url
-        labels_url = generate_url(url_root,
+        predictions_url = generate_url(url_root,
                                   'plots/predictions',
                                   'labels' + str(job_id))
 
@@ -584,7 +584,7 @@ async def predict(job_id):
 
     return jsonify(message=message,
                    status_code=status_code,
-                   labels_url=labels_url)
+                   predictions_url=predictions_url)
 
 @app.route('/api/plots/plot/<int:job_id>', methods=['POST'])
 async def plot_boundary(job_id):

@@ -1,5 +1,5 @@
 import numpy as np
-from microservices.classification.SPSAOptimizer import SPSAOptimizer
+from SPSAOptimizer import SPSAOptimizer
 from matplotlib import cm, gridspec
 from matplotlib import pyplot as plt
 
