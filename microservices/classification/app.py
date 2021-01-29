@@ -371,7 +371,10 @@ async def optimize(job_id):
     if optimizer_parameters_url is None:
         optimizer_parameters_url = (await request.get_json())['optimizer-parameters-url']
 
-    iteration = request.args.get('iteration', type=int, default=0)
+    iteration = request.args.get('iteration', type=int)
+    if iteration is None:
+        iteration = (await request.get_json())['iteration']
+
     is_statevector = request.args.get('is-statevector', type=str, default='False')
     is_statevector = False if is_statevector in ['False', '', 'No', 'None'] else True
 
