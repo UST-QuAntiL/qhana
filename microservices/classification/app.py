@@ -653,6 +653,9 @@ async def plot_boundary(job_id):
         grid = NumpySerializer.deserialize(grid_file_path)
         predictions = NumpySerializer.deserialize(predictions_file_path)
 
+        labels = labels.astype(int)
+        predictions = predictions.astype(int)
+
         DecisionBoundaryPlotter.save_plot(data, labels, grid, predictions, plot_file_path)
 
         # generate urls

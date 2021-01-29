@@ -56,10 +56,11 @@ async def optimize_varSVM(url_root, job_id, results_url, labels_url, thetas_url,
             response['delta_url'],\
             response['costs_curr']
 
-async def generate_grid(url_root, data_url, job_id):
+async def generate_grid(url_root, data_url, job_id, resolution):
     request_url = url_root + '/api/plots/grid-generation/' +\
                                 str(job_id) +\
-                                '?data-url=' + data_url
+                                '?data-url=' + data_url +\
+                                '&resolution=' + str(resolution)
     response = json.loads(requests.request("POST", request_url, headers={}, data={}).text)
     return response['grid_url']
 
@@ -88,13 +89,14 @@ async def plot_costs(costs):
 async def test_varSVM():
     """ test variational SVM classification workflow """
 
-    maxiter = 80
+    maxiter = 20
     url_root = 'http://127.0.0.1:5001'
     data_url = url_root + '/static/0_base/embedding0.txt'
     labels_url = url_root + '/static/0_base/labels0.txt'
     optimizer_parameters_url = url_root + '/static/0_base/optimizer-parameters.txt'
     backend = 'aer_statevector_simulator'
     token = ''
+    resolution = 25
 
     job_id = 0
 
@@ -144,7 +146,7 @@ async def test_varSVM():
             break
 
     """ Create plot(s) """
-    grid_url = await generate_grid(url_root, data_url, job_id)
+    grid_url = await generate_grid(url_root, data_url, job_id, resolution)
 
     parameterizations_url = \
                 await generate_parameterizations_varSVM(url_root,\
