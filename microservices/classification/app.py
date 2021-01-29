@@ -481,7 +481,7 @@ async def generate_grid(job_id):
     if data_url is None:
         data_url = (await request.get_json())['data-url']
 
-    resolution = request.args.get('resolution', type=int, default=20)
+    resolution = request.args.get('resolution', type=int, default=50)
 
     # file paths (inputs)
     data_file_path = './static/plots/grid-generation/data' \
