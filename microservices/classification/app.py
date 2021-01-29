@@ -657,9 +657,7 @@ async def plot_boundary(job_id):
 
         # generate urls
         url_root = request.host_url
-        plot_url = generate_url(url_root,
-                                  'plots/plot',
-                                  'plot' + str(job_id))
+        plot_url = url_root + '/static/plots/plot/plot' + str(job_id) + '.png'
 
     except Exception as ex:
         message = str(ex)

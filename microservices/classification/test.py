@@ -3,6 +3,7 @@ from cached_property import asyncio
 import matplotlib.pyplot as plt
 import json
 import requests
+import webbrowser
 
 async def initialize_varSVM(url_root, job_id, data_url, optimizer_parameters_url):
     request_url = url_root + '/api/variational-svm-classification/initialization/' +\
@@ -172,6 +173,7 @@ async def test_varSVM():
                                    grid_url,\
                                    predictions_url)
 
+    webbrowser.open(plot_url)
     await plot_costs(costs)
 
 if __name__ == '__main__':
