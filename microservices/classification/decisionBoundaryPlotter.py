@@ -27,8 +27,15 @@ class DecisionBoundaryPlotter():
     @classmethod
     def predict(cls, results, n_classes, is_statevector):
         n_data = len(results)
+
+        indices = None
+        if (n_data == 1):
+            results = results[0]
+            n_data = len(results.results)
+            indices = range(n_data)
+
         probs, pred_lbls = \
-            SPSAOptimizer.computeProbabilities(results, is_statevector, n_data, n_classes)
+            SPSAOptimizer.computeProbabilities(results, is_statevector, n_data, n_classes, indices)
         return pred_lbls
 
     @classmethod

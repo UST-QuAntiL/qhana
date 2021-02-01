@@ -210,7 +210,9 @@ async def generate_circuit_parameterizations(job_id):
         # download and store locally
         await FileService.download_to_file(data_url, data_file_path)
         await FileService.download_to_file(circuit_template_url, circuit_template_file_path)
-        await FileService.download_to_file(thetas_url, thetas_file_path)
+
+        if(thetas_url != ''):
+            await FileService.download_to_file(thetas_url, thetas_file_path)
         if (thetas_plus_url != ''):
             await FileService.download_to_file(thetas_plus_url, thetas_plus_file_path)
         if (thetas_minus_url != ''):
@@ -224,12 +226,9 @@ async def generate_circuit_parameterizations(job_id):
         # WORKAROUND until https://github.com/Qiskit/qiskit-terra/issues/5710 is fixed
         circuit_template = PickleSerializer.deserialize(circuit_template_file_path)
 
-        thetas_plus, thetas_minus = None, None
-        thetas = NumpySerializer.deserialize(thetas_file_path)
-        if (thetas_plus_url != ''):
-            thetas_plus = NumpySerializer.deserialize(thetas_plus_file_path)
-        if (thetas_minus_url != ''):
-            thetas_minus = NumpySerializer.deserialize(thetas_minus_file_path)
+        thetas = NumpySerializer.deserialize(thetas_file_path) if thetas_url != '' else None
+        thetas_plus = NumpySerializer.deserialize(thetas_plus_file_path) if thetas_plus_url != '' else None
+        thetas_minus = NumpySerializer.deserialize(thetas_minus_file_path) if thetas_plus_url != '' else None
 
         thetas_array = []
         for t in [thetas, thetas_plus, thetas_minus]:

@@ -29,17 +29,14 @@ class CircuitExecutor():
             circuit.barrier()
             circuit.measure(circuit.qubits, circuit.clbits)
 
-        results = []
-
+        circuits = []
         for parameterization in parameterizations:
             parameterization = parameterization_from_parameter_names(circuit, parameterization)
             curr_circuit = circuit.assign_parameters(parameterization)
-            curr_circuit = QInstance.transpile(curr_circuit)[0]
+            circuits.append(curr_circuit)
 
-            # run each circuit individually (for now), this can be optimized
-            result = QInstance.execute(curr_circuit, had_transpiled=True)
+        results = QInstance.execute(circuits)
 
-            results.append(result)
 
         return results, QInstance.is_statevector
 

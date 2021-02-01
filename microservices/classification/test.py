@@ -115,7 +115,7 @@ async def test_varSVM():
                 await generate_parameterizations_varSVM(url_root,\
                                                         job_id, data_url,\
                                                         circuit_template_url,\
-                                                        thetas_url,\
+                                                        '',\
                                                         thetas_plus_url,\
                                                         thetas_minus_url)
 
@@ -136,7 +136,7 @@ async def test_varSVM():
                                       thetas_url,\
                                       delta_url,\
                                       optimizer_parameters_url,\
-                                      i,\
+                                      i+1,\
                                       is_statevector)
 
         costs.append(costs_curr)
