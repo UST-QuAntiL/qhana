@@ -3,6 +3,13 @@
 
 The Quantum Humanities Analyse Tool is a toolset of Machine Learning techniques for classical and quantum hardware, designed for the use with the MUSE Repository [1].
 
+## Example Output
+
+The following figures are the output of a clustering and classification with a dataset consisting of 25 costumes done with QHana.
+<br/>
+<br/>
+<img src="OutputExample.png" width="800"/>
+
 ## Features
 A rich set of techniques, mostly for categorical data, are already implemented and can be use straight forward.
 The features can be split up into 4 different categories:
