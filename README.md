@@ -1,4 +1,6 @@
 # QHAna - Quantum Humanities Analyse Tool
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 The Quantum Humanities Analyse Tool is a toolset of Machine Learning techniques for classical and quantum hardware, designed for the use with the MUSE Repository [1].
 
 ## Features
