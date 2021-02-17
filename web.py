@@ -1217,7 +1217,7 @@ def start_calculating():
         #app.scaling.set_dimensions(2)
         #pos2d = app.scaling.scaling(similarities)
         #app.scaling.set_dimensions(dim)
-        params.append(("positionMatrixND" , "Position Matrix n-Dimensional" , "description" , pos , "header"))
+        params.append(("positionMatrixND" , "Position Matrix n-Dimensional" , "dies ist ein test" , pos , "header"))
         params.append(("positionMatrix2D" , "Position Matrix 2-Dimensional" , "description" , None , "header"))
         params.append(("stressLevel" , "Stress Level" , "description" , stress , "header"))
     except Exception as error:
