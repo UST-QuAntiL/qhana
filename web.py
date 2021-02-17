@@ -1197,8 +1197,8 @@ def start_calculating():
         similarities = app.entitySimilarities.create_matrix_limited(min_value,max_value)
         app.distance_matrix = similarities
         sequenz = app.entitySimilarities.get_last_sequenz_id()
-        params.append(("similarityMatrix" , "Similarity Matrix" , "description" , similarities , "header"))
-        params.append(("lastSequenzID" , "Last Sequenz ID" , "description" , sequenz , "header"))
+        params.append(("similarityMatrix" , "Distance Matrix" , "The distance matrix shows the distance between two costumes. The range is between 0 and infinity. If the distance between two costumes is assumed to be 0, they are identical." , similarities , "header"))
+        params.append(("lastSequenzID" , "Last Sequenz ID" , "lastSequenceId describes the entity sequence used to create the distance matrix." , sequenz , "header"))
     except Exception as error:
         flash(" an Error occurs in creating similarity matrix. Please try again. Error: " + str(error))
         return calculating()
@@ -1217,9 +1217,9 @@ def start_calculating():
         #app.scaling.set_dimensions(2)
         #pos2d = app.scaling.scaling(similarities)
         #app.scaling.set_dimensions(dim)
-        params.append(("positionMatrixND" , "Position Matrix n-Dimensional" , "dies ist ein test" , pos , "header"))
-        params.append(("positionMatrix2D" , "Position Matrix 2-Dimensional" , "description" , None , "header"))
-        params.append(("stressLevel" , "Stress Level" , "description" , stress , "header"))
+        params.append(("positionMatrixND" , "Position Matrix n-Dimensional" , "description" , pos , "header"))
+        params.append(("positionMatrix2D" , "Position Matrix 2-Dimensional" , "In the position matrix, the distances of individual objects (DistanceMatrix) were arranged spatially in such a way that the distances between the objects in space correspond as exactly as possible to the surveyed distance." , None , "header"))
+        params.append(("stressLevel" , "Stress Level" , "The STRESS value (STRESS for STandardized REsidual Sum of Squares, is calculated (according to Kruskal) as the square root of the sum of the squares of the disparities from the distances, divided by the sum of the squared distances. It is a measure of the quality of the position matrix in relation to the distance matrix." , stress , "header"))
     except Exception as error:
         flash(" an Error occurs in creating position matrix. Please try again. Error: " + str(error))
         return calculating()
@@ -1229,7 +1229,7 @@ def start_calculating():
         try:
             labels = app.clustering.create_cluster(pos,similarities)
             app.cluster_mapping = labels
-            params.append(("labels" , "Label Matrix" , "description" , labels , "header"))
+            params.append(("labels" , "Label Matrix" , "The LabelMatrix assigns objects to specific classes according to the clustering method." , labels , "header"))
         except Exception as error:
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
             return calculating()
@@ -1262,7 +1262,7 @@ def start_calculating():
 
             train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels, valid_entities, similarities)
             decision_fun, support_vectors = app.classification.create_classifier(train_data, train_labels, similarities)
-            params.append(("decision_fun" , "Decision boundary" , "description" , decision_fun , "header"))
+            params.append(("decision_fun" , "Decision boundary" , "DecisionBoundary describes the allocation boundary between two classes based on the class allocation as well as the location of individual classes" , decision_fun , "header"))
         except Exception as error:
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
             return calculating()
