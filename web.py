@@ -26,6 +26,7 @@ from tkinter.constants import NO
 from backend.plotsForClassification import PlotsForClassification
 from backend.labeler import LabelerTypes, Labeler, LabelerFactory, clustersLabeler
 from backend.splitter import SplitterTypes, Splitter, SplitterFactory
+import sys
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -1491,6 +1492,11 @@ if __name__ == '__main__':
     if "WERKZEUG_RUN_MAIN" not in os.environ:
         # starts opening the tab if server is up
         threading.Timer(1.2, lambda: webbrowser.open(url) ).start()
+
+    if "--debug" in sys.argv:
+        Logger.initialize(3)
+    else:
+        Logger.initialize(1)
 
     Logger.normal("Instance directory is " + app.instance_path)
     app.run(port=port, debug=True)

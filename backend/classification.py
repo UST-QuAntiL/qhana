@@ -230,20 +230,22 @@ class qkeQiskitSVM(Classification):
         if n_classes > 2 and self.__multiclass_extension == "binary":
             raise Exception("Select a multiclass extension for "+ str(type(self)))
 
-        """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
+        Logger.debug("Training classifier: {}\nN samples: {}\nN classes: {}".format(str(type(self)), n_samples, n_classes))
+
         backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
+        Logger.debug("Backend: {}".format(self.__backend))
 
         dimension = position_matrix.shape[1]
         feature_map = self.instanciate_featuremap(feature_dimension=dimension)
         multiclass_ext = self.instanciate_multiclas_extension()
+        Logger.debug("Dimensions: {}\nFeature Map: {}\nMulti class extension: {}".format(dimension, self.__featuremap, self.__multiclass_extension))
 
         qsvm = QSVM(feature_map, multiclass_extension=multiclass_ext)
         quantum_instance = QuantumInstance(backend, seed_simulator=9283712, seed_transpiler=9283712, shots=self.__shots)
+        Logger.debug("Initialized quantum instance.\nStart training...")
         qsvm.train(position_matrix, labels, quantum_instance)
 
-#         kernel_matrix = qsvm.construct_kernel_matrix(x1_vec=position_matrix, quantum_instance=quantum_instance)
-#         print(kernel_matrix)
-
+        Logger.debug("Training complete.")
         return qsvm.predict, \
             qsvm.ret['svm']['support_vectors'] if self.__multiclass_extension == "binary" else [] # the support vectors if applicable
 
