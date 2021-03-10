@@ -5,7 +5,7 @@ The Quantum Humanities Analyse Tool is a toolset of Machine Learning techniques 
 
 ## Example Output
 
-The following figures are the output of a clustering and classification with a dataset consisting of 25 costumes done with QHana.
+The following figures are the output of a clustering and classification with a dataset consisting of 25 costumes done with QHAna.
 <br/>
 <br/>
 <img src="OutputExample.png" width="800"/>
@@ -58,7 +58,7 @@ We have implemented the following clustering algorithms:
 
 ### Classification
 Once clusters have been created, we can perform some classification tasks.
-The following clustering algorithms are implemented in QHana:
+The following clustering algorithms are implemented in QHAna:
 
 | Name                    | Comment                                                               |
 | ----------------------- |-----------------------------------------------------------------------|
