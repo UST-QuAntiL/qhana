@@ -10,6 +10,7 @@ class PlotsForClassification():
 
     @staticmethod
     def classifier_2d_plot(dataforplots: dfp.DataForPlots, train_set, train_labels, test_set, test_labels, dict_label_class: dict, subplot) -> None:
+        Logger.debug("Start plotting trained classifier.")
         position_matrix: np.matrix = dataforplots.get_position_matrix()
         position_matrix_orig: np.matrix = dataforplots.get_position_matrix_orig()
         support_vectors: np.matrix = dataforplots.get_support_vectors()
@@ -27,12 +28,14 @@ class PlotsForClassification():
 
         """ plot samples for 2 classes """
         train_set2d = transform(train_set)
+        Logger.debug("Scatter train set.")
         for i in range(len(train_labels)):
             subplot.scatter(train_set2d[i][0], train_set2d[i][1],
                         color=colors_dict[train_labels[i]],
                         s=100, lw=0, label=dict_label_class[train_labels[i]])
 
         if not str(train_set) == str(test_set):
+            Logger.debug("Scatter test set.")
             test_set2d = transform(test_set)
             for i in range(len(test_labels)):
                 subplot.scatter(test_set2d[i][0], test_set2d[i][1],
@@ -41,14 +44,17 @@ class PlotsForClassification():
 
         """ circle support vectors """
         if len(support_vectors) > 0:
+            Logger.debug("Scatter support vectors.")
             support_vectors2d = transform(support_vectors)
             subplot.scatter(support_vectors2d[:,0], support_vectors2d[:,1],
                         s=150, linewidth=.5, facecolors='none', edgecolors='green', label="supp. vectors")
 
-        """ mark training data """
+        """ mark train data """
+        Logger.debug("Mark train data.")
         subplot.scatter(train_set2d[:,0], train_set2d[:,1], s=50, marker="x", label="train data")
 
         """ draw decision fun boundaries """
+        Logger.debug("Generate grid.")
         # get axes
 #         xlim = np.array([np.min(position_matrix_orig[:,0]), np.max(position_matrix_orig[:,0])])*1.1
 #         ylim = np.array([np.min(position_matrix_orig[:,1]), np.max(position_matrix_orig[:,1])])*1.1
@@ -68,10 +74,12 @@ class PlotsForClassification():
         #print(grid2d)
 
         # evaluate decision function for each point in the grid
+        Logger.debug("Evaluate decision function on grid.")
         z_labels = decision_fun(grid)
         z_labels = z_labels.reshape(x_grid.shape)
 
         # draw contours
+        Logger.debug("Draw contours.")
         subplot.contourf(grid2d[:,0].reshape(x_grid.shape), grid2d[:,1].reshape(x_grid.shape),
                         z_labels, #colors="k",
                         levels=n_classes-1, linestyles=["-"],
@@ -81,6 +89,7 @@ class PlotsForClassification():
         #                levels=1, linewidths=0.5, linestyles=["-"])
 
         """ compute accuracy """
+        Logger.debug("Compute precision, accuracy, and recall")
         predictions = decision_fun(test_set)
         accuracy = round(metrics.accuracy_score(test_labels, predictions), 3)
         recall = round(metrics.recall_score(test_labels, predictions, average='micro' if n_classes > 2 else 'binary'), 3)
@@ -93,3 +102,4 @@ class PlotsForClassification():
 
         #subplot.legend(scatterpoints=1, loc='best', shadow=False)
         subplot.set_title('Classification \naccuracy={}, precision={}, recall={}'.format(accuracy, precision, recall))
+        Logger.debug("Finished plot.")
