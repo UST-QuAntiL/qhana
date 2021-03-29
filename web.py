@@ -1137,6 +1137,104 @@ def set_classification():
 
     return classification()
 
+# Plot settings
+plot_params = []
+parameter_resolution = 20
+description_resolution = "Classification boundary plot resolution, (default=20)\n"\
+                    +"Resolution of classification plot. By default, a 20*20 grid of data points is evaluated to determine the classification boundary."
+plot_params.append(("classBoundaryResolution", "Classification boundary resolution" , description_resolution, parameter_resolution, "number", 1, 1))
+
+@app.route("/plots")
+def plots():
+    global plot_params
+    return render_template(
+    "plots.html",
+    params = plot_params
+    )
+
+@app.route("/set_plots", methods = ['POST', 'GET'])
+def set_plots():
+    global plot_params
+    # check for other scaling types the set methodes
+    if request.method == 'POST':
+        params = plot_params
+        params2 = params
+        for param in params:
+            if param[4] == "number":
+                if param[6] < 1:
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = float(request.form[param[0]])
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(float(request.form[param[0]]))
+                elif param[6] == 1:
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = int(request.form[param[0]])
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(int(request.form[param[0]]))
+            elif param[4] == "text":
+                if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = np.inf
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(np.inf)
+                elif request.form[param[0]] == "None":
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = None
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(None)
+                else:
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = request.form[param[0]]
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(np.inf)
+                # How do we proceed if we really have a string?
+                #elif isinstance (eval(request.form[param[0]]), float):
+                #    index = params.index(param)
+                #    var = list(param)
+                #    var[3] = float(request.form[param[0]])
+                #    param = tuple(var)
+                #    params2[index] = param
+                #    #print(float(request.form[param[0]]))
+                #else:
+                #    print("no right type found : " + request.form[param[0]])
+            elif param[4] == "select":
+                index = params.index(param)
+                var = list(param)
+                var[3] = request.form[param[0]]
+                param = tuple(var)
+                params2[index] = param
+                #print(request.form[param[0]])
+            elif param[4] == "checkbox":
+                if request.form.get(param[0]):
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = True
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(True)
+                else:
+                    index = params.index(param)
+                    var = list(param)
+                    var[3] = False
+                    param = tuple(var)
+                    params2[index] = param
+                    #print(False)
+
+        plot_params = params2
+
+    return plots()
+
+
 # assume and calculating
 @app.route("/calculating")
 def calculating():
@@ -1301,7 +1399,9 @@ def start_calculating():
             plt.figure(1)
             G = gridspec.GridSpec(1, 1)
             ax1 = plt.subplot(G[0, 0])
-            PlotsForClassification.classifier_2d_plot(dfp_instance, train_data, train_labels, test_data, test_labels, dict_label_class, ax1)
+            global plot_params
+            resolution = plot_params[0][3]
+            PlotsForClassification.classifier_2d_plot(dfp_instance, train_data, train_labels, test_data, test_labels, resolution, dict_label_class, ax1)
             plt.savefig('static/classification.png', dpi=300, bbox_inches='tight')
             plt.close(1)
     except Exception as error:

@@ -9,7 +9,7 @@ from sklearn import metrics
 class PlotsForClassification():
 
     @staticmethod
-    def classifier_2d_plot(dataforplots: dfp.DataForPlots, train_set, train_labels, test_set, test_labels, dict_label_class: dict, subplot) -> None:
+    def classifier_2d_plot(dataforplots: dfp.DataForPlots, train_set, train_labels, test_set, test_labels, res, dict_label_class: dict, subplot) -> None:
         Logger.debug("Start plotting trained classifier.")
         position_matrix: np.matrix = dataforplots.get_position_matrix()
         position_matrix_orig: np.matrix = dataforplots.get_position_matrix_orig()
@@ -61,7 +61,6 @@ class PlotsForClassification():
         xlim = np.array([np.min(position_matrix[:,0]), np.max(position_matrix[:,0])])*1.1
         ylim = np.array([np.min(position_matrix[:,1]), np.max(position_matrix[:,1])])*1.1
 
-        res = 50
         # generate a grid of res^n_axes points on the canvas
         x_linspace = np.linspace(xlim[0], xlim[1], res)
         y_linspace = np.linspace(ylim[0], ylim[1], res)
