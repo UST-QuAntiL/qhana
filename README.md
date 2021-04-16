@@ -53,6 +53,7 @@ We have implemented the following clustering algorithms:
 | QInterferenceKMeans     | Destructive Interference Quantum KMeans [14]                         |
 | QStatePreparationKMeans | Own implementation, extension to [14]                                |
 | Classical KMeans        | SKlearn implementation [15, 16]                                      |
+| PositiveCorrelationKMeans | Implementation of [24]
 
 <br/>
 
@@ -238,3 +239,5 @@ Dies ist ein Forschungsprototyp. Die Haftung für entgangenen Gewinn, Produktion
 [22] SKLearn documentation, Multi-layer Perceptron classifier, https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html.
 
 [23] Qiskit notebook, Hybrid quantum-classical Neural Networks with PyTorch and Qiskit, https://qiskit.org/textbook/ch-machine-learning/machine-learning-qiskit-pytorch.html.
+
+[24] Abhijat et al., "Quantum Unsupervised and Supervised Learning on Superconducting Processors", https://arxiv.org/abs/1909.04226

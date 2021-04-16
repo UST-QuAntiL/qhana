@@ -7,7 +7,8 @@ from backend.logger import Logger, LogLevel
 from sklearn.cluster import OPTICS, KMeans
 from backend.entity import Costume
 from typing import List
-from backend.quantumKMeans import NegativeRotationQuantumKMeans, DestructiveInterferenceQuantumKMeans, StatePreparationQuantumKMeans
+from backend.quantumKMeans import NegativeRotationQuantumKMeans, DestructiveInterferenceQuantumKMeans, \
+    StatePreparationQuantumKMeans, PositiveCorrelationQuantumKmeans
 
 from qiskit import Aer
 from qiskit.circuit.library import TwoLocal
@@ -37,6 +38,7 @@ class ClusteringType(enum.Enum):
     destructiveInterferenceQuantumKMeans = 6 # Destructive Interference Quantum K Means
     ClassicalKMeans = 7 # a classical scikit implementation of K means
     StatePreparationQuantumKMeans = 8 # an own implementation of a quantum k means
+    PositiveCorrelationQuantumKMeans = 9
 
     @staticmethod
     def get_name(clusteringTyp) -> str:
@@ -59,6 +61,8 @@ class ClusteringType(enum.Enum):
             name = "classicalKMeans"
         elif clusteringTyp == ClusteringType.StatePreparationQuantumKMeans:
             name = "statePreparationQuantumKMeans"
+        elif clusteringTyp == ClusteringType.PositiveCorrelationQuantumKMeans:
+            name = "positiveCorrelationQuantumKMeans"
         else:
             Logger.error("No name for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No name for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -90,6 +94,8 @@ class ClusteringType(enum.Enum):
             description = ("Classical K Means")
         elif clusteringTyp == ClusteringType.StatePreparationQuantumKMeans:
             description = ("State Preparation Quantum K Means")
+        elif clusteringTyp == ClusteringType.PositiveCorrelationQuantumKMeans:
+            description = ("Positive Correlation Quantum K Means")
         else:
             Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No description for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -141,6 +147,8 @@ class ClusteringFactory:
             return ClassicalKMeans()
         elif type == ClusteringType.StatePreparationQuantumKMeans:
             return StatePreparationQuantumKMeansClustering()
+        elif type == ClusteringType.PositiveCorrelationQuantumKMeans:
+            return PositiveCorrelationQuantumKMeansClustering()
         else:
             Logger.error("Unknown type of clustering. The application will quit know.")
             raise Exception("Unknown type of clustering.")
@@ -2070,6 +2078,166 @@ class StatePreparationQuantumKMeansClustering(Clustering):
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
 
+class PositiveCorrelationQuantumKMeansClustering(Clustering):
+    def __init__(self,
+                 number_of_clusters=2,
+                 shots_each=100,
+                 max_runs=10,
+                 relative_residual_amount=5,
+                 backend=QuantumBackends.aer_statevector_simulator,
+                 ibmq_token="",
+                 ibmq_custom_backend=""):
+
+        self.clusterAlgo = PositiveCorrelationQuantumKmeans()
+
+        self.number_of_clusters = number_of_clusters
+        self.shots_each = shots_each
+        self.max_runs = max_runs
+        self.relative_residual_amount = relative_residual_amount
+        self.backend = backend
+        self.ibmq_token = ibmq_token
+        self.ibmq_custom_backend = ibmq_custom_backend
+        return
+
+    def create_cluster(self, position_matrix: np.matrix, similarity_matrix: np.matrix) -> np.matrix:
+        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
+
+        label = np.zeros(similarity_matrix.shape[0])
+
+        if similarity_matrix.any() == np.zeros((similarity_matrix.shape)).any():
+            return label.astype(np.int)
+
+        # run
+        clusterMapping = self.clusterAlgo.fit(position_matrix, self.number_of_clusters, self.max_runs, self.relative_residual_amount, qBackend, self.shots_each)
+
+        # write result into labels
+        for i in range(0, len(label)):
+            label[i] = int(clusterMapping[i])
+
+        return label.astype(np.int)
+
+    # getter and setter params
+    def get_number_of_clusters(self):
+        return self.number_of_clusters
+
+    def set_number_of_clusters(self, number_of_clusters):
+        self.number_of_clusters = number_of_clusters
+        return
+
+    def get_shots_each(self):
+        return self.shots_each
+
+    def set_shots_each(self, shots_each):
+        self.shots_each = shots_each
+        return
+
+    def get_max_runs(self):
+        return self.max_runs
+
+    def set_max_runs(self, max_runs):
+        self.max_runs = max_runs
+        return
+
+    def get_relative_residual_amount(self):
+        return self.relative_residual_amount
+
+    def set_relative_residual_amount(self, relative_residual_amount):
+        self.relative_residual_amount = relative_residual_amount
+        return
+
+    def get_backend(self):
+        return self.backend
+
+    def set_backend(self, backend):
+        self.backend = backend
+        return
+
+    def get_ibmq_token(self):
+        return self.ibmq_token
+
+    def set_ibmq_token(self, ibmq_token):
+        self.ibmq_token = ibmq_token
+        return
+
+    def get_ibmq_custom_backend(self):
+        return self.ibmq_custom_backend
+
+    def set_ibmq_custom_backend(self, ibmq_custom_backend):
+        self.ibmq_custom_backend = ibmq_custom_backend
+        return
+
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        clusteringTypeName = "Positive Correlation Quantum KMeans"
+        params.append(("name", "ClusterTyp", "Name of choosen Clustering Type", clusteringTypeName, "header"))
+
+        parameter_number_of_clusters = self.get_number_of_clusters()
+        description_number_of_clusters = "int > 0 (default=2)" \
+                                         + ": k Clusters will be generated"
+        params.append(("numberClusters", "Number of Clusters", description_number_of_clusters,
+                       parameter_number_of_clusters, "number", 1, 1))
+
+        parameter_shots_each = self.get_shots_each()
+        description_shots_each = "int > 0 (default 100): " \
+                                 + "The amount of shots for each circuit run."
+        params.append(("shotsEach", "shots each", description_shots_each, parameter_shots_each, "number", 1, 1))
+
+        parameter_max_runs = self.get_max_runs()
+        description_max_runs = "int > 0 (default 10): " \
+                               + "The amount of k mean iteration runs."
+        params.append(("maxRuns", "max runs", description_max_runs, parameter_max_runs, "number", 1, 1))
+
+        parameter_relative_residual = self.get_relative_residual_amount()
+        description_relative_residual = "int > 0 (default 5): " \
+                                        + "The amount in percentage of how many data points can change their label between" \
+                                        + "two runs. The default is 5, i.e. when less then 5% of the data points change" \
+                                        + "their label, we consider this as converged"
+        params.append(("relativeResidual", "relative residual amount", description_relative_residual,
+                       parameter_relative_residual, "number", 1, 1))
+
+        parameter_backend = self.get_backend().value
+        description_backend = "Enum default(aer_statevector_simulator): " \
+                              + " A list of possible backends. aer is a local simulator and ibmq are backends provided by IBM."
+        params.append(("quantumBackend", "QuantumBackend", description_backend, parameter_backend, "select",
+                       [qb.value for qb in QuantumBackends]))
+
+        parameter_ibmq_custom_backend = self.get_ibmq_custom_backend()
+        description_ibmq_custom_backend = "str default(\"\") " \
+                                          + " The name of a custom backend of ibmq."
+        params.append(("ibmqCustomBackend", "IBMQ-Custom-Backend", description_ibmq_custom_backend,
+                       str(parameter_ibmq_custom_backend), "text", "", ""))
+
+        parameter_ibmq_token = self.get_ibmq_token()
+        description_ibmq_token = "str default(\"\") " \
+                                 + " The token of an account accessing the IBMQ online service."
+        params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
+
+        return params
+
+    def set_param_list(self, params: list = []) -> np.matrix:
+        for param in params:
+            if param[0] == "numberClusters":
+                self.set_number_of_clusters(param[3])
+            elif param[0] == "shotsEach":
+                self.set_shots_each(param[3])
+            elif param[0] == "maxRuns":
+                self.set_max_runs(param[3])
+            elif param[0] == "relativeResidual":
+                self.set_relative_residual_amount(param[3])
+            elif param[0] == "quantumBackend":
+                self.set_backend(QuantumBackends[param[3]])
+            elif param[0] == "ibmqToken":
+                self.set_ibmq_token(param[3])
+            elif param[0] == "ibmqCustomBackend":
+                self.set_ibmq_custom_backend(param[3])
+
+    def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
+        pass
 
 class ClassicalKMeans(Clustering):
     def __init__(

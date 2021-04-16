@@ -184,7 +184,8 @@ class BaseQuantumKMeans():
 
         return data
 
-    def Standardize(self, data):
+    @staticmethod
+    def Standardize(data):
         """
         Standardize all the points, i.e. they have zero mean and unit variance.
         Note that a copy of the data points will be created.
@@ -208,7 +209,8 @@ class BaseQuantumKMeans():
 
         return preprocessedData
 
-    def Normalize(self, data):
+    @staticmethod
+    def Normalize(data):
         """
         Normalize the data, i.e. every entry of data has length 1.
         Note, that a copy of the data will be done.
@@ -222,7 +224,8 @@ class BaseQuantumKMeans():
 
         return preprocessedData
 
-    def CalculateCentroids(self, centroidMapping, oldCentroids, data, k):
+    @staticmethod
+    def CalculateCentroids(centroidMapping, oldCentroids, data, k):
         """
         Calculates the new cartesian positions of the
         given centroids in the centroid mapping.
@@ -254,7 +257,7 @@ class BaseQuantumKMeans():
         """
         Check wether two centroid mappings are different and how different they are
         i.e. this is the convergency condition. Return true if we are converged.
-        The relativeResidualNumber is the percentage of how many points are
+        The tol is the percentage of how many points are
         allowed to have a different label in the new iteration but still accept it 
         as converged.
 
@@ -792,6 +795,155 @@ class StatePreparationQuantumKMeans(BaseQuantumKMeans):
         """
         clusterMapping = self.ExecuteNegativeRotation(data, self.k, self.maxQubits, self.shotsEach, self.maxRuns, self.relativeResidualAmount / 100.0, self.backend, plotData, plotCircuit, "custom")
         return clusterMapping
+
+
+class PositiveCorrelationQuantumKmeans:
+
+    def fit(self, data, k, max_iter, tol, backend, shots_each):
+        """
+        Performs the positive correlation quantum KMeans accordingly to
+        https://towardsdatascience.com/quantum-machine-learning-distance-estimation-for-k-means-clustering-26bccfbfcc76
+        resp.
+        https://arxiv.org/abs/1909.04226
+        """
+
+        centroids = BaseQuantumKMeans.Normalize(BaseQuantumKMeans.Standardize(self.generate_centroids(k, 2)))
+        new_centroids = np.zeros((k, 2))
+        for i in range(0, k):
+            for j in range(0, 2):
+                new_centroids[i, j] = centroids[i][j]
+        centroids = new_centroids
+        data_phi, data_theta = self.calculate_angles(data)
+        centroids_phi, centroids_theta = self.calculate_angles(centroids)
+
+        converged = False
+        it = 0
+        old_centroid_mapping = np.zeros(len(data))
+        new_centroid_mapping = np.zeros(len(data))
+
+        while not converged and it < max_iter:
+            print(f'Iteration {it}')
+            it += 1
+            new_centroid_mapping = self.execute_circuits(data_phi,
+                                                         data_theta,
+                                                         centroids_phi,
+                                                         centroids_theta,
+                                                         backend,
+                                                         shots_each)
+            converged = self.check_convergence(old_centroid_mapping, new_centroid_mapping, tol / 100)
+            old_centroid_mapping = new_centroid_mapping
+            centroids = BaseQuantumKMeans.CalculateCentroids(new_centroid_mapping, centroids, data, k)
+            new_centroids = np.zeros((k, 2))
+            for i in range(0, k):
+                for j in range(0, 2):
+                    new_centroids[i,j] = centroids[i][j]
+            centroids = new_centroids
+            centroids_phi, centroids_theta = self.calculate_angles(centroids)
+
+        return new_centroid_mapping
+
+    @staticmethod
+    def execute_circuits(data_phi, data_theta, centroids_phi, centroids_theta, backend, shots_each):
+        """
+        Execute the quantum circuit(s) and returns the centroid mapping according to the result.
+        We need 3 qubits per data point - centroid pair. Two for data encoding and one ancilla.
+        """
+
+        distances = np.zeros((len(data_phi), len(centroids_phi)))
+        centroid_mapping = np.zeros(len(data_phi))
+
+        for i in range(0, len(data_phi)):
+            for j in range(0, len(centroids_phi)):
+                qc = QuantumCircuit(3, 3)
+                qc.h(2)
+                qc.u(data_theta[i], data_phi[i], 0, 0)
+                qc.u(centroids_theta[j], centroids_phi[j], 0, 1)
+                qc.cswap(2, 0, 1)
+                qc.h(2)
+                qc.measure(2, 0)
+
+                job = execute(qc, backend=backend, shots=shots_each)
+                result = job.result().get_counts(qc)
+                if '001' in result:
+                    distances[i, j] = result['001']
+                else:
+                    distances[i, j] = 0
+
+        for i in range(0, len(distances)):
+            centroid_mapping[i] = np.argmin(distances[i, :])
+
+        return centroid_mapping
+
+    @staticmethod
+    def check_convergence(old_centroid_mapping, new_centroid_mapping, tol):
+        """
+        Check if two centroid mappings are different and how different they are
+        i.e. this is the convergence condition. Return true if we are converged.
+        The tol is the percentage of how many points are
+        allowed to have a different label in the new iteration but still accept it
+        as converged.
+
+        E.g.: tol = 0.05, 100 data points in total
+
+        =>  if from one iteration to the other less than 100 * 0.05 = 5 points change their
+            label, we still accept it as converged
+        """
+        n_different_labels = 0
+        n_data_points = len(new_centroid_mapping)
+        for i in range(0, len(old_centroid_mapping)):
+            if old_centroid_mapping[i] != new_centroid_mapping[i]:
+                n_different_labels += 1
+
+        residual = np.ceil(n_different_labels / n_data_points * 100)
+        print(f'Current residual {residual}')
+
+        if n_different_labels < np.ceil(n_data_points * tol):
+            return True
+        else:
+            return False
+
+    def calculate_angles(self, data):
+        """
+        Calculates the angles for data encoding. For each 2D data point we
+        calculate two angles: phi and theta. Phi rotates the vector on the
+        bloch sphere to get the correct x coordinate while theta do the same
+        for the y coordinate.
+
+        We return a tuple (phi, theta) with each being a numpy array
+        with the calculated angles.
+
+        Note, that we use a one-to-one transformation from [-1, +1] to [0, pi]
+        for both angles, which is the transform_euclidean_to_radian function.
+        """
+        phi = [self.transform_euclidean_to_radian(x) for x in data[:, 0]]
+        theta = [self.transform_euclidean_to_radian(y) for y in data[:, 1]]
+
+        return phi, theta
+
+    @staticmethod
+    def transform_euclidean_to_radian(euclidean):
+        """
+        Transforms euclidean coordinates to radian angles.
+        We use the transformation (x + 1) * pi/2 which is a
+        one-to-one transformation from [-1, +1] to [0, pi].
+        """
+        return (euclidean + 1) * np.pi / 2
+
+    @staticmethod
+    def generate_centroids(k, d):
+        """
+        Generate k random d-dim data points with each feature being in [-1, 1].
+        The output will be a k x d numpy array.
+        """
+        centroids = np.zeros((k, d))
+
+        # Create random float numbers per coordinate
+        for i in range(0, k):
+            for j in range(0, d):
+                centroids[i, j] = random.uniform(-1, 1)
+
+        return centroids
+
 
 if __name__== "__main__":
 
