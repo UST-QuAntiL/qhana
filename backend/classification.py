@@ -26,10 +26,9 @@ from sklearn.neural_network import MLPClassifier
 from ast import literal_eval as make_tuple
 
 import torch
-from torch.autograd import Function
-import torch.optim as optim
+from torch.optim import Adadelta, Adagrad, Adam, AdamW, SparseAdam, Adamax, ASGD, SGD, Rprop, RMSprop, LBFGS
 import torch.nn as nn
-import torch.nn.functional as F
+from QNN import DressedQNN
 
 """
 Enum for Classifications
@@ -178,7 +177,7 @@ class ClassicSklearnSVM(Classification):
 
         parameter_C = self.get_C_param()
         description_C = "C : float, (default=1.0)\n"\
-                            +"Specifies the kernel type to be used in the algorithm. 'precomputed' not selectable here."
+                            +"Regularization parameter. The strength of the regularization is inversely proportional to C. Must be strictly positive. The penalty is a squared l2 penalty."
         params.append(("C", "C" , description_C, parameter_C, "number", 0, 0.001))
 
         parameter_degree = self.get_degree()
@@ -820,9 +819,16 @@ class HybridQNN(Classification):
         ibmq_custom_backend = "",
         shots = 1024,
         epochs = 10,
-        learning_rate = 0.01,
-        batch_size = 1,
-        shuffle = True
+        optimizer = 'Adam',
+        learning_rate = 0.07,
+        batch_size = 10,
+        shuffle = True,
+        hidden_layers_preproc = (4,),
+        hidden_layers_postproc = (4,),
+        repetitions_qlayer = 4,
+        shift = np.pi / 4,
+        weight_initialization = "uniform",
+        w2w = 0
     ):
         self.__backend = backend
         self.__ibmq_token = ibmq_token
@@ -830,21 +836,24 @@ class HybridQNN(Classification):
         self.__shuffle = shuffle
         self.__shots = shots
         self.__epochs = epochs
+        self.__optimizer = optimizer
         self.__learning_rate = learning_rate
         self.__batch_size = batch_size
+        self.__hl_preproc = hidden_layers_preproc
+        self.__hl_postproc = hidden_layers_postproc
+        self.__reps_qlayer = repetitions_qlayer
+        self.__shift = shift
+        self.__weight_initialization = weight_initialization
+        self.__w2w = w2w
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
         n_samples = len(labels)
         n_classes = len(list(set(labels)))
+        dimensions = position_matrix.shape[1]
+
         if n_classes > 2:
             raise Exception("Multi-class support for "+ str(type(self)) +" not implemented, yet.")
-
-        # shuffle
-        if self.__shuffle:
-            zipped = list(zip(position_matrix, labels))
-            random.shuffle(zipped)
-            position_matrix, labels = zip(*zipped)
 
         # Conversion of labels to int necessary for tensorization
         position_matrix, labels = list(position_matrix), [int(i) for i in labels]
@@ -859,8 +868,12 @@ class HybridQNN(Classification):
         labels = labels.long()
 
         backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
-        model = Net(backend, self.__shots)
-        optimizer = optim.Adam(model.parameters(), lr=self.__learning_rate)
+        model = DressedQNN(dimensions, n_classes, self.__hl_preproc,
+                           self.__hl_postproc, self.__reps_qlayer,
+                           self.__weight_initialization, self.__w2w, self.__shift,
+                           backend, self.__shots)
+
+        optimizer = self.instanciate_optimizer(self.__optimizer, model.parameters(), self.__learning_rate)
 
         loss_func = nn.NLLLoss()
 
@@ -868,8 +881,15 @@ class HybridQNN(Classification):
 
         model.train()
         for epoch in range(self.__epochs):
+            model.update_epoch(epoch)
+
+            if self.__shuffle:
+                shuff = list(range(len(position_matrix)))
+                random.shuffle(shuff)
+                position_matrix, labels = position_matrix[shuff], labels[shuff]
+
             total_loss = []
-            for batch_idx, (data, target) in enumerate(zip(chunk(position_matrix, self.__batch_size), chunk(labels, self.__batch_size))): # this implies batch size 1
+            for batch_idx, (data, target) in enumerate(zip(chunk(position_matrix, self.__batch_size), chunk(labels, self.__batch_size))):
                 optimizer.zero_grad()
                 # Forward pass
                 output = model(data)
@@ -886,16 +906,17 @@ class HybridQNN(Classification):
                 100. * (epoch + 1) / self.__epochs, loss_list[-1]))
         model.eval()
 
-        def prediction_fun(test_data):
-            result = []
-            for data_point in test_data:
-                data_tensor = torch.tensor([data_point]).float()
-                data_res = model(data_tensor)
-                result.append(data_res)
-            lbls = [int(torch.argmax(res)) for res in result]
+        def prediction_fun(data):
+            data_tensor = torch.tensor(data).float()
+            data_res = model(data_tensor)
+
+            lbls = [int(torch.argmax(res)) for res in data_res]
             return np.array(lbls)
 
         return prediction_fun, []
+
+    def instanciate_optimizer(self, name, parameters, learningrate):
+        return globals()[name](parameters, lr=learningrate)
 
     # getter and setter params
     def get_shots(self):
@@ -947,6 +968,48 @@ class HybridQNN(Classification):
     def set_shuffle(self, shuffle):
         self.__shuffle = shuffle
 
+    def get_hl_preproc(self):
+        return self.__hl_preproc
+
+    def set_hl_preproc(self, hl_preproc):
+        self.__hl_preproc = hl_preproc
+
+    def get_hl_postproc(self):
+        return self.__hl_postproc
+
+    def set_hl_postproc(self, hl_postproc):
+        self.__hl_postproc = hl_postproc
+
+    def get_reps_qlayer(self):
+        return self.__reps_qlayer
+
+    def set_reps_qlayer(self, reps_qlayer):
+        self.__reps_qlayer = reps_qlayer
+
+    def get_optimizer(self):
+        return self.__optimizer
+
+    def set_optimizer(self, optimizer):
+        self.__optimizer = optimizer
+
+    def get_shift(self):
+        return self.__shift
+
+    def set_shift(self, shift):
+        self.__shift = shift
+
+    def get_weight_init(self):
+        return self.__weight_initialization
+
+    def set_weight_init(self, weight_init):
+        self.__weight_initialization = weight_init
+
+    def get_w2w(self):
+        return self.__w2w
+
+    def set_w2w(self, w2w):
+        self.__w2w = w2w
+
     def get_param_list(self) -> list:
         """
         # each tuple has informations as follows
@@ -977,23 +1040,61 @@ class HybridQNN(Classification):
                             +"Number of repetitions of each circuit, for sampling."
         params.append(("shots", "Shots" , description_shots, parameter_shots, "number", 1, 1))
 
-        parameter_epochs = self.get_epochs()
-        description_epochs = "Epochs : int, (default=10)\n"\
-                            +"Number of learning epochs."
-        params.append(("epochs", "Epochs" , description_epochs, parameter_epochs, "number", 1, 1))
+        parameter_optimizer = self.get_optimizer()
+        description_optimizer = "Optimizer : {'Adadelta', 'Adagrad', 'Adam', 'AdamW', 'SparseAdam', 'Adamax', 'ASGD', 'SGD', 'Rprop', 'RMSprop', 'LBFGS'}, (default='Adam')\n"\
+                                    +"The classical optimizer to use."
+        params.append(("optimizer", "Optimizer", description_optimizer, parameter_optimizer, "select", ['Adadelta', 'Adagrad', 'Adam', 'AdamW', 'SparseAdam', 'Adamax', 'ASGD', 'SGD', 'Rprop', 'RMSprop', 'LBFGS']))
 
         parameter_learningrate = self.get_learningrate()
         description_learningrate = "Learning rate parameter"
         params.append(("learningrate", "Learning rate", description_learningrate, parameter_learningrate, "number", 0, 1e-3))
 
+        parameter_epochs = self.get_epochs()
+        description_epochs = "Epochs : int, (default=10)\n"\
+                            +"Number of learning epochs."
+        params.append(("epochs", "Epochs" , description_epochs, parameter_epochs, "number", 1, 1))
+
         parameter_batchsize = self.get_batchsize()
-        description_batchsize = "Batch size : int, (default=1)\n"\
-                            +"Batch size for training"
+        description_batchsize = "Batch size : int, (default=10)\n"\
+                            +"Batch size for training; It's highly recommendable to choose a batch size that is a factor of the number of samples"
         params.append(("batchsize", "Batchsize" , description_batchsize, parameter_batchsize, "number", 1, 1))
 
         parameter_shuffle = self.get_shuffle()
         description_shuffle = "shuffle: bool, (default=True)\n If True: randomly shuffle data before training"
         params.append(("shuffle", "Shuffle" , description_shuffle, parameter_shuffle, "checkbox"))
+
+        parameter_preproc_layers = str(self.get_hl_preproc())
+        description_preproc_layers = "Preprocessing: Classical hidden layer sizes : tuple, (default=(4,))\n"\
+                            + "The ith element represents the number of neurons in the ith hidden layer."\
+                            + "This is for the classical network that preprocesses the data before passing it to the quantum layer."
+        params.append(("pre_hiddenlayersizes", "Preprocessing: Classical hidden layer sizes" , description_preproc_layers, parameter_preproc_layers, "text", "", ""))
+
+        parameter_postproc_layers = str(self.get_hl_postproc())
+        description_postproc_layers = "Postprocessing: Classical hidden layer sizes : tuple, (default=(4,))\n"\
+                            + "The ith element represents the number of neurons in the ith hidden layer."\
+                            + "This is for the classical network that postprocesses the data coming out of the quantum layer."
+        params.append(("post_hiddenlayersizes", "Postprocessing: Classical hidden layer sizes" , description_postproc_layers, parameter_postproc_layers, "text", "", ""))
+
+        parameter_reps_qlayer = self.get_reps_qlayer()
+        description_reps_qlayer = "Quantum Layer: Number of repetitions: int, (default=4)\n"\
+                                + "Repetitions in the trainable circuit of the quantum layer."\
+                                + "This directly influences the depth of the overall circuit."
+        params.append(("reps_qlayer", "Quantum Layer: Number of repetitions", description_reps_qlayer, parameter_reps_qlayer, "number", 1, 1))
+
+        parameter_shift = round(self.get_shift(), 3)
+        description_shift = "Shift: int, (default=π/4)\n"\
+                            "Shift to apply for determination of gradients via parameter shift rule."
+        params.append(("shift", "Quantum Layer: Shift for gradient determination", description_shift, parameter_shift, "number", 1e-3, 1e-3))
+
+        parameter_weight_init = self.get_weight_init()
+        description_weight_init = "Weight initialization: {'standard_normal', 'uniform', 'zero'}, (default='uniform')\n"\
+                                    +"Distribution for (random) initialization of weights."
+        params.append(("weight_init", "Quantum Layer: Weight initialization strategy", description_weight_init, parameter_weight_init, "select", ['standard_normal', 'uniform', 'zero']))
+
+        parameter_w2w = self.get_w2w()
+        description_w2w = "w2w: weights to wiggle: int, (default=0)\n"\
+                                + "The number of weights in the quantum circuit to update in one optimization step. 0 means all."
+        params.append(("w2w", "Quantum Layer: Weights to wiggle", description_w2w, parameter_w2w, "number", 0, 1))
 
         return params
 
@@ -1009,120 +1110,30 @@ class HybridQNN(Classification):
                 self.set_ibmq_custom_backend(param[3])
             if param[0] == "epochs":
                 self.set_epochs(param[3])
+            if param[0] == "optimizer":
+                self.set_optimizer(param[3])
             if param[0] == "learningrate":
                 self.set_learningrate(param[3])
             if param[0] == "batchsize":
                 self.set_batchsize(param[3])
             if param[0] == "shuffle":
                 self.set_shuffle(param[3])
-
+            if param[0] == "pre_hiddenlayersizes":
+                self.set_hl_preproc((make_tuple(param[3])))
+            if param[0] == "post_hiddenlayersizes":
+                self.set_hl_postproc((make_tuple(param[3])))
+            if param[0] == "reps_qlayer":
+                self.set_reps_qlayer(param[3])
+            if param[0] == "shift":
+                self.set_shift(param[3])
+            if param[0] == "weight_init":
+                self.set_weight_init(param[3])
+            if param[0] == "w2w":
+                self.set_w2w(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
 
-# source https://qiskit.org/textbook/ch-machine-learning/machine-learning-qiskit-pytorch.html
-# Some classes for the hybrid neural network approach
-class NNQuantumCircuit:
-    """
-    This class provides a simple interface for interaction
-    with the quantum circuit
-    """
-
-    def __init__(self, n_qubits, backend, shots):
-        # --- Circuit definition ---
-        self._circuit = qiskit.QuantumCircuit(n_qubits)
-
-        all_qubits = [i for i in range(n_qubits)]
-        self.theta = qiskit.circuit.Parameter('theta')
-
-        self._circuit.h(all_qubits)
-        self._circuit.barrier()
-        self._circuit.ry(self.theta, all_qubits)
-
-        self._circuit.measure_all()
-        # ---------------------------
-
-        self.backend = backend
-        self.shots = shots
-
-    def run(self, thetas):
-        job = qiskit.execute(self._circuit,
-                             self.backend,
-                             shots = self.shots,
-                             parameter_binds = [{self.theta: theta} for theta in thetas])
-        result = job.result().get_counts(self._circuit)
-
-        counts = np.array(list(result.values()))
-        states = np.array(list(result.keys())).astype(float)
-
-        # Compute probabilities for each state
-        probabilities = counts / self.shots
-        # Get state expectation
-        expectation = np.sum(states * probabilities)
-
-        return np.array([expectation])
-
-    def draw_circuit(self):
-        self ._circuit.draw()
-
-class HybridFunction1(Function):
-    """ Hybrid quantum - classical function definition """
-
-    @staticmethod
-    def forward(ctx, input, quantum_circuit, shift):
-        """ Forward pass computation """
-        ctx.shift = shift
-        ctx.quantum_circuit = quantum_circuit
-
-        expectation_z = [ctx.quantum_circuit.run(input[i].tolist()) for i in range(len(input))]
-        result = torch.tensor(expectation_z)
-        ctx.save_for_backward(input, result)
-        return result
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        """ Backward pass computation """
-        input, expectation_z = ctx.saved_tensors
-        input_list = np.array(input.tolist())
-        shift_right = input_list + np.ones(input_list.shape) * ctx.shift
-        shift_left = input_list - np.ones(input_list.shape) * ctx.shift
-
-        gradients = []
-        for i in range(len(input_list)):
-            expectation_right = ctx.quantum_circuit.run(shift_right[i])
-            expectation_left  = ctx.quantum_circuit.run(shift_left[i])
-
-            gradient = torch.tensor([expectation_right]) - torch.tensor([expectation_left])
-            gradients.append(gradient)
-        gradients = np.array([gradients]).T
-
-        result_gradient = (torch.tensor([gradients]).float() * grad_output.float())
-
-        return result_gradient.view(len(input), 1), None, None
-
-class Hybrid(nn.Module):
-    """ Hybrid quantum - classical layer definition """
-
-    def __init__(self, backend, shots, shift):
-        super(Hybrid, self).__init__()
-        self.quantum_circuit = NNQuantumCircuit(1, backend, shots)
-        self.shift = shift
-
-    def forward(self, input):
-        return HybridFunction1.apply(input, self.quantum_circuit, self.shift)
-
-class Net(nn.Module):
-    def __init__(self, backend, shots):
-        super(Net, self).__init__()
-        self.fc1 = nn.Linear(2, 32)
-        self.fc2 = nn.Linear(32, 1)
-        self.hybrid = Hybrid(backend, shots, np.pi / 2)
-
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        x = self.hybrid(x)
-        return torch.cat((x, 1 - x), -1)
 
 def chunk(data, batch_size):
     chunks = []
