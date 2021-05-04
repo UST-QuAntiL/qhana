@@ -28,7 +28,7 @@ from ast import literal_eval as make_tuple
 import torch
 from torch.optim import Adadelta, Adagrad, Adam, AdamW, SparseAdam, Adamax, ASGD, SGD, Rprop, RMSprop, LBFGS
 import torch.nn as nn
-from QNN import DressedQNN
+from backend.QNN import DressedQNN
 
 """
 Enum for Classifications

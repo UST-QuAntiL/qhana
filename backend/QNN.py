@@ -3,8 +3,8 @@ import torch
 from torch.autograd import Function
 import torch.nn as nn
 import torch.nn.functional as F
-from QNNCircuitGenerator import QNNCircuitGenerator
-from QNNcircuitExecutor import CircuitExecutor
+from backend.QNNCircuitGenerator import QNNCircuitGenerator
+from backend.QNNcircuitExecutor import CircuitExecutor
 import math
 import numpy as np
 
