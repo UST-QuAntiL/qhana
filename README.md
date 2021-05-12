@@ -65,8 +65,8 @@ The following clustering algorithms are implemented in QHAna:
 | Name                    | Comment                                                               |
 | ----------------------- |-----------------------------------------------------------------------|
 | ClassicSklearnSVM       | Classical support vector machines using SKLearn [17, 18]              |
-| QKEQiskitSVM            | Quantum Kernel Estimation method for SVM using Qiskit [19, 20]        |
-| VariationalQiskitSVM    | Variational Quantum SVM method using Qiskit [20, 21]                  |
+| qiskitQSVC              | Quantum Support Vector Classifier (based on quantum kernel) using Qiskit [19, 20] |
+| qiskitVQC               | Variational Quantum Classifier using Qiskit [20, 21]                  |
 | ClassicSklearnNN        | Classical neural network method using SKLearn [22]                    |
 | HybridQNN               | Hybrid quantum-classical Neural Network using PyTorch and Qiskit [23] |
 
@@ -98,6 +98,7 @@ The following packages (including their dependencies) are needed and will be ins
 | flask                  | https://anaconda.org/anaconda/flask                  |
 | pygraphviz             | https://anaconda.org/anaconda/pygraphviz             |
 | qiskit                 | https://qiskit.org                                   |
+| qiskit-machine-learning| https://qiskit.org/documentation/machine-learning    |
 | cvxpy                  | https://anaconda.org/conda-forge/cvxpy               |
 | pylatexenc             | https://anaconda.org/conda-forge/pylatexenc          |
 
@@ -232,11 +233,11 @@ Dies ist ein Forschungsprototyp. Die Haftung für entgangenen Gewinn, Produktion
 
 [18] Chih-Chung Chang and Chih-Jen Lin, LIBSVM -- A Library for Support Vector Machines, https://www.csie.ntu.edu.tw/~cjlin/libsvm.
 
-[19] Qiskit documentation, Quantum Kernel Estimation method for SVM, https://qiskit.org/documentation/stubs/qiskit.aqua.algorithms.QSVM.html.
+[19] Qiskit documentation, Quantum Support Vector Classifier, https://qiskit.org/documentation/machine-learning/stubs/qiskit_machine_learning.algorithms.QSVC.html#qiskit_machine_learning.algorithms.QSVC.
 
 [20] Havlíček, V. et al., "Supervised learning with quantum-enhanced feature spaces." Nature, 567(7747), pp.209-212, 2019, https://arxiv.org/pdf/1804.11326.pdf.
 
-[21] Qiskit documentation, Variational Quantum SVM, https://qiskit.org/documentation/stubs/qiskit.aqua.algorithms.VQC.html.
+[21] Qiskit documentation, Variational Quantum Classifier, https://qiskit.org/documentation/machine-learning/stubs/qiskit_machine_learning.algorithms.VQC.html#qiskit_machine_learning.algorithms.VQC.
 
 [22] SKLearn documentation, Multi-layer Perceptron classifier, https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html.
 

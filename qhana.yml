@@ -20,3 +20,4 @@ dependencies:
   - pytorch=1.6.0
   - pip:
     - qiskit==0.25.3
+    - qiskit-machine-learning==0.1.0

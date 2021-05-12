@@ -1,29 +1,24 @@
+import sys
 import enum
-from backend.logger import Logger
-from abc import ABCMeta, abstractmethod
 import numpy as np
 from typing import List
-from backend.entity import Costume
-from sklearn import svm
-import math
-import qiskit
-from qiskit import Aer
-from qiskit.aqua.algorithms import QSVM
-from qiskit.aqua.quantum_instance import QuantumInstance
-from backend.clustering import QuantumBackends  # TODO: separate from clustering
-from qiskit.circuit.library import ZZFeatureMap, PauliFeatureMap, ZFeatureMap
-from qiskit import IBMQ
-from qiskit.aqua.algorithms.classifiers.vqc import VQC
-from qiskit.aqua.components.optimizers import ADAM, AQGD, BOBYQA, COBYLA, NELDER_MEAD, SPSA, POWELL, NFT, TNC
-                                        # some more https://qiskit.org/documentation/apidoc/qiskit.aqua.components.optimizers.html
-import sys
-from qiskit.circuit.library.n_local import RealAmplitudes, ExcitationPreserving, EfficientSU2
-from qiskit.circuit.library.n_local.two_local import TwoLocal
+from abc import ABCMeta, abstractmethod
 import random
-from numpy import setdiff1d
-from qiskit.aqua.components.multiclass_extensions import ErrorCorrectingCode, OneAgainstRest, AllPairs
-from sklearn.neural_network import MLPClassifier
 from ast import literal_eval as make_tuple
+
+from backend.logger import Logger
+from backend.entity import Costume
+from backend.clustering import QuantumBackends  # TODO: separate from clustering
+
+from sklearn import svm
+from sklearn.neural_network import MLPClassifier
+
+from qiskit.utils import QuantumInstance
+from qiskit_machine_learning.kernels.quantum_kernel import QuantumKernel
+from qiskit_machine_learning.algorithms import QSVC
+from qiskit_machine_learning.algorithms.classifiers import VQC
+from qiskit.circuit.library import TwoLocal, RealAmplitudes, ExcitationPreserving, EfficientSU2, ZZFeatureMap, PauliFeatureMap, ZFeatureMap
+from qiskit.algorithms.optimizers import ADAM, AQGD, BOBYQA, COBYLA, NELDER_MEAD, SPSA, POWELL, NFT, TNC
 
 import torch
 from torch.optim import Adadelta, Adagrad, Adam, AdamW, SparseAdam, Adamax, ASGD, SGD, Rprop, RMSprop, LBFGS
@@ -37,8 +32,8 @@ Enum for Classifications
 
 class ClassificationTypes(enum.Enum):
     classicSklearnSVM = 0  # classical implementation of SVMs in scikit learn module
-    qkeQiskitSVM = 1  # quantum kernel estimation method QSVM
-    variationalQiskitSVM = 2  # variational SVM method
+    qiskitQSVC = 1  # quantum kernel estimation method QSVM
+    qiskitVQC = 2  # variational SVM method
     classicSklearnNN = 3 # classical implementation based on neutral networks (from sklearn)
     HybridQNN = 4
 
@@ -47,10 +42,10 @@ class ClassificationTypes(enum.Enum):
         name = ""
         if classificationType == ClassificationTypes.classicSklearnSVM :
             name = "classicSklearnSVM"
-        elif classificationType == ClassificationTypes.qkeQiskitSVM :
-            name = "qkeQiskitSVM"
-        elif classificationType == ClassificationTypes.variationalQiskitSVM:
-            name = "variationalQiskitSVM"
+        elif classificationType == ClassificationTypes.qiskitQSVC :
+            name = "qiskitQSVC"
+        elif classificationType == ClassificationTypes.qiskitVQC:
+            name = "qiskitVQC"
         elif classificationType == ClassificationTypes.classicSklearnNN:
             name = "classicSklearnNN"
         elif classificationType == ClassificationTypes.HybridQNN:
@@ -107,10 +102,10 @@ class ClassificationFactory:
     def create(type: ClassificationTypes) -> Classification:
         if type == ClassificationTypes.classicSklearnSVM:
             return ClassicSklearnSVM()
-        if type == ClassificationTypes.qkeQiskitSVM:
-            return qkeQiskitSVM()
-        if type == ClassificationTypes.variationalQiskitSVM:
-            return variationalQiskitSVM()
+        if type == ClassificationTypes.qiskitQSVC:
+            return qiskitQSVC()
+        if type == ClassificationTypes.qiskitVQC:
+            return qiskitVQC()
         if type == ClassificationTypes.classicSklearnNN:
             return ClassicSklearnNN()
         if type == ClassificationTypes.HybridQNN:
@@ -200,7 +195,7 @@ class ClassicSklearnSVM(Classification):
         pass
 
 
-class qkeQiskitSVM(Classification):
+class qiskitQSVC(Classification):
 
     def __init__(
         self,
@@ -211,7 +206,6 @@ class qkeQiskitSVM(Classification):
         entanglement="linear",
         reps=2,
         shots=1024,
-        multiclass_ext = "binary" # i.e. standard binary
     ):
         self.__featuremap = featuremap
         self.__backend = backend
@@ -220,15 +214,11 @@ class qkeQiskitSVM(Classification):
         self.__shots = shots
         self.__ibmq_token = ibmq_token
         self.__ibmq_custom_backend = ibmq_custom_backend
-        self.__multiclass_extension = multiclass_ext
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
         n_samples = len(labels)
         n_classes = len(list(set(labels)))
-        if n_classes > 2 and self.__multiclass_extension == "binary":
-            raise Exception("Select a multiclass extension for "+ str(type(self)))
-
         Logger.debug("Training classifier: {}\nN samples: {}\nN classes: {}".format(str(type(self)), n_samples, n_classes))
 
         backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
@@ -236,17 +226,16 @@ class qkeQiskitSVM(Classification):
 
         dimension = position_matrix.shape[1]
         feature_map = self.instanciate_featuremap(feature_dimension=dimension)
-        multiclass_ext = self.instanciate_multiclas_extension()
-        Logger.debug("Dimensions: {}\nFeature Map: {}\nMulti class extension: {}".format(dimension, self.__featuremap, self.__multiclass_extension))
-
-        qsvm = QSVM(feature_map, multiclass_extension=multiclass_ext)
         quantum_instance = QuantumInstance(backend, seed_simulator=9283712, seed_transpiler=9283712, shots=self.__shots)
+        kernel = QuantumKernel(feature_map=feature_map, quantum_instance=quantum_instance)
+        Logger.debug("Dimensions: {}\nFeature Map: {}".format(dimension, self.__featuremap))
+
         Logger.debug("Initialized quantum instance.\nStart training...")
-        qsvm.train(position_matrix, labels, quantum_instance)
+        qsvc = QSVC(quantum_kernel=kernel)
+        qsvc.fit(position_matrix, labels)
 
         Logger.debug("Training complete.")
-        return qsvm.predict, \
-            qsvm.ret['svm']['support_vectors'] if self.__multiclass_extension == "binary" else [] # the support vectors if applicable
+        return qsvc.predict, qsvc.support_vectors_
 
     def instanciate_featuremap(self, feature_dimension):
         if self.__featuremap == "ZFeatureMap":
@@ -257,15 +246,6 @@ class qkeQiskitSVM(Classification):
             return PauliFeatureMap(feature_dimension=feature_dimension, entanglement=self.__entanglement, reps=self.__reps)
         else:
             Logger.error("No such feature map available: {}".format(self.__featuremap))
-
-    def instanciate_multiclas_extension(self):
-        if self.__multiclass_extension == "allPairs":
-            return AllPairs()
-        elif self.__multiclass_extension == "oneAgainstRest":
-            return OneAgainstRest()
-        elif self.__multiclass_extension == "errorCorrectingCode":
-            return ErrorCorrectingCode()
-        return None
 
     # getter and setter params
     def get_featuremap(self):
@@ -312,12 +292,6 @@ class qkeQiskitSVM(Classification):
         self.__ibmq_custom_backend = ibmq_custom_backend
         return
 
-    def get_multiclassext(self):
-        return self.__multiclass_extension
-
-    def set_multiclassext(self, multiclass_ext):
-        self.__multiclass_extension = multiclass_ext
-
     def get_param_list(self) -> list:
         """
         # each tuple has informations as follows
@@ -325,7 +299,7 @@ class qkeQiskitSVM(Classification):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        classificationTypeName = "QKE SVM (using qiskit)"
+        classificationTypeName = "qiskit Quantum Support Vector Classifier (QSVC; using quantum kernel)"
         params.append(("name", "ClassificationType" , "Name of choosen classification type", classificationTypeName , "header"))
 
         parameter_featuremap = self.get_featuremap()
@@ -365,12 +339,6 @@ class qkeQiskitSVM(Classification):
                             +"IBMQ-Token for access to IBMQ online service"
         params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
 
-        parameter_multiclassext = self.get_multiclassext()
-        description_multiclassext = "Multiclass extension : {'allPairs', 'oneAgainstRest', 'errorCorrectingCode', 'binary'} (default='binary')\n "\
-                            +"If number of classes is greater than 2 then a multiclass scheme "\
-                            +"must be supplied, in the form of a multiclass extension."
-        params.append(("multiclassext", "Multiclass extension" , description_multiclassext, parameter_multiclassext, "select", ["allPairs", "oneAgainstRest", "errorCorrectingCode", "binary"]))
-
         return params
 
     def set_param_list(self, params: list=[]) -> np.matrix:
@@ -389,14 +357,12 @@ class qkeQiskitSVM(Classification):
                 self.set_backend(QuantumBackends[param[3]])
             if param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
-            if param[0] == "multiclassext":
-                self.set_multiclassext(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume]) -> None:
         pass
 
 
-class variationalQiskitSVM(Classification):
+class qiskitVQC(Classification):
 
     def __init__(
         self,
@@ -407,14 +373,10 @@ class variationalQiskitSVM(Classification):
         entanglement="linear",
         reps=2,
         shots=1024,
-        var_form="RyRz",
-        reps_varform = 3,
+        ansatz="RyRz",
+        reps_ansatz = 3,
         optimizer="SPSA",
-        maxiter=100,
-        adam_tolerance = 0,
-        adam_learningrate = 0.1,
-        adam_noicefactor = 1e-8,
-        adam_epsilon = 1e-10,
+        maxiter=100
     ):
         self.__featuremap = featuremap
         self.__backend = backend
@@ -423,14 +385,10 @@ class variationalQiskitSVM(Classification):
         self.__shots = shots
         self.__ibmq_token = ibmq_token
         self.__ibmq_custom_backend = ibmq_custom_backend
-        self.__var_form = var_form
-        self.__reps_varform = reps_varform
+        self.__ansatz = ansatz
+        self.__reps_ansatz = reps_ansatz
         self.__optimizer = optimizer
         self.__maxiter = maxiter
-        self.__adam_tolerance = adam_tolerance
-        self.__adam_learningrate = adam_learningrate
-        self.__adam_noisefactor = adam_noicefactor
-        self.__adam_epsilon = adam_epsilon
         return
 
     def create_classifier(self, position_matrix : np.matrix, labels: list, similarity_matrix : np.matrix) -> np.matrix:
@@ -439,24 +397,25 @@ class variationalQiskitSVM(Classification):
         if n_classes > 2:
             raise Exception("Multi-class support for "+ str(type(self)) +" not implemented, yet.")
 
-
-        """ set backend: Code duplicated from clustering """  # TODO: separate from clustering & classification
         backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
 
         dimension = position_matrix.shape[1]
         feature_map = self.instanciate_featuremap(feature_dimension=dimension)
+        ansatz = self.instanciate_ansatz(dimension)
         optimizer = self.instanciate_optimizer()
-        var_form = self.instanciate_veriational_form(dimension)
-
-        vqc = VQC(feature_map=feature_map, optimizer=optimizer, \
-                  training_dataset=get_dict_dataset(position_matrix, labels), \
-                  var_form=var_form)
         quantum_instance = QuantumInstance(backend, seed_simulator=9283712, seed_transpiler=9283712, shots=self.__shots)
 
-        vqc.train(position_matrix, labels, quantum_instance)
+        vqc = VQC(feature_map=feature_map, ansatz=ansatz,
+                  optimizer=optimizer, quantum_instance=quantum_instance)
+
+        # convert labels to one-hot
+        labels_onehot = np.zeros((n_samples, 2))
+        for i in range(n_samples):
+            labels_onehot[i, labels[i]] = 1
+
+        vqc.fit(position_matrix, labels_onehot)
 
         pred_wrapper = self.prediction_wrapper(vqc.predict)
-        #print(pred_wrapper.predict(data=position_matrix))
         return pred_wrapper.predict, []
 
     """ this wrapper takes the prediction function and strips off unnecessary
@@ -470,7 +429,8 @@ class variationalQiskitSVM(Classification):
 
         def predict(self, data):
             result = self.pred_func(data)
-            labels = result[1]
+            # convert back from one-hot to class
+            labels = np.array([r[1] for r in result])
             return labels
 
     def instanciate_featuremap(self, feature_dimension):
@@ -483,22 +443,21 @@ class variationalQiskitSVM(Classification):
         else:
             Logger.error("No such feature map available: {}".format(self.__featuremap))
 
-    def instanciate_veriational_form(self, feature_dimension):
-        if self.__var_form == "RealAmplitudes":
+    def instanciate_ansatz(self, feature_dimension):
+        if self.__ansatz == "RealAmplitudes":
             return RealAmplitudes(num_qubits=feature_dimension, entanglement=self.__entanglement)
-        elif self.__var_form == "ExcitationPreserving":
+        elif self.__ansatz == "ExcitationPreserving":
             return ExcitationPreserving(num_qubits=feature_dimension, entanglement=self.__entanglement)
-        elif self.__var_form == "EfficientSU2":
+        elif self.__ansatz == "EfficientSU2":
             return EfficientSU2(num_qubits=feature_dimension, entanglement=self.__entanglement)
-        elif self.__var_form == "RyRz":
+        elif self.__ansatz == "RyRz":
             return TwoLocal(num_qubits=feature_dimension, rotation_blocks=['ry', 'rz'], entanglement_blocks="cz", entanglement=self.__entanglement, reps=3)
         else:
-            Logger.error("No such variational form available: {}".format(self.__var_form))
+            Logger.error("No such ansatz available: {}".format(self.__ansatz))
 
     def instanciate_optimizer(self):
         if self.__optimizer == "ADAM":
-            return ADAM(maxiter=self.__maxiter, tol = self.__adam_tolerance, lr=self.__adam_learningrate,
-                        noise_factor=self.__adam_noisefactor, eps=self.__adam_epsilon)
+            return ADAM(maxiter=self.__maxiter)
         if self.__optimizer == "AQGD":
             return AQGD(maxiter=self.__maxiter)
         if self.__optimizer == "BOBYQA":
@@ -554,17 +513,17 @@ class variationalQiskitSVM(Classification):
     def set_reps(self, reps):
         self.__reps = reps
 
-    def get_var_form(self):
-        return self.__var_form
+    def get_ansatz(self):
+        return self.__ansatz
 
-    def set_var_form(self, var_form):
-        self.__var_form = var_form
+    def set_ansatz(self, ansatz):
+        self.__ansatz = ansatz
 
-    def get_repsvarform(self):
-        return self.__reps_varform
+    def get_reps_ansatz(self):
+        return self.__reps_ansatz
 
-    def set_repsvarform(self, reps):
-        self.__reps_varform = reps
+    def set_reps_ansatz(self, reps):
+        self.__reps_ansatz = reps
 
     def get_optimizer(self):
         return self.__optimizer
@@ -577,30 +536,6 @@ class variationalQiskitSVM(Classification):
 
     def set_maxiter(self, maxiter):
         self.__maxiter = maxiter
-
-    def get_adamtolerance(self):
-        return self.__adam_tolerance
-
-    def get_adamlearningrate(self):
-        return self.__adam_learningrate
-
-    def get_adamnoisefactor(self):
-        return self.__adam_noisefactor
-
-    def get_adamepsilon(self):
-        return self.__adam_epsilon
-
-    def set_adamtolerance(self, adam_tolerance):
-        self.__adam_tolerance = adam_tolerance
-
-    def set_adamlearningrate(self, adam_learningrate):
-        self.__adam_learningrate = adam_learningrate
-
-    def set_adamnoisefactor(self, adam_noicefactor):
-        self.__adam_noisefactor = adam_noicefactor
-
-    def set_adamepsilon(self, adam_epsilon):
-        self.__adam_epsilon = adam_epsilon
 
     def get_ibmq_custom_backend(self):
         return self.__ibmq_custom_backend
@@ -616,7 +551,7 @@ class variationalQiskitSVM(Classification):
         # [5] number(min steps)/select (options) /checkbox() / text )
         """
         params = []
-        classificationTypeName = "variational SVM (using qiskit)"
+        classificationTypeName = "qiskit Variational Quantum Classifier (VQC)"
         params.append(("name", "ClassificationType" , "Name of choosen classification type", classificationTypeName , "header"))
 
         parameter_featuremap = self.get_featuremap()
@@ -656,16 +591,15 @@ class variationalQiskitSVM(Classification):
                             +"IBMQ-Token for access to IBMQ online service"
         params.append(("ibmqtoken", "IBMQ-Token" , description_ibmqtoken, parameter_ibmqtoken, "text", "", ""))
 
-        parameter_varform = self.get_var_form()
-        description_varform = "Variational Form : {'RealAmplitudes', 'ExcitationPreserving', 'EfficientSU2', 'RyRz'}, (default='RyRz')\n"\
-                                +"The variational form instance."
-        params.append(("varform", "Variational Form", description_varform, parameter_varform, "select", ["RealAmplitudes", "ExcitationPreserving", "EfficientSU2", "RyRz"]))
+        parameter_ansatz = self.get_ansatz()
+        description_ansatz = "Ansatz : {'RealAmplitudes', 'ExcitationPreserving', 'EfficientSU2', 'RyRz'}, (default='RyRz')\n"
+        params.append(("ansatz", "Ansatz", description_ansatz, parameter_ansatz, "select", ["RealAmplitudes", "ExcitationPreserving", "EfficientSU2", "RyRz"]))
 
-        parameter_repsvarform = self.get_repsvarform()
-        description_repsvarform= "reps: int (default=3)\n For variational form;"\
+        parameter_reps_ansatz = self.get_reps_ansatz()
+        description_reps_ansatz= "reps: int (default=3)\n For ansatz;"\
                                     +"Specifies how often a block consisting of a rotation layer and entanglement"\
                                     +"layer is repeated."
-        params.append(("reps_varform", "Repetitions (variational Form)", description_repsvarform, parameter_repsvarform, "number", 1,1))
+        params.append(("reps_ansatz", "Repetitions (ansatz)", description_reps_ansatz, parameter_reps_ansatz, "number", 1,1))
 
         parameter_optimizer = self.get_optimizer()
         description_optimizer = "Optimizer : {'ADAM', 'AQGD', 'BOBYQA', 'COBYLA', 'NELDER_MEAD', 'SPSA', 'POWELL', 'NFT', 'TNC'}, (default='SPSA')\n"\
@@ -677,21 +611,6 @@ class variationalQiskitSVM(Classification):
                                 +"Maximum number of iterations to perform."
         params.append(("maxiter", "Max iterations", description_maxiter, parameter_maxiter, "number", 1, 1))
 
-        parameter_adamtolerance = self.get_adamtolerance()
-        description_adamtolerance = "Tolerance parameter of ADAM optimizer"
-        params.append(("adam_tolerance", "ADAM Optimizer: Tolerance", description_adamtolerance, parameter_adamtolerance, "number", 0, 1e-6))
-
-        parameter_adamlearningrate = self.get_adamlearningrate()
-        description_adamlearningrate = "Learning rate parameter of ADAM optimizer"
-        params.append(("adam_learningrate", "ADAM Optimizer: Learning rate", description_adamlearningrate, parameter_adamlearningrate, "number", 0, 1e-3))
-
-        parameter_adamnoisefactor = self.get_adamnoisefactor()
-        description_adamnoisefactor = "Noise factor parameter of ADAM optimizer"
-        params.append(("adam_noise", "ADAM Optimizer: Noise factor", description_adamnoisefactor, parameter_adamnoisefactor, "number", 0, 1e-8))
-
-        parameter_adamepsilon = self.get_adamepsilon()
-        description_adamepsilon = "Epsilon parameter of ADAM optimizer"
-        params.append(("adam_epsilon", "ADAM Optimizer: Epsilon", description_adamepsilon, parameter_adamepsilon, "number", 0, 1e-10))
         return params
 
     def set_param_list(self, params: list=[]) -> np.matrix:
@@ -708,22 +627,14 @@ class variationalQiskitSVM(Classification):
                 self.set_ibmq_token(param[3])
             if param[0] == "quantumBackend":
                 self.set_backend(QuantumBackends[param[3]])
-            if param[0] == "varform":
-                self.set_var_form(param[3])
-            if param[0] == "reps_varform":
-                self.set_repsvarform(param[3])
+            if param[0] == "ansatz":
+                self.set_ansatz(param[3])
+            if param[0] == "reps_ansatz":
+                self.set_reps_ansatz(param[3])
             if param[0] == "optimizer":
                 self.set_optimizer(param[3])
             if param[0] == "maxiter":
                 self.set_maxiter(param[3])
-            if param[0] == "adam_tolerance":
-                self.set_adamtolerance(param[3])
-            if param[0] == "adam_learningrate":
-                self.set_adamlearningrate(param[3])
-            if param[0] == "adam_noise":
-                self.set_adamnoisefactor(param[3])
-            if param[0] == "adam_epsilon":
-                self.set_adamepsilon(param[3])
             if param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
 
