@@ -53,7 +53,8 @@ We have implemented the following clustering algorithms:
 | QInterferenceKMeans     | Destructive Interference Quantum KMeans [14]                         |
 | QStatePreparationKMeans | Own implementation, extension to [14]                                |
 | Classical KMeans        | SKlearn implementation [15, 16]                                      |
-| PositiveCorrelationKMeans | Implementation of [24]
+| PositiveCorrelationKMeans | Implementation of [24]                                             |
+| Classical KMedoids      | SKlearn-Extra implementation [25, 26]
 
 <br/>
 
@@ -92,6 +93,7 @@ The following packages (including their dependencies) are needed and will be ins
 | simplejson             | https://anaconda.org/anaconda/simplejson             |
 | colorama               | https://anaconda.org/anaconda/colorama               |
 | scikit-learn           | https://anaconda.org/anaconda/scikit-learn           |
+| scikit-learn-extra     | https://anaconda.org/conda-forge/scikit-learn-extra  |
 | pandas                 | https://anaconda.org/anaconda/pandas                 |
 | flask                  | https://anaconda.org/anaconda/flask                  |
 | pygraphviz             | https://anaconda.org/anaconda/pygraphviz             |
@@ -241,3 +243,7 @@ Dies ist ein Forschungsprototyp. Die Haftung für entgangenen Gewinn, Produktion
 [23] Qiskit notebook, Hybrid quantum-classical Neural Networks with PyTorch and Qiskit, https://qiskit.org/textbook/ch-machine-learning/machine-learning-qiskit-pytorch.html.
 
 [24] Abhijat et al., "Quantum Unsupervised and Supervised Learning on Superconducting Processors", https://arxiv.org/abs/1909.04226
+
+[25] SKLearn-Extra documentation, KMedoids, https://scikit-learn-extra.readthedocs.io/en/latest/generated/sklearn_extra.cluster.KMedoids.html.
+
+[26] Park, H.S.and Jun, C.H., "A simple and fast algorithm for K-medoids clustering", Expert systems with applications, 36(2), pp.3336-3341. 2009. https://www.sciencedirect.com/science/article/abs/pii/S095741740800081X
