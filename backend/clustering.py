@@ -5,6 +5,7 @@ import enum
 import numpy as np
 from backend.logger import Logger, LogLevel
 from sklearn.cluster import OPTICS, KMeans
+from sklearn_extra.cluster import KMedoids
 from backend.entity import Costume
 from typing import List
 from backend.quantumKMeans import NegativeRotationQuantumKMeans, DestructiveInterferenceQuantumKMeans, \
@@ -39,6 +40,7 @@ class ClusteringType(enum.Enum):
     ClassicalKMeans = 7 # a classical scikit implementation of K means
     StatePreparationQuantumKMeans = 8 # an own implementation of a quantum k means
     PositiveCorrelationQuantumKMeans = 9
+    ClassicalKMedoids = 10
 
     @staticmethod
     def get_name(clusteringTyp) -> str:
@@ -63,6 +65,8 @@ class ClusteringType(enum.Enum):
             name = "statePreparationQuantumKMeans"
         elif clusteringTyp == ClusteringType.PositiveCorrelationQuantumKMeans:
             name = "positiveCorrelationQuantumKMeans"
+        elif clusteringTyp == ClusteringType.ClassicalKMedoids:
+            name = "classicalKMedoids"
         else:
             Logger.error("No name for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No name for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -96,6 +100,8 @@ class ClusteringType(enum.Enum):
             description = ("State Preparation Quantum K Means")
         elif clusteringTyp == ClusteringType.PositiveCorrelationQuantumKMeans:
             description = ("Positive Correlation Quantum K Means")
+        elif clusteringTyp == ClusteringType.ClassicalKMedoids:
+            description = ("Classical K Medoids")
         else:
             Logger.error("No description for clustering \"" + str(clusteringTyp) + "\" specified")
             raise ValueError("No description for clustering \"" + str(clusteringTyp) + "\" specified")
@@ -149,6 +155,8 @@ class ClusteringFactory:
             return StatePreparationQuantumKMeansClustering()
         elif type == ClusteringType.PositiveCorrelationQuantumKMeans:
             return PositiveCorrelationQuantumKMeansClustering()
+        elif type == ClusteringType.ClassicalKMedoids:
+            return ClassicalKMedoids()
         else:
             Logger.error("Unknown type of clustering. The application will quit know.")
             raise Exception("Unknown type of clustering.")
@@ -2324,4 +2332,117 @@ class ClassicalKMeans(Clustering):
                 self.set_relative_residual_amount(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
+        pass
+
+
+class ClassicalKMedoids(Clustering):
+    def __init__(
+            self,
+            number_of_clusters=2,
+            max_runs=10
+    ):
+        self.number_of_clusters = number_of_clusters
+        self.max_runs = max_runs
+        self.method = 'alternate'
+        self.init = 'build'
+        return
+
+    def create_cluster(self, position_matrix: np.matrix, similarity_matrix: np.matrix) -> np.matrix:
+        n_clusters = self.get_number_of_clusters()
+        random_state = 0
+        method = self.get_method()
+        init = self.get_init()
+        max_iter = self.get_max_runs()
+        kmedoidsOutput = KMedoids(
+            n_clusters=n_clusters,
+            method=method,
+            init=init,
+            random_state=random_state,
+            max_iter=max_iter).fit(similarity_matrix)
+        return kmedoidsOutput.labels_.astype(np.int)
+
+    # getter and setter params
+    def get_number_of_clusters(self):
+        return self.number_of_clusters
+
+    def set_number_of_clusters(self, number_of_clusters):
+        self.number_of_clusters = number_of_clusters
+        return
+
+    def get_max_runs(self):
+        return self.max_runs
+
+    def set_max_runs(self, max_runs):
+        self.max_runs = max_runs
+        return
+
+    def set_method(self, method):
+        self.method = method
+        return
+
+    def get_method(self):
+        return self.method
+
+    def set_init(self, init):
+        self.init = init
+        return
+
+    def get_init(self):
+        return self.init
+
+    def get_param_list(self) -> list:
+        """
+        # each tuple has informations as follows
+        # (pc_name[0] , showedname[1] , description[2] , actual value[3] , input type[4] ,
+        # [5] number(min steps)/select (options) /checkbox() / text )
+        """
+        params = []
+        clusteringTypeName = "Classical KMedoids"
+        params.append(("name", "ClusterTyp", "Name of choosen Clustering Type", clusteringTypeName, "header"))
+
+        parameter_init = self.get_init()
+        description_init = "string (default=build)" \
+                                         + "Specify medoid initialization method. ‘random’ selects n_clusters " \
+                                           "elements from the dataset. ‘heuristic’ picks the n_clusters points with the " \
+                                           "smallest sum distance to every other point. ‘k-medoids++’ follows an " \
+                                           "approach based on k-means++_, and in general, gives initial medoids which " \
+                                         "are more separated than those generated by the other methods. ‘build’ is a " \
+                                         "greedy initialization of the medoids used in the original PAM algorithm. " \
+                                         "Often ‘build’ is more efficient but slower than other initializations on " \
+                                         "big datasets and it is also very non-robust, if there are outliers in the " \
+                                         "dataset, use another initialization. "
+        params.append(("init", "Initialization", description_init,
+                       parameter_init, "text", "", ""))
+
+        parameter_method = self.get_method()
+        description_method = "string (default=alternate)" \
+                                         + "Which algorithm to use. ‘alternate’ is faster while ‘pam’ is more accurate."
+        params.append(("method", "Method", description_method,
+                       parameter_method, "text", "", ""))
+
+        parameter_number_of_clusters = self.get_number_of_clusters()
+        description_number_of_clusters = "int > 0 (default=2)" \
+                                         + ": k Clusters will be generated"
+        params.append(("numberClusters", "Number of Clusters", description_number_of_clusters,
+                       parameter_number_of_clusters, "number", 1, 1))
+
+        parameter_max_runs = self.get_max_runs()
+        description_max_runs = "int > 0 (default 10): " \
+                               + "The amount of k medoids iteration runs."
+        params.append(("maxRuns", "max runs", description_max_runs, parameter_max_runs, "number", 1, 1))
+
+        return params
+
+    def set_param_list(self, params: list = []) -> np.matrix:
+        for param in params:
+            if param[0] == "numberClusters":
+                self.set_number_of_clusters(param[3])
+            elif param[0] == "maxRuns":
+                self.set_max_runs(param[3])
+            elif param[0] == "init":
+                self.set_init(param[3])
+            elif param[0] == "method":
+                self.set_method(param[3])
+
+    def d2_plot(self, last_sequenz: List[int], costumes: List[Costume]) -> None:
         pass
