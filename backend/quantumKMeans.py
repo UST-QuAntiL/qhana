@@ -339,24 +339,33 @@ class BaseQuantumKMeans():
         while queueNotEmpty:
             maxQubitsForCircuit = globalWorkAmount - index
             qubitsForCircuit = maxQubits if maxQubits < maxQubitsForCircuit else maxQubitsForCircuit
-            qc = QuantumCircuit(qubitsForCircuit, qubitsForCircuit)
 
-            for i in range(0, qubitsForCircuit):
-                qc.ry( parameters[index][0], i) # testAngle rotation
-                qc.ry(-parameters[index][1], i) # negative centeroidAngle rotation
-                qc.measure(i, i)
-                index += 1
-                if index == globalWorkAmount:
-                    queueNotEmpty = False
-                    break
-            if plot:
-                qc.draw('mpl', filename='negrot_circuit' + str(circuitsIndex) + '.svg')
+            def circ_func():
+                nonlocal index
+                nonlocal queueNotEmpty
+
+                for i in range(0, qubitsForCircuit):
+                    qml.RY(parameters[index][0], wires=i)  # testAngle rotation
+                    qml.RY(-parameters[index][1], wires=i)  # negative centeroidAngle rotation
+                    index += 1
+
+                    if index == globalWorkAmount:
+                        queueNotEmpty = False
+                        break
+
+                return [qml.sample(qml.PauliZ(wires=i)) for i in range(qubitsForCircuit)]
+
+            # if plot:
+            #     qc.draw('mpl', filename='negrot_circuit' + str(circuitsIndex) + '.svg')
             circuitsIndex += 1
             self.UpdateConsole(circuitAmount = ceil(globalWorkAmount / maxQubits), currentCircuit = ceil(index / maxQubits))
             #print("Execute quantum circuit " + str(ceil(index / maxQubits)) + " / " + str(ceil(globalWorkAmount / maxQubits)), end="\r", flush=True)
-            job = execute(qc, backend, shots=shotsEach)
+
+            dev = qml.device("default.qubit", wires=qubitsForCircuit, shots=1024)  # TODO: replace with selected backend
+            circuit = qml.QNode(circ_func, dev)
+            histogram = pl_samples_to_counts(circuit())
             amountExecutedCircuits += 1
-            histogram = job.result().get_counts()
+
             hits = self.CalculateP0Hits(histogram)
             for i in range(0, len(hits)):
                 result[index - qubitsForCircuit + i] = hits[i]
