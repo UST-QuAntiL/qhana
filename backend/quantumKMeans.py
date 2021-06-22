@@ -874,18 +874,21 @@ class PositiveCorrelationQuantumKmeans:
 
         for i in range(0, len(data_phi)):
             for j in range(0, len(centroids_phi)):
-                qc = QuantumCircuit(3, 3)
-                qc.h(2)
-                qc.u(data_theta[i], data_phi[i], 0, 0)
-                qc.u(centroids_theta[j], centroids_phi[j], 0, 1)
-                qc.cswap(2, 0, 1)
-                qc.h(2)
-                qc.measure(2, 0)
+                def circ_func():
+                    qml.Hadamard(2)
+                    qml.U3(data_theta[i], data_phi[i], 0, wires=0)
+                    qml.U3(centroids_theta[j], centroids_phi[j], 0, wires=1)
+                    qml.CSWAP(wires=[2, 0, 1])
+                    qml.Hadamard(2)
 
-                job = execute(qc, backend=backend, shots=shots_each)
-                result = job.result().get_counts(qc)
-                if '001' in result:
-                    distances[i, j] = result['001']
+                    return [qml.sample(qml.PauliZ(wires=2))]
+
+                dev = qml.device("default.qubit", wires=3, shots=1024)  # TODO: replace with selected backend
+                circuit = qml.QNode(circ_func, dev)
+                result = pl_samples_to_counts(circuit())
+
+                if '1' in result:
+                    distances[i, j] = result['1']
                 else:
                     distances[i, j] = 0
 
