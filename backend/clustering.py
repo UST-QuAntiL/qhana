@@ -109,6 +109,10 @@ class ClusteringType(enum.Enum):
 
 
 class Clustering(metaclass=ABCMeta):
+
+    def __init__(self):
+        self.keep_cluster_mapping = False
+
     """
     Interface for Clustering Object
     """
@@ -127,6 +131,13 @@ class Clustering(metaclass=ABCMeta):
     @abstractmethod
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
+
+    def get_keep_cluster_mapping(self):
+        return self.keep_cluster_mapping
+
+    def set_keep_cluster_mapping(self, keep_cluster_mapping):
+        self.keep_cluster_mapping = keep_cluster_mapping
+        return
 
 """ 
 Represents the factory to create an scaling object
@@ -285,6 +296,7 @@ class Optics(Clustering):
         leaf_size: int = 30, # only for BallTree or KDTree
         n_jobs: int = None # -1 mean using all processors
     ):
+        super().__init__()
         if min_samples <= 1 and min_samples >= 0:
             self.__min_samples: float = min_samples
         elif min_samples > 1:
@@ -718,6 +730,13 @@ class Optics(Clustering):
                             +"and query, as well as the memory required to store the tree. The optimal value depends on "\
                             +"the nature of the problem."
         params.append(("leaf_size","Leaf Size" ,description_leaf_size, parameter_leaf_size, "number", 0 , 1))
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
 
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -749,6 +768,9 @@ class Optics(Clustering):
                 self.set_algorithm(param[3])
             elif param[0] == "leaf_size":
                 self.set_leaf_size(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
+
 
 class QuantumBackends(enum.Enum):
     custom_ibmq = "custom_ibmq"
@@ -782,6 +804,7 @@ class QuantumBackends(enum.Enum):
             Logger.error("Unknown quantum backend specified!")
         return backend
 
+
 class VQEMaxCut(Clustering):
     def __init__(self,
                  number_of_clusters = 1,
@@ -791,6 +814,7 @@ class VQEMaxCut(Clustering):
                  backend = QuantumBackends.aer_statevector_simulator,
                  ibmq_token: str = "",
                  ibmq_custom_backend: str = ""):
+        super().__init__()
         self.__number_of_clusters = number_of_clusters
         self.__max_trials = max_trials
         self.__reps = reps
@@ -993,6 +1017,12 @@ class VQEMaxCut(Clustering):
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
 
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -1011,12 +1041,16 @@ class VQEMaxCut(Clustering):
                 self.set_ibmq_token(param[3])
             elif param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
 
+
 class ClassicNaiveMaxCut(Clustering):
     def __init__(self, number_of_clusters = 1):
+        super().__init__()
         self.__number_of_clusters = number_of_clusters
         return
         
@@ -1180,19 +1214,29 @@ class ClassicNaiveMaxCut(Clustering):
         description_number_of_clusters = "int > 0 (default=2)"\
                             +"2**x Clusters would be generated"
         params.append(("numberClusters", "Number of Clusters" ,description_number_of_clusters, parameter_number_of_clusters, "number", 1 , 1 ))
-        
+
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
         for param in params:
             if param[0] == "numberClusters":
                 self.set_number_of_clusters(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
     
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
 
+
 class SdpMaxCut(Clustering):
     def __init__(self, number_of_clusters = 1):
+        super().__init__()
         self.__number_of_clusters = number_of_clusters
         return
         
@@ -1356,19 +1400,29 @@ class SdpMaxCut(Clustering):
         description_number_of_clusters = "int > 0 (default=2)"\
                             +"2**x Clusters would be generated"
         params.append(("numberClusters", "Number of Clusters" ,description_number_of_clusters, parameter_number_of_clusters, "number", 1 , 1 ))
-        
+
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
         for param in params:
             if param[0] == "numberClusters":
                 self.set_number_of_clusters(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
     
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
 
+
 class BmMaxCut(Clustering):
     def __init__(self, number_of_clusters = 1):
+        super().__init__()
         self.__number_of_clusters = number_of_clusters
         return
         
@@ -1532,16 +1586,25 @@ class BmMaxCut(Clustering):
         description_number_of_clusters = "int > 0 (default=2)"\
                             +"2**x Clusters would be generated"
         params.append(("numberClusters", "Number of Clusters" ,description_number_of_clusters, parameter_number_of_clusters, "number", 1 , 1 ))
-        
+
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
         for param in params:
             if param[0] == "numberClusters":
                 self.set_number_of_clusters(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
     
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
+
 
 class NegativeRotationQuantumKMeansClustering(Clustering):
     def __init__(self, 
@@ -1553,7 +1616,7 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
         backend = QuantumBackends.aer_statevector_simulator,
         ibmq_token = "",
         ibmq_custom_backend = ""):
-
+        super().__init__()
         self.clusterAlgo = NegativeRotationQuantumKMeans()
 
         self.number_of_clusters = number_of_clusters
@@ -1700,6 +1763,12 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
 
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -1720,9 +1789,12 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
                 self.set_ibmq_token(param[3])
             elif param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
+
 
 class DestructiveInterferenceQuantumKMeansClustering(Clustering):
     def __init__(self, 
@@ -1734,7 +1806,7 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
         backend = QuantumBackends.aer_statevector_simulator,
         ibmq_token = "",
         ibmq_custom_backend = ""):
-
+        super().__init__()
         self.clusterAlgo = DestructiveInterferenceQuantumKMeans()
 
         self.number_of_clusters = number_of_clusters
@@ -1881,6 +1953,12 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
 
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -1901,9 +1979,12 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
                 self.set_ibmq_token(param[3])
             elif param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
+
 
 class StatePreparationQuantumKMeansClustering(Clustering):
     def __init__(self, 
@@ -1915,7 +1996,7 @@ class StatePreparationQuantumKMeansClustering(Clustering):
         backend = QuantumBackends.aer_statevector_simulator,
         ibmq_token = "",
         ibmq_custom_backend = ""):
-
+        super().__init__()
         self.clusterAlgo = StatePreparationQuantumKMeans()
 
         self.number_of_clusters = number_of_clusters
@@ -2062,6 +2143,12 @@ class StatePreparationQuantumKMeansClustering(Clustering):
             + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
 
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -2082,9 +2169,12 @@ class StatePreparationQuantumKMeansClustering(Clustering):
                 self.set_ibmq_token(param[3])
             elif param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
+
 
 class PositiveCorrelationQuantumKMeansClustering(Clustering):
     def __init__(self,
@@ -2095,7 +2185,7 @@ class PositiveCorrelationQuantumKMeansClustering(Clustering):
                  backend=QuantumBackends.aer_statevector_simulator,
                  ibmq_token="",
                  ibmq_custom_backend=""):
-
+        super().__init__()
         self.clusterAlgo = PositiveCorrelationQuantumKmeans()
 
         self.number_of_clusters = number_of_clusters
@@ -2225,6 +2315,12 @@ class PositiveCorrelationQuantumKMeansClustering(Clustering):
                                  + " The token of an account accessing the IBMQ online service."
         params.append(("ibmqToken", "IBMQ-Token", description_ibmq_token, parameter_ibmq_token, "text", "", ""))
 
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
 
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -2243,9 +2339,12 @@ class PositiveCorrelationQuantumKMeansClustering(Clustering):
                 self.set_ibmq_token(param[3])
             elif param[0] == "ibmqCustomBackend":
                 self.set_ibmq_custom_backend(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
+
 
 class ClassicalKMeans(Clustering):
     def __init__(
@@ -2254,6 +2353,7 @@ class ClassicalKMeans(Clustering):
         max_runs = 10,
         relative_residual_amount = 5
     ):
+        super().__init__()
         self.number_of_clusters = number_of_clusters
         self.max_runs = max_runs
         self.relative_residual_amount = relative_residual_amount
@@ -2320,6 +2420,12 @@ class ClassicalKMeans(Clustering):
                             + "their label, we consider this as converged"
         params.append(("relativeResidual", "relative residual amount" ,description_relative_residual,parameter_relative_residual,"number", 1 , 1 ))
 
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                                           + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping,
+                       parameter_keep_cluster_mapping, "checkbox"))
+
         return params
         
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -2330,6 +2436,8 @@ class ClassicalKMeans(Clustering):
                 self.set_max_runs(param[3])
             elif param[0] == "relativeResidual":
                 self.set_relative_residual_amount(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
 
     def d2_plot(self, last_sequenz: List[int] , costumes: List[Costume] ) -> None:
         pass
@@ -2341,6 +2449,7 @@ class ClassicalKMedoids(Clustering):
             number_of_clusters=2,
             max_runs=10
     ):
+        super().__init__()
         self.number_of_clusters = number_of_clusters
         self.max_runs = max_runs
         self.method = 'alternate'
@@ -2431,6 +2540,11 @@ class ClassicalKMedoids(Clustering):
                                + "The amount of k medoids iteration runs."
         params.append(("maxRuns", "max runs", description_max_runs, parameter_max_runs, "number", 1, 1))
 
+        parameter_keep_cluster_mapping = self.get_keep_cluster_mapping()
+        description_keep_cluster_mapping = "bool (default False): " \
+                               + "If True, keeps the cluster mapping when re-calculating."
+        params.append(("keepClusterMapping", "keep cluster mapping", description_keep_cluster_mapping, parameter_keep_cluster_mapping, "checkbox"))
+
         return params
 
     def set_param_list(self, params: list = []) -> np.matrix:
@@ -2443,6 +2557,8 @@ class ClassicalKMedoids(Clustering):
                 self.set_init(param[3])
             elif param[0] == "method":
                 self.set_method(param[3])
+            elif param[0] == "keepClusterMapping":
+                self.set_keep_cluster_mapping(param[3])
 
     def d2_plot(self, last_sequenz: List[int], costumes: List[Costume]) -> None:
         pass

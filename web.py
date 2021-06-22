@@ -1326,8 +1326,11 @@ def start_calculating():
     labels: np.matrix = None
     if isinstance(app.clustering, Clustering):
         try:
-            labels = app.clustering.create_cluster(pos,similarities)
-            app.cluster_mapping = labels
+            if not app.clustering.get_keep_cluster_mapping() or app.cluster_mapping is None:
+                labels = app.clustering.create_cluster(pos,similarities)
+                app.cluster_mapping = labels
+            else:
+                labels = app.cluster_mapping
             params.append(("labels" , "Label Matrix" , "The LabelMatrix assigns objects to specific classes according to the clustering method." , labels , "header"))
         except Exception as error:
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
