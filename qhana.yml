@@ -21,3 +21,4 @@ dependencies:
   - pip:
     - qiskit==0.25.3
     - qiskit-machine-learning==0.1.0
+    - pennylane==0.16.0

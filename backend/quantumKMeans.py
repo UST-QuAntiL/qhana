@@ -3,8 +3,11 @@ from qiskit.visualization import *
 from math import *
 import numpy as np
 import matplotlib.pyplot as plt
+import pennylane as qml
 import random
 from backend.logger import Logger
+from backend.tools import pl_samples_to_counts
+
 
 class BaseQuantumKMeans():
     """
@@ -420,30 +423,38 @@ class BaseQuantumKMeans():
             qubitsForCircuit = maxQubits if maxQubits < maxQubitsForCircuit else maxQubitsForCircuit
             if qubitsForCircuit % 2 != 0:
                 qubitsForCircuit -= 1
-            qc = QuantumCircuit(qubitsForCircuit, qubitsForCircuit)
 
-            for i in range(0, qubitsForCircuit, 2):
-                qc.h(i)
-                qc.cx(i, i+1)
-                relativeAngular = abs( parameters[index][0] - parameters[index][1] )
-                qc.ry(-relativeAngular, i+1) # relative angular difference rotation
-                qc.cx(i, i+1)
-                qc.ry(relativeAngular, i+1) # relative angular difference rotation
-                qc.h(i)
-                qc.measure(i, i)
-                qc.measure(i+1, i+1)
-                index += 1
-                if index == globalWorkAmount:
-                    queueNotEmpty = False
-                    break
+            def circ_func():
+                nonlocal queueNotEmpty
+                nonlocal index
+
+                for i in range(0, qubitsForCircuit, 2):
+                    qml.Hadamard(i)
+                    qml.CNOT(wires=[i, i + 1])
+                    relativeAngular = abs(parameters[index][0] - parameters[index][1])
+                    qml.RY(-relativeAngular, wires=i + 1)
+                    qml.CNOT(wires=[i, i + 1])
+                    qml.RY(relativeAngular, wires=i + 1)
+                    qml.Hadamard(i)
+
+                    index += 1
+
+                    if index == globalWorkAmount:
+                        queueNotEmpty = False
+                        break
+
+                return [qml.sample(qml.PauliZ(wires=i)) for i in range(qubitsForCircuit)]
             
-            if plot:
-                qc.draw('mpl', filename='inter_circuit' + str(circuitsIndex) + '.svg')
+            # if plot:
+            #     qc.draw('mpl', filename='inter_circuit' + str(circuitsIndex) + '.svg')
             circuitsIndex += 1
             self.UpdateConsole(circuitAmount = ceil(globalWorkAmount * 2 / maxQubits), currentCircuit = ceil(index * 2 / maxQubits))
-            job = execute(qc, backend, shots=shotsEach)
+
+            dev = qml.device("default.qubit", wires=qubitsForCircuit, shots=1024)  # TODO: replace with selected backend
+            circuit = qml.QNode(circ_func, dev)
+            histogram = pl_samples_to_counts(circuit())
             amountExecutedCircuits += 1
-            histogram = job.result().get_counts()
+
             distances = self.CalculateP1Hits(histogram)
             for i in range(0, len(distances)):
                 result[index - int(qubitsForCircuit / 2) + i] = distances[i]
