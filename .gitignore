@@ -16,3 +16,4 @@ similarities.png
 classification.png
 cache/*
 microservices/*/static
+poetry.lock
