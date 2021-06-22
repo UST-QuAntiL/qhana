@@ -508,29 +508,36 @@ class BaseQuantumKMeans():
             qubitsForCircuit = maxQubits if maxQubits < maxQubitsForCircuit else maxQubitsForCircuit
             if qubitsForCircuit % 2 != 0:
                 qubitsForCircuit -= 1
-            qc = QuantumCircuit(qubitsForCircuit, qubitsForCircuit)
 
-            for i in range(0, qubitsForCircuit, 2):
-                qc.h(i)
-                qc.cx(i, i+1)
-                qc.ry(parameters[index][0], i)      # angle for data point
-                qc.ry(parameters[index][1], i+1)    # angle for centroid
-                qc.cx(i, i+1)
-                qc.h(i)
-                qc.measure(i, i)
-                qc.measure(i+1, i+1)
-                index += 1
-                if index == globalWorkAmount:
-                    queueNotEmpty = False
-                    break
+            def circ_func():
+                nonlocal index
+                nonlocal queueNotEmpty
+
+                for i in range(0, qubitsForCircuit, 2):
+                    qml.Hadamard(i)
+                    qml.CNOT(wires=[i, i+1])
+                    qml.RY(parameters[index][0], wires=i)      # angle for data point
+                    qml.RY(parameters[index][1], wires=i+1)    # angle for centroid
+                    qml.CNOT(wires=[i, i+1])
+                    qml.Hadamard(i)
+
+                    index += 1
+                    if index == globalWorkAmount:
+                        queueNotEmpty = False
+                        break
+
+                return [qml.sample(qml.PauliZ(wires=i)) for i in range(qubitsForCircuit)]
             
-            if plot:
-                qc.draw('mpl', filename='cus/circuit' + str(circuitsIndex) + '.svg')
+            # if plot:
+            #     qc.draw('mpl', filename='cus/circuit' + str(circuitsIndex) + '.svg')
             circuitsIndex += 1
             self.UpdateConsole(circuitAmount = ceil(globalWorkAmount * 2 / maxQubits), currentCircuit = ceil(index * 2 / maxQubits))
-            job = execute(qc, backend, shots=shotsEach)
+
+            dev = qml.device("default.qubit", wires=qubitsForCircuit, shots=1024)  # TODO: replace with selected backend
+            circuit = qml.QNode(circ_func, dev)
+            histogram = pl_samples_to_counts(circuit())
             amountExecutedCircuits += 1
-            histogram = job.result().get_counts()
+
             distances = self.CalculateP0HitsOdd(histogram)
             for i in range(0, len(distances)):
                 result[index - int(qubitsForCircuit / 2) + i] = distances[i]
