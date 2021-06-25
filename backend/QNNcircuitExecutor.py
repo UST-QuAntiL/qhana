@@ -26,21 +26,6 @@ class CircuitExecutor:
                 - is_statevector: True if QInstance is statevector
         """
 
-        # Qbackend = backend
-        # QInstance = QuantumInstance(Qbackend, seed_simulator=9283712, seed_transpiler=9283712, shots=shots)
-
-        # add measurements
-        # if not QInstance.is_statevector and add_measurements:
-        #     circuit.barrier()
-        #     circuit.measure(circuit.qubits, circuit.clbits)
-
-        # circuits = []
-        # for parameterization in parameterizations:
-        #     parameterization = parameterization_from_parameter_names(circuit, parameterization)
-        #     curr_circuit = circuit.assign_parameters(parameterization)
-        #     circuits.append(curr_circuit)
-        #
-        # results = QInstance.execute(circuits)
         dev = qml.device("default.qubit", wires=n_qubits, shots=1024)  # TODO: replace with selected backend
         circuit = qml.QNode(circuit_function, dev)
         results = []
@@ -50,6 +35,7 @@ class CircuitExecutor:
             results.append(counts)
 
         return results, False  # TODO: statevector
+
 
 def parameterization_from_parameter_names(circuit, parameterization):
     """

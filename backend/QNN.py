@@ -19,7 +19,6 @@ import numpy as np
 class NNQuantumCircuit:
     def __init__(self, n_inputs: int, depth: int, backend, shots: int):
         self.circuit_function = QNNCircuitGenerator.genCircuit(n_inputs, depth)
-        # self.parameters = self.circuit_function.parameters
         self.backend = backend
         self.shots = shots
         self.n_inputs = n_inputs
