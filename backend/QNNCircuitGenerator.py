@@ -1,10 +1,7 @@
 # circuit adapted from https://github.com/XanaduAI/quantum-transfer-learning/blob/master/dressed_circuit.ipynb
 from typing import List, Callable
 
-from qiskit import QuantumCircuit, QuantumRegister
-from qiskit.circuit.parameter import Parameter
 from numpy import pi
-from qiskit.circuit.classicalregister import ClassicalRegister
 import pennylane as qml
 
 
