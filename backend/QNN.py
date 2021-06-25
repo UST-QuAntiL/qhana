@@ -15,44 +15,50 @@ import numpy as np
 # and https://qiskit.org/textbook/ch-machine-learning/machine-learning-qiskit-pytorch.html
 # see also https://github.com/XanaduAI/quantum-transfer-learning/blob/master/dressed_circuit.ipynb
 
+
 class NNQuantumCircuit:
-    def __init__(self, n_inputs, depth, backend, shots):
-        self.circuit_template = QNNCircuitGenerator.genCircuit(n_inputs, depth)
-        self.parameters = self.circuit_template.parameters
+    def __init__(self, n_inputs: int, depth: int, backend, shots: int):
+        self.circuit_function = QNNCircuitGenerator.genCircuit(n_inputs, depth)
+        # self.parameters = self.circuit_function.parameters
         self.backend = backend
         self.shots = shots
+        self.n_inputs = n_inputs
 
-    def run(self, inputs, weights):
-        parameterizations = []
+    def run(self, inputs: torch.Tensor, weights: torch.Tensor):
+        inputs_list = []
+        weights_list = []
 
         for input in inputs:
-            parameterizations.append({})
+            inputs_list.append([])
+            weights_list.append([])
+
             for i in range(len(input)):
-                parameterizations[-1]['in'+str(i)] = float(input[i])
+                inputs_list[-1].append(float(input[i]))
             for i in range(len(weights)):
-                parameterizations[-1]['weight'+str(i)] = float(weights[i])
+                weights_list[-1].append(float(weights[i]))
 
         # run circuit with these parameters
-        results, is_statevector = CircuitExecutor.runCircuit(self.circuit_template, parameterizations, self.backend, 
-                                   "", self.shots, add_measurements=True)
+        results, is_statevector = CircuitExecutor.runCircuits(
+            self.circuit_function, inputs_list, weights_list, self.n_inputs, self.backend, "", self.shots,
+            add_measurements=True)
 
         # determine counts
         expectations = []
         for i in range(len(inputs)):
             outcome_dict = {}
-            if (is_statevector):
+            if is_statevector:
                 temp = results.get_statevector(i)
                 outcome_vector = (temp * temp.conj()).real
-                    # convert outcome_vector to outcome_dict, where key
-                    # is a basis state and value is the count.
-                    # Note: the count can be scaled linearly, i.e.,
-                    # it does not have to be an integer.
+                # convert outcome_vector to outcome_dict, where key
+                # is a basis state and value is the count.
+                # Note: the count can be scaled linearly, i.e.,
+                # it does not have to be an integer.
                 bitstr_size = int(math.log2(len(outcome_vector)))
                 for i, _ in enumerate(outcome_vector):
                     bitstr_i = format(i, '0' + str(bitstr_size) + 'b')
                     outcome_dict[bitstr_i] = outcome_vector[i]
             else:
-                outcome_dict = results.get_counts(i)
+                outcome_dict = results[i]
 
             # compute counts per qbit
             count_per_bit = {}
@@ -62,12 +68,13 @@ class NNQuantumCircuit:
                     count_per_bit[qbit][int(key[qbit])] += outcome_dict[key]
 
             # determine expectation value per qbit
-            #expectation = [(count_per_bit[k][1])/(self.shots*(not is_statevector)+is_statevector)
+            # expectation = [(count_per_bit[k][1])/(self.shots*(not is_statevector)+is_statevector)
             expectation = [(count_per_bit[k][1]-count_per_bit[k][0])/(self.shots*(not is_statevector)+is_statevector)
                             for k in count_per_bit]
             expectations.append(expectation)
 
         return np.array(expectations)
+
 
 class HybridFunction(Function):
     """ Hybrid quantum - classical function definition """

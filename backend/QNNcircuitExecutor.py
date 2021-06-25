@@ -1,11 +1,17 @@
-from qiskit import QuantumCircuit
-from qiskit.providers.aer import Aer
-from qiskit.aqua.quantum_instance import QuantumInstance
+from typing import List, Callable, Dict, Tuple
 
-class CircuitExecutor():
+import pennylane as qml
+
+from backend.tools import pl_samples_to_counts
+
+
+class CircuitExecutor:
 
     @classmethod
-    def runCircuit(cls, circuit: QuantumCircuit, parameterizations: list, backend, token, shots, add_measurements=False):
+    def runCircuits(
+            cls, circuit_function: Callable[[List[float], List[float]], List], input_params: List[List[float]],
+            weight_params: List[List[float]], n_qubits: int, backend, token, shots, add_measurements=False)\
+            -> Tuple[List[Dict[str, int]], bool]:
         """
             Runs the circuit with each parameterization in the provided list and
             on the provided quantum instance and
@@ -20,24 +26,30 @@ class CircuitExecutor():
                 - is_statevector: True if QInstance is statevector
         """
 
-        Qbackend = backend
-        QInstance = QuantumInstance(Qbackend, seed_simulator=9283712, seed_transpiler=9283712, shots=shots)
+        # Qbackend = backend
+        # QInstance = QuantumInstance(Qbackend, seed_simulator=9283712, seed_transpiler=9283712, shots=shots)
 
         # add measurements
-        if not QInstance.is_statevector and add_measurements:
-            circuit.barrier()
-            circuit.measure(circuit.qubits, circuit.clbits)
+        # if not QInstance.is_statevector and add_measurements:
+        #     circuit.barrier()
+        #     circuit.measure(circuit.qubits, circuit.clbits)
 
-        circuits = []
-        for parameterization in parameterizations:
-            parameterization = parameterization_from_parameter_names(circuit, parameterization)
-            curr_circuit = circuit.assign_parameters(parameterization)
-            circuits.append(curr_circuit)
+        # circuits = []
+        # for parameterization in parameterizations:
+        #     parameterization = parameterization_from_parameter_names(circuit, parameterization)
+        #     curr_circuit = circuit.assign_parameters(parameterization)
+        #     circuits.append(curr_circuit)
+        #
+        # results = QInstance.execute(circuits)
+        dev = qml.device("default.qubit", wires=n_qubits, shots=1024)  # TODO: replace with selected backend
+        circuit = qml.QNode(circuit_function, dev)
+        results = []
 
-        results = QInstance.execute(circuits)
+        for inp, weights in zip(input_params, weight_params):
+            counts = pl_samples_to_counts(circuit(inp, weights))
+            results.append(counts)
 
-
-        return results, QInstance.is_statevector
+        return results, False  # TODO: statevector
 
 def parameterization_from_parameter_names(circuit, parameterization):
     """
