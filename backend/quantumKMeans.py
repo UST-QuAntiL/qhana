@@ -43,7 +43,7 @@ class BaseQuantumKMeans():
 
         return
 
-    def ExecuteNegativeRotation(self, dataRaw, k, maxQubits, shotsEach, maxRuns, relativeResidualNumber, backend, plotData, plotCircuit, whichCircuit = "negrot"):
+    def ExecuteNegativeRotation(self, dataRaw, k, maxQubits, shotsEach, maxRuns, relativeResidualNumber, backend: qml.Device, plotData, plotCircuit, whichCircuit = "negrot"):
         """
         Executes the quantum k means cluster algorithm on the given
         quantum backend and the specified circuit.
@@ -133,7 +133,7 @@ class BaseQuantumKMeans():
                 + " shots in total using " \
                 + str(maxQubits) \
                 + " qubits in parallel on " \
-                + backend.name() \
+                + backend.name \
                 + " backend."
             Logger.normal(loggingString)
 
@@ -294,7 +294,7 @@ class BaseQuantumKMeans():
             angles[i] = acos(self.baseVector[0] * cartesianPoints[i][0] + self.baseVector[1] * cartesianPoints[i][1])
         return angles
 
-    def ApplyNegativeRotationCircuit(self, centroidAngles, dataAngles, maxQubits, shotsEach, backend, plot):
+    def ApplyNegativeRotationCircuit(self, centroidAngles, dataAngles, maxQubits, shotsEach, backend: qml.Device, plot):
         """
         Create and apply the negative rotation circuit.
         Note, that the lenght of centeroids is the same as k!
@@ -361,8 +361,7 @@ class BaseQuantumKMeans():
             self.UpdateConsole(circuitAmount = ceil(globalWorkAmount / maxQubits), currentCircuit = ceil(index / maxQubits))
             #print("Execute quantum circuit " + str(ceil(index / maxQubits)) + " / " + str(ceil(globalWorkAmount / maxQubits)), end="\r", flush=True)
 
-            dev = qml.device("default.qubit", wires=qubitsForCircuit, shots=1024)  # TODO: replace with selected backend
-            circuit = qml.QNode(circ_func, dev)
+            circuit = qml.QNode(circ_func, device=backend)
             histogram = pl_samples_to_counts(circuit())
             amountExecutedCircuits += 1
 
@@ -383,7 +382,7 @@ class BaseQuantumKMeans():
         
         return (centroidMapping, amountExecutedCircuits)
 
-    def ApplyDestructiveInterferenceCircuit(self, centroidAngles, dataAngles, maxQubits, shotsEach, backend, plot):
+    def ApplyDestructiveInterferenceCircuit(self, centroidAngles, dataAngles, maxQubits, shotsEach, backend: qml.Device, plot):
         """
         Create and apply the distance calculation using
         destructive interference circuit.
@@ -459,8 +458,7 @@ class BaseQuantumKMeans():
             circuitsIndex += 1
             self.UpdateConsole(circuitAmount = ceil(globalWorkAmount * 2 / maxQubits), currentCircuit = ceil(index * 2 / maxQubits))
 
-            dev = qml.device("default.qubit", wires=qubitsForCircuit, shots=1024)  # TODO: replace with selected backend
-            circuit = qml.QNode(circ_func, dev)
+            circuit = qml.QNode(circ_func, device=backend)
             histogram = pl_samples_to_counts(circuit())
             amountExecutedCircuits += 1
 
@@ -479,7 +477,7 @@ class BaseQuantumKMeans():
         
         return (centroidMapping, amountExecutedCircuits) 
 
-    def ApplyStatePreparationQuantumKMeansCircuit(self, centroids, data, maxQubits, shotsEach, backend, plot):
+    def ApplyStatePreparationQuantumKMeansCircuit(self, centroids, data, maxQubits, shotsEach, backend: qml.Device, plot):
         # this is also the amount of qubits that are needed in total.
         # note that this is not necessarily in parallel, also sequential
         # is possible here. He need at least 2 qubits that run in parallel.
@@ -533,8 +531,7 @@ class BaseQuantumKMeans():
             circuitsIndex += 1
             self.UpdateConsole(circuitAmount = ceil(globalWorkAmount * 2 / maxQubits), currentCircuit = ceil(index * 2 / maxQubits))
 
-            dev = qml.device("default.qubit", wires=qubitsForCircuit, shots=1024)  # TODO: replace with selected backend
-            circuit = qml.QNode(circ_func, dev)
+            circuit = qml.QNode(circ_func, device=backend)
             histogram = pl_samples_to_counts(circuit())
             amountExecutedCircuits += 1
 
@@ -751,7 +748,7 @@ class BaseQuantumKMeans():
     def get_backend(self):
         return self.backend
 
-    def set_backend(self, backend) -> None:
+    def set_backend(self, backend: qml.Device) -> None:
         self.backend = backend
 
 class NegativeRotationQuantumKMeans(BaseQuantumKMeans):
@@ -826,7 +823,7 @@ class StatePreparationQuantumKMeans(BaseQuantumKMeans):
 
 class PositiveCorrelationQuantumKmeans:
 
-    def fit(self, data, k, max_iter, tol, backend, shots_each):
+    def fit(self, data, k, max_iter, tol, backend: qml.Device, shots_each):
         """
         Performs the positive correlation quantum KMeans accordingly to
         https://towardsdatascience.com/quantum-machine-learning-distance-estimation-for-k-means-clustering-26bccfbfcc76
@@ -870,7 +867,7 @@ class PositiveCorrelationQuantumKmeans:
         return new_centroid_mapping
 
     @staticmethod
-    def execute_circuits(data_phi, data_theta, centroids_phi, centroids_theta, backend, shots_each):
+    def execute_circuits(data_phi, data_theta, centroids_phi, centroids_theta, backend: qml.Device, shots_each):
         """
         Execute the quantum circuit(s) and returns the centroid mapping according to the result.
         We need 3 qubits per data point - centroid pair. Two for data encoding and one ancilla.
@@ -890,8 +887,7 @@ class PositiveCorrelationQuantumKmeans:
 
                     return [qml.sample(qml.PauliZ(wires=2))]
 
-                dev = qml.device("default.qubit", wires=3, shots=1024)  # TODO: replace with selected backend
-                circuit = qml.QNode(circ_func, dev)
+                circuit = qml.QNode(circ_func, device=backend)
                 result = pl_samples_to_counts(circuit())
 
                 if '1' in result:

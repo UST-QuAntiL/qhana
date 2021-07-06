@@ -6,6 +6,7 @@ from backend.QNNCircuitGenerator import QNNCircuitGenerator
 from backend.QNNcircuitExecutor import CircuitExecutor
 import math
 import numpy as np
+import pennylane as qml
 
 # Adapted from
 # Some classes for the hybrid neural network approach
@@ -16,7 +17,7 @@ import numpy as np
 
 
 class NNQuantumCircuit:
-    def __init__(self, n_inputs: int, depth: int, backend, shots: int):
+    def __init__(self, n_inputs: int, depth: int, backend: qml.Device, shots: int):
         self.circuit_function = QNNCircuitGenerator.genCircuit(n_inputs, depth)
         self.backend = backend
         self.shots = shots
@@ -132,7 +133,7 @@ class HybridFunction(Function):
 class Hybrid(nn.Module):
     """ Hybrid quantum - classical layer definition """
 
-    def __init__(self, n_inputs, depth, weight_initialization ,backend, shots, shift, w2w):
+    def __init__(self, n_inputs, depth, weight_initialization, backend: qml.Device, shots, shift, w2w):
         super(Hybrid, self).__init__()
         self.quantum_circuit = NNQuantumCircuit(n_inputs, depth, backend, shots)
         weights = self.init_weights(weight_initialization, n_inputs*depth)
@@ -160,7 +161,7 @@ class Hybrid(nn.Module):
 
 class DressedQNN(nn.Module):
     def __init__(self, dimensions, n_classes, pre_proc_layers, post_proc_layers,
-                 quantum_layer_depth, weight_initialization, w2w, shift, backend, shots):
+                 quantum_layer_depth, weight_initialization, w2w, shift, backend: qml.Device, shots):
         super(DressedQNN, self).__init__()
 
         # generate layers of pre processing partial NN

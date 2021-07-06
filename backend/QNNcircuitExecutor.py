@@ -10,7 +10,7 @@ class CircuitExecutor:
     @classmethod
     def runCircuits(
             cls, circuit_function: Callable[[List[float], List[float]], List], input_params: List[List[float]],
-            weight_params: List[List[float]], n_qubits: int, backend, token, shots, add_measurements=False)\
+            weight_params: List[List[float]], n_qubits: int, backend: qml.Device, token, shots, add_measurements=False)\
             -> Tuple[List[Dict[str, int]], bool]:
         """
             Runs the circuit with each parameterization in the provided list and
@@ -26,8 +26,7 @@ class CircuitExecutor:
                 - is_statevector: True if QInstance is statevector
         """
 
-        dev = qml.device("default.qubit", wires=n_qubits, shots=1024)  # TODO: replace with selected backend
-        circuit = qml.QNode(circuit_function, dev)
+        circuit = qml.QNode(circuit_function, device=backend)
         results = []
 
         for inp, weights in zip(input_params, weight_params):

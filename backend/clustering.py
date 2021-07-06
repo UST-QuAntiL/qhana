@@ -20,6 +20,8 @@ from qiskit.aqua import QuantumInstance
 from qiskit.optimization.applications.ising.common import sample_most_likely
 from qiskit import IBMQ
 
+import pennylane as qml
+
 import networkx as nx
 from backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
 from backend.sdpMaxCutSolver import SdpMaxCutSolver
@@ -781,6 +783,26 @@ class QuantumBackends(enum.Enum):
         else:
             Logger.error("Unknown quantum backend specified!")
         return backend
+
+    @staticmethod
+    def get_pennylane_backend(backend_enum: "QuantumBackends", ibmq_token: str, custom_backend_name: str, qubit_cnt: int) -> qml.Device:
+        if backend_enum.name.startswith("aer"):
+            # Use local AER backend
+            aer_backend_name = backend_enum.name[4:]
+
+            return qml.device("qiskit.aer", wires=qubit_cnt, backend=aer_backend_name)
+        elif backend_enum.name.startswith("ibmq"):
+            # Use IBMQ backend
+            provider = IBMQ.enable_account(ibmq_token)
+
+            return qml.device("qiskit.ibmq", wires=qubit_cnt, backend=backend_enum.name, provider=provider)
+        elif backend_enum.name.startswith("custom_ibmq"):
+            provider = IBMQ.enable_account(ibmq_token)
+
+            return qml.device("qiskit.ibmq", wires=qubit_cnt, backend=custom_backend_name, provider=provider)
+        else:
+            Logger.error("Unknown pennylane backend specified!")
+
 
 class VQEMaxCut(Clustering):
     def __init__(self,
@@ -1573,9 +1595,9 @@ class NegativeRotationQuantumKMeansClustering(Clustering):
         self.clusterAlgo.set_max_runs(self.get_max_runs())
         self.clusterAlgo.set_relative_residual_amount(self.get_relative_residual_amount())
 
-        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
+        backend: qml.Device = QuantumBackends.get_pennylane_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend, self.get_max_qubits())
 
-        self.clusterAlgo.set_backend(qBackend)
+        self.clusterAlgo.set_backend(backend)
 
         label = np.zeros(similarity_matrix.shape[0])
 
@@ -1754,9 +1776,9 @@ class DestructiveInterferenceQuantumKMeansClustering(Clustering):
         self.clusterAlgo.set_max_runs(self.get_max_runs())
         self.clusterAlgo.set_relative_residual_amount(self.get_relative_residual_amount())
 
-        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
+        backend: qml.Device = QuantumBackends.get_pennylane_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend, self.get_max_qubits())
 
-        self.clusterAlgo.set_backend(qBackend)
+        self.clusterAlgo.set_backend(backend)
 
         label = np.zeros(similarity_matrix.shape[0])
 
@@ -1935,9 +1957,9 @@ class StatePreparationQuantumKMeansClustering(Clustering):
         self.clusterAlgo.set_max_runs(self.get_max_runs())
         self.clusterAlgo.set_relative_residual_amount(self.get_relative_residual_amount())
 
-        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
+        backend: qml.Device = QuantumBackends.get_pennylane_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend, self.get_max_qubits())
 
-        self.clusterAlgo.set_backend(qBackend)
+        self.clusterAlgo.set_backend(backend)
 
         label = np.zeros(similarity_matrix.shape[0])
 
@@ -2108,7 +2130,7 @@ class PositiveCorrelationQuantumKMeansClustering(Clustering):
         return
 
     def create_cluster(self, position_matrix: np.matrix, similarity_matrix: np.matrix) -> np.matrix:
-        qBackend = QuantumBackends.get_quantum_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend)
+        backend = QuantumBackends.get_pennylane_backend(self.backend, self.ibmq_token, self.ibmq_custom_backend, 3)
 
         label = np.zeros(similarity_matrix.shape[0])
 
@@ -2116,7 +2138,7 @@ class PositiveCorrelationQuantumKMeansClustering(Clustering):
             return label.astype(np.int)
 
         # run
-        clusterMapping = self.clusterAlgo.fit(position_matrix, self.number_of_clusters, self.max_runs, self.relative_residual_amount, qBackend, self.shots_each)
+        clusterMapping = self.clusterAlgo.fit(position_matrix, self.number_of_clusters, self.max_runs, self.relative_residual_amount, backend, self.shots_each)
 
         # write result into labels
         for i in range(0, len(label)):

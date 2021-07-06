@@ -778,7 +778,8 @@ class HybridQNN(Classification):
         labels = torch.tensor([item for item in labels])
         labels = labels.long()
 
-        backend = QuantumBackends.get_quantum_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend)
+        qubits_cnt = self.__hl_preproc[-1]
+        backend = QuantumBackends.get_pennylane_backend(self.__backend, self.__ibmq_token, self.__ibmq_custom_backend, qubits_cnt)
         model = DressedQNN(dimensions, n_classes, self.__hl_preproc,
                            self.__hl_postproc, self.__reps_qlayer,
                            self.__weight_initialization, self.__w2w, self.__shift,
