@@ -1,11 +1,11 @@
-from flask import Flask, render_template, url_for, session, send_file, request, flash , redirect
+from flask import Flask, render_template, url_for, session, send_file, request, flash, redirect
 import threading, webbrowser
 from backend.attribute import Attribute
 from backend.taxonomie import TaxonomieType, Taxonomie
 from backend.logger import Logger
 from backend.database import Database
 import os
-from os.path import basename 
+from os.path import basename
 from mysql.connector import Error
 import shutil
 import zipfile
@@ -16,7 +16,7 @@ from backend.transformer import TransformerType
 from backend.attributeComparer import AttributeComparerType
 from backend.elementComparer import ElementComparerType
 from backend.entityComparer import EmptyAttributeAction
-import pickle 
+import pickle
 import backend.savingAndLoading as sal
 from backend.entitySimilarities import EntitySimilarities
 import backend.dataForPlots as dfp
@@ -27,12 +27,13 @@ from backend.plotsForClassification import PlotsForClassification
 from backend.labeler import LabelerTypes, Labeler, LabelerFactory, clustersLabeler
 from backend.splitter import SplitterTypes, Splitter, SplitterFactory
 import sys
+
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import backend.plotsForCluster as pfc
 import numpy as np
-from backend.scaling import ScalingType, ScalingFactory , Scaling , MultidimensionalScaling
+from backend.scaling import ScalingType, ScalingFactory, Scaling, MultidimensionalScaling
 from backend.clustering import ClusteringType, ClusteringFactory, Clustering, Optics
 import numpy as np
 from backend.entityService import Subset
@@ -51,16 +52,16 @@ app.strCostumePlan: list = None
 app.result: list = None
 app.tablelist: list = None
 app.start: bool = True
-app.labeler = LabelerFactory.create(LabelerTypes.fixedSubset) # use as a default labeler
-app.splitter = SplitterFactory.create(SplitterTypes.none) # use as a default splitter
+app.labeler = LabelerFactory.create(LabelerTypes.fixedSubset)  # use as a default labeler
+app.splitter = SplitterFactory.create(SplitterTypes.none)  # use as a default splitter
+
 
 @app.route("/home")
 @app.route("/")
 def home():
-    if app.start :
+    if app.start:
         session["saveload"] = ""
         initialize_costumeplan()
-
 
     attributes = []
     for attribute in Attribute:
@@ -83,7 +84,8 @@ def home():
 
     session["dbConnectionString"] = dbConnectionString
 
-    return render_template("home.html", error = errorMessage)
+    return render_template("home.html", error=errorMessage)
+
 
 @app.route("/reset_all")
 def reset_all():
@@ -98,9 +100,10 @@ def reset_all():
     app.result: list = None
     app.tablelist: list = None
     initialize_costumeplan()
-    #app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+    # app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     ##################################
     return redirect(url_for('home'))
+
 
 @app.route("/attributes")
 def attributes():
@@ -115,6 +118,7 @@ def attributes():
         attributes.append((attribute_string, tax))
     return render_template("attributes.html", attributes=attributes)
 
+
 @app.route("/taxonomies")
 def taxonomies():
     taxonomies = []
@@ -123,6 +127,7 @@ def taxonomies():
         taxonomyTypeName = TaxonomieType.get_name(taxonomyType)
         taxonomies.append((taxonomyTypeValueString, taxonomyTypeName))
     return render_template("taxonomies.html", taxonomies=taxonomies)
+
 
 @app.route("/components")
 def components():
@@ -149,7 +154,7 @@ def components():
         name = ElementComparerType.get_name(elementComparerType)
         description = ElementComparerType.get_description(elementComparerType)
         elementComparers.append((name, description))
-    
+
     scalings = []
     for scalingType in ScalingType:
         name = ScalingType.get_name(scalingType)
@@ -161,16 +166,17 @@ def components():
         name = ClusteringType.get_name(clusteringTyp)
         description = ClusteringType.get_description(clusteringTyp)
         clusterings.append((name, description))
-    
+
     return render_template(
-        "components.html", 
+        "components.html",
         aggregators=aggregators,
         transformers=transformers,
         attributeComparers=attributeComparers,
         elementComparers=elementComparers,
-        scalings = scalings,
-        clusterings = clusterings
+        scalings=scalings,
+        clusterings=clusterings
     )
+
 
 @app.route("/view_taxonomy_<taxonomyValueString>")
 def view_taxonomy(taxonomyValueString):
@@ -181,7 +187,8 @@ def view_taxonomy(taxonomyValueString):
 
     svg_file_name = "taxonomies/" + taxonomyName + ".svg"
 
-    return "<img src=" + url_for("static", filename=svg_file_name) + " object-fit: contain' >" 
+    return "<img src=" + url_for("static", filename=svg_file_name) + " object-fit: contain' >"
+
 
 @app.route("/zip_taxonomies")
 def zip_taxonomies():
@@ -203,6 +210,7 @@ def zip_taxonomies():
         attachment_filename='taxonomies.zip'
     )
 
+
 # routes for entity plan
 @app.route("/costumeplan")
 def costumeplan():
@@ -212,14 +220,11 @@ def costumeplan():
         attributeType = attribute
         attributes.append((attributeName, attributeType))
 
-    attributes1, attributes2 = split_list(attributes)
-
-
     taxonomies = []
     for taxonomyType in TaxonomieType:
         taxonomyName = TaxonomieType.get_name(taxonomyType)
         taxonomies.append((taxonomyName, taxonomyType))
-    
+
     aggregators = []
     for aggregatorType in AggregatorType:
         aggregatorName = AggregatorType.get_name(aggregatorType)
@@ -244,54 +249,59 @@ def costumeplan():
     for emptyAttributeActionType in EmptyAttributeAction:
         emptyAttributeActionTypeName = EmptyAttributeAction.get_name(emptyAttributeActionType)
         emptyAttributeActions.append((emptyAttributeActionTypeName, emptyAttributeActionType))
-    
+
     return render_template(
         "costumeplan.html",
-        emptyAttributeActions = emptyAttributeActions,
-        attributes1=attributes1,
-        attributes2=attributes2,
+        emptyAttributeActions=emptyAttributeActions,
+        attributes1=attributes,
+        attributes2=[],
         taxonomies=taxonomies,
         aggregators=aggregators,
         transformers=transformers,
         attributeComparers=attributeComparers,
-        elementComparers=elementComparers
+        elementComparers=elementComparers,
+        filterValues={}
     )
 
+
 def split_list(a_list):
-    half = len(a_list)//2
+    half = len(a_list) // 2
     return a_list[:half], a_list[half:]
+
 
 @app.route("/distspace")
 def distspace():
     return render_template("distspace.html")
 
+
 @app.route("/references")
 def references():
     return render_template("references.html")
 
-@app.route('/saveload_costume_plan', methods = ['POST', 'GET'])
+
+@app.route('/saveload_costume_plan', methods=['POST', 'GET'])
 def saveload_costume_plan():
     if request.method == 'POST':
         COSTUME_PLAN = pickle.loads(session["costumePlan"])
         if request.form['saveload'] == "Save CDS":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumePlan)
-            saf_cp.set(request.form['session'],COSTUME_PLAN)
+            saf_cp.set(request.form['session'], COSTUME_PLAN)
             saf_cp.saving()
         elif request.form['saveload'] == "Load CDS":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.costumePlan)
-            saf_cp.set(request.form['session'],COSTUME_PLAN)
+            saf_cp.set(request.form['session'], COSTUME_PLAN)
             test = saf_cp.loading()
             COSTUME_PLAN = test.get_object()
             if isinstance(COSTUME_PLAN, list):
                 session["costumePlan"] = pickle.dumps(COSTUME_PLAN)
                 session["strCostumePlan"] = costumePlanToStr(COSTUME_PLAN)
-            else: 
+            else:
                 flash("For the choosen sessions name ({0}) no plan object exist!".format(request.form['session']))
 
         session["saveload"] = request.form['session']
 
-    
     return costumeplan()
+
 
 @app.route("/instance_costume_plan/<value>")
 def managing_costume_plan_agre_transf(value):
@@ -301,32 +311,35 @@ def managing_costume_plan_agre_transf(value):
         costumePlan[0] = value
         session["costumePlan"] = pickle.dumps(costumePlan)
         session["strCostumePlan"] = costumePlanToStr(costumePlan)
-        
+
     elif isinstance(value, TransformerType):
         costumePlan[1] = value
         session["costumePlan"] = pickle.dumps(costumePlan)
         session["strCostumePlan"] = costumePlanToStr(costumePlan)
-    
+
     return costumeplan()
+
 
 def initialize_costumeplan():
     costumePlan = []
     costumePlan.append(AggregatorType.mean)
     costumePlan.append(TransformerType.squareInverse)
     costumePlan.append((
-            Attribute.dominanteFarbe,
-            ElementComparerType.wuPalmer,
-            AttributeComparerType.symMaxMean,
-            EmptyAttributeAction.ignore
-        ))
+        Attribute.dominanteFarbe,
+        ElementComparerType.wuPalmer,
+        AttributeComparerType.symMaxMean,
+        EmptyAttributeAction.ignore
+    ))
 
     session["costumePlan"] = pickle.dumps(costumePlan)
     session["strCostumePlan"] = costumePlanToStr(costumePlan)
+
 
 @app.route("/reset_costume_plan")
 def reset_costume_plan():
     initialize_costumeplan()
     return costumeplan()
+
 
 @app.route("/instance_costume_plan_attribute_<attribute>")
 def managing_costume_plan_set_attribute(attribute: str):
@@ -339,7 +352,6 @@ def managing_costume_plan_set_attribute(attribute: str):
         attributeName = Attribute.get_name(attribute)
         attributeType = attribute
         attributes.append((attributeName, attributeType))
-    
 
     for plan in costumePlan:
         if (plan == costumePlan[0] or plan == costumePlan[1]):
@@ -357,15 +369,16 @@ def managing_costume_plan_set_attribute(attribute: str):
                     if list(plan)[0] == attributetype:
                         check = False
             if check:
-                costumePlan2.append((attributetype, None , None , None))
+                costumePlan2.append((attributetype, None, None, None))
 
     session["costumePlan"] = pickle.dumps(costumePlan2)
     session["strCostumePlan"] = costumePlanToStr(costumePlan2)
 
     return costumeplan()
 
+
 @app.route("/instance_costume_plan/<attribute>/<value>")
-def managing_costume_plan_attribute(attribute: str , value : str):
+def managing_costume_plan_attribute(attribute: str, value: str):
     costumePlan = pickle.loads(session["costumePlan"])
     attribute = eval(attribute)
     value = eval(value)
@@ -393,21 +406,21 @@ def managing_costume_plan_attribute(attribute: str , value : str):
                 var[3] = value
                 element = tuple(var)
                 costumePlan2[index] = element
-                check = False   
+                check = False
     costumePlan = costumePlan2
     if check:
         if isinstance(value, ElementComparerType):
-            costumePlan.append((attribute,value,None,None))
+            costumePlan.append((attribute, value, None, None))
         elif isinstance(value, AttributeComparerType):
-            costumePlan.append((attribute,None,value,None))
+            costumePlan.append((attribute, None, value, None))
         elif isinstance(value, EmptyAttributeAction):
-            costumePlan.append((attribute,None,None,value))
+            costumePlan.append((attribute, None, None, value))
     session["costumePlan"] = pickle.dumps(costumePlan)
     session["strCostumePlan"] = costumePlanToStr(costumePlan)
     return costumeplan()
 
-def costumePlanToStr(costumePlan: list) -> str:
 
+def costumePlanToStr(costumePlan: list) -> str:
     strCostumePlan = []
     for element in costumePlan:
         if isinstance(element, tuple):
@@ -426,7 +439,7 @@ def costumePlanToStr(costumePlan: list) -> str:
                 element[3] = EmptyAttributeAction.get_name(element[3])
             else:
                 element[3] = None
-            strCostumePlan.append((element[0],element[1],element[2],element[3]))
+            strCostumePlan.append((element[0], element[1], element[2], element[3]))
 
 
         elif isinstance(element, AggregatorType):
@@ -436,6 +449,7 @@ def costumePlanToStr(costumePlan: list) -> str:
 
     return strCostumePlan
 
+
 @app.route("/load_costume_plan_entitySimilarities")
 def load_costume_plan_entitySimilarities():
     if isinstance(app.entitySimilarities, EntitySimilarities):
@@ -443,13 +457,14 @@ def load_costume_plan_entitySimilarities():
         session["strCostumePlan"] = costumePlanToStr(app.entitySimilarities.get_costume_plan())
     return costumeplan()
 
-# routes for similarities 
+
+# routes for similarities
 @app.route("/entitySimilarities")
 def entitySimilarities():
-    initialized : bool = False
-    memory : bool = False
+    initialized: bool = False
+    memory: bool = False
     showplot: bool = False
-    number_costumes =100   #2147483646
+    number_costumes = 100  # 2147483646
     strCostumePlan = ""
     last_sequenz_id = []
     entities_in_memory: str = ""
@@ -460,7 +475,7 @@ def entitySimilarities():
         initialized = True
         memory = app.entitySimilarities.get_bool_memory()
         number_costumes = app.entitySimilarities.get_entity_number()
-        strCostumePlan =  costumePlanToStr(app.entitySimilarities.get_costume_plan())
+        strCostumePlan = costumePlanToStr(app.entitySimilarities.get_costume_plan())
         last_sequenz_id = app.entitySimilarities.get_last_sequenz_id()
         entities_in_memory = app.entitySimilarities.get_entities_in_memory()
         if len(last_sequenz_id) != 0:
@@ -468,28 +483,27 @@ def entitySimilarities():
             max_value = last_sequenz_id[-1]
         else:
             min_value = 0
-            max_value = number_costumes-1
-        
+            max_value = number_costumes - 1
+
         if len(last_sequenz_id) != 0:
             showplot = True
 
-
-                
     return render_template(
         "entitySimilarities.html",
-        initialized = initialized,
-        memory = memory,
-        numberCostumes = number_costumes,
-        strCostumePlan = strCostumePlan,
-        last_sequenz_id = last_sequenz_id,
-        min_value = min_value,
-        max_value = max_value,
-        showplot = showplot,
-        EIN = entities_in_memory,
-        subsets = [Subset.get_name(subset) for subset in Subset]
+        initialized=initialized,
+        memory=memory,
+        numberCostumes=number_costumes,
+        strCostumePlan=strCostumePlan,
+        last_sequenz_id=last_sequenz_id,
+        min_value=min_value,
+        max_value=max_value,
+        showplot=showplot,
+        EIN=entities_in_memory,
+        subsets=[Subset.get_name(subset) for subset in Subset]
     )
 
-@app.route("/entitySimilarities_initialize" , methods = ['POST', 'GET'])
+
+@app.route("/entitySimilarities_initialize", methods=['POST', 'GET'])
 def initialize_entitySimilarities():
     if request.method == 'POST':
         memory = False
@@ -499,47 +513,47 @@ def initialize_entitySimilarities():
         costumePlan = pickle.loads(session["costumePlan"])
         selected_subset = request.form["SubsetSelect"]
         if selected_subset == "Custom":
-            app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes)
+            app.entitySimilarities = EntitySimilarities(costumePlan, memory, number_costumes)
         elif selected_subset == "Random":
-            app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes,useRandom=True)
+            app.entitySimilarities = EntitySimilarities(costumePlan, memory, number_costumes, useRandom=True)
         else:
             subsetEnum = Subset.get_subset(selected_subset)
-            app.entitySimilarities = EntitySimilarities(costumePlan,memory,number_costumes, subsetEnum)
+            app.entitySimilarities = EntitySimilarities(costumePlan, memory, number_costumes, subsetEnum)
         return entitySimilarities()
 
-@app.route('/saveload_entitySimilarities', methods = ['POST', 'GET'])
+
+@app.route('/saveload_entitySimilarities', methods=['POST', 'GET'])
 def saveload_entitySimilarities():
     if request.method == 'POST':
         if request.form['saveload'] == "Save Similarities":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.entitySimilarities)
-            saf_cp.set(request.form['session'],app.entitySimilarities)
+            saf_cp.set(request.form['session'], app.entitySimilarities)
             saf_cp.saving()
         elif request.form['saveload'] == "Load Similarities":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.entitySimilarities)
-            saf_cp.set(request.form['session'],app.entitySimilarities)
+            saf_cp.set(request.form['session'], app.entitySimilarities)
             test = saf_cp.loading()
 
             if isinstance(test.get_object(), EntitySimilarities):
                 app.entitySimilarities = test.get_object()
-            else: 
-                flash("For the choosen sessions name ({0}) no entitySimilarities object exist!".format(request.form['session']))
+            else:
+                flash("For the choosen sessions name ({0}) no entitySimilarities object exist!".format(
+                    request.form['session']))
 
-            
-            
         session["saveload"] = request.form['session']
 
-    
     return entitySimilarities()
 
-@app.route('/entitySimilarities_create_similaritiesMatrix', methods = ['POST', 'GET'])
+
+@app.route('/entitySimilarities_create_similaritiesMatrix', methods=['POST', 'GET'])
 def entitySimilarities_create_similaritiesMatrix():
     if request.method == 'POST':
         max_value = int(request.form['NoCfSMMax'])
         min_value = int(request.form['NoCfSMMin'])
-        similarities = app.entitySimilarities.create_matrix_limited(min_value,max_value)
+        similarities = app.entitySimilarities.create_matrix_limited(min_value, max_value)
         sequenz = app.entitySimilarities.get_last_sequenz_id()
         # dfp_instance
-        dfp_instance = dfp.DataForPlots(similarities, sequenz ,None,None, None)
+        dfp_instance = dfp.DataForPlots(similarities, sequenz, None, None, None)
 
         # plot things 
         plt.figure(1)
@@ -549,6 +563,7 @@ def entitySimilarities_create_similaritiesMatrix():
         plt.savefig('static/similarities.png', dpi=300, bbox_inches='tight')
         plt.close(1)
     return entitySimilarities()
+
 
 # scaling page
 @app.route('/scaling')
@@ -561,25 +576,27 @@ def scaling():
     exist_scaling: bool = False
     params = []
 
-    if isinstance(app.scaling , Scaling):
+    if isinstance(app.scaling, Scaling):
         exist_scaling = True
         params = app.scaling.get_param_list()
 
     return render_template(
         "scaling.html",
-        existScaling = exist_scaling,
-        scalings = scalings,
-        params = params
+        existScaling=exist_scaling,
+        scalings=scalings,
+        params=params
     )
-    
-@app.route('/initialize_scaling' , methods = ['POST', 'GET'])
+
+
+@app.route('/initialize_scaling', methods=['POST', 'GET'])
 def initialize_scaling():
     if request.method == 'POST':
         scalingType = eval(request.form['scaling'])
         app.scaling = ScalingFactory.create(scalingType)
     return scaling()
 
-@app.route('/set_scaling' , methods = ['POST', 'GET'])
+
+@app.route('/set_scaling', methods=['POST', 'GET'])
 def set_scaling():
     # check for other scaling types the set methodes
     if request.method == 'POST':
@@ -594,14 +611,14 @@ def set_scaling():
                         var[3] = float(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(float(request.form[param[0]]))
+                        # print(float(request.form[param[0]]))
                     elif param[6] == 1:
                         index = params.index(param)
                         var = list(param)
                         var[3] = int(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(int(request.form[param[0]]))
+                        # print(int(request.form[param[0]]))
                 elif param[4] == "text":
                     if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
                         index = params.index(param)
@@ -609,21 +626,21 @@ def set_scaling():
                         var[3] = np.inf
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     elif request.form[param[0]] == "None":
                         index = params.index(param)
                         var = list(param)
                         var[3] = None
                         param = tuple(var)
                         params2[index] = param
-                        #print(None)
-                    elif isinstance (eval(request.form[param[0]]), float):
+                        # print(None)
+                    elif isinstance(eval(request.form[param[0]]), float):
                         index = params.index(param)
                         var = list(param)
                         var[3] = float(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(float(request.form[param[0]]))
+                        # print(float(request.form[param[0]]))
                     else:
                         print("no right type found : " + request.form[param[0]])
                 elif param[4] == "select":
@@ -632,7 +649,7 @@ def set_scaling():
                     var[3] = request.form[param[0]]
                     param = tuple(var)
                     params2[index] = param
-                    #print(request.form[param[0]])
+                    # print(request.form[param[0]])
                 elif param[4] == "checkbox":
                     if request.form.get(param[0]):
                         index = params.index(param)
@@ -640,40 +657,42 @@ def set_scaling():
                         var[3] = True
                         param = tuple(var)
                         params2[index] = param
-                        #print(True)
+                        # print(True)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = False
                         param = tuple(var)
                         params2[index] = param
-                        #print(False)
+                        # print(False)
 
             app.scaling.set_param_list(params2)
 
     return scaling()
 
-@app.route("/saveload_scaling" , methods = ['POST', 'GET'])
+
+@app.route("/saveload_scaling", methods=['POST', 'GET'])
 def saveload_scaling():
     if request.method == 'POST':
         if request.form['saveload'] == "Save Embedding":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.scaling)
-            saf_cp.set(request.form['session'],app.scaling)
+            saf_cp.set(request.form['session'], app.scaling)
             saf_cp.saving()
         elif request.form['saveload'] == "Load Embedding":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.scaling)
-            saf_cp.set(request.form['session'],app.scaling)
+            saf_cp.set(request.form['session'], app.scaling)
             test = saf_cp.loading()
 
             if isinstance(test.get_object(), Scaling):
                 app.scaling = test.get_object()
-            else: 
+            else:
                 flash("For the choosen sessions name ({0}) no scaling object exist!".format(request.form['session']))
-            
+
         session["saveload"] = request.form['session']
     return scaling()
 
-# cluster page 
+
+# cluster page
 @app.route('/clustering')
 def clustering():
     clusterings = []
@@ -684,25 +703,27 @@ def clustering():
     exist_clustering: bool = False
     params = []
 
-    if isinstance(app.clustering , Clustering):
+    if isinstance(app.clustering, Clustering):
         exist_clustering = True
         params = app.clustering.get_param_list()
 
     return render_template(
         "clustering.html",
-        existClustering = exist_clustering,
-        clusterings = clusterings,
-        params = params
+        existClustering=exist_clustering,
+        clusterings=clusterings,
+        params=params
     )
-    
-@app.route('/initialize_clustering' , methods = ['POST', 'GET'])
+
+
+@app.route('/initialize_clustering', methods=['POST', 'GET'])
 def initialize_clustering():
     if request.method == 'POST':
         clusteringType = eval(request.form['clustering'])
         app.clustering = ClusteringFactory.create(clusteringType)
     return clustering()
 
-@app.route('/set_clustering' , methods = ['POST', 'GET'])
+
+@app.route('/set_clustering', methods=['POST', 'GET'])
 def set_clustering():
     # check for other scaling types the set methodes
     if request.method == 'POST':
@@ -717,14 +738,14 @@ def set_clustering():
                         var[3] = float(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(float(request.form[param[0]]))
+                        # print(float(request.form[param[0]]))
                     elif param[6] == 1:
                         index = params.index(param)
                         var = list(param)
                         var[3] = int(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(int(request.form[param[0]]))
+                        # print(int(request.form[param[0]]))
                 elif param[4] == "text":
                     if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
                         index = params.index(param)
@@ -732,30 +753,30 @@ def set_clustering():
                         var[3] = np.inf
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     elif request.form[param[0]] == "None":
                         index = params.index(param)
                         var = list(param)
                         var[3] = None
                         param = tuple(var)
                         params2[index] = param
-                        #print(None)
+                        # print(None)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = request.form[param[0]]
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     # How do we proceed if we really have a string?
-                    #elif isinstance (eval(request.form[param[0]]), float):
+                    # elif isinstance (eval(request.form[param[0]]), float):
                     #    index = params.index(param)
                     #    var = list(param)
                     #    var[3] = float(request.form[param[0]])
                     #    param = tuple(var)
                     #    params2[index] = param
                     #    #print(float(request.form[param[0]]))
-                    #else:
+                    # else:
                     #    print("no right type found : " + request.form[param[0]])
                 elif param[4] == "select":
                     index = params.index(param)
@@ -763,7 +784,7 @@ def set_clustering():
                     var[3] = request.form[param[0]]
                     param = tuple(var)
                     params2[index] = param
-                    #print(request.form[param[0]])
+                    # print(request.form[param[0]])
                 elif param[4] == "checkbox":
                     if request.form.get(param[0]):
                         index = params.index(param)
@@ -771,38 +792,40 @@ def set_clustering():
                         var[3] = True
                         param = tuple(var)
                         params2[index] = param
-                        #print(True)
+                        # print(True)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = False
                         param = tuple(var)
                         params2[index] = param
-                        #print(False)
+                        # print(False)
 
             app.clustering.set_param_list(params2)
 
     return clustering()
 
-@app.route("/saveload_clustering" , methods = ['POST', 'GET'])
+
+@app.route("/saveload_clustering", methods=['POST', 'GET'])
 def saveload_clustering():
     if request.method == 'POST':
         if request.form['saveload'] == "Save Clustering":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.clustering)
-            saf_cp.set(request.form['session'],app.clustering)
+            saf_cp.set(request.form['session'], app.clustering)
             saf_cp.saving()
         elif request.form['saveload'] == "Load Clustering":
             saf_cp = sal.SavingAndLoadingFactory.create(sal.SavingAndLoadingType.clustering)
-            saf_cp.set(request.form['session'],app.clustering)
+            saf_cp.set(request.form['session'], app.clustering)
             test = saf_cp.loading()
 
             if isinstance(test.get_object(), Clustering):
                 app.clustering = test.get_object()
-            else: 
+            else:
                 flash("For the choosen sessions name ({0}) no clustering object exist!".format(request.form['session']))
 
         session["saveload"] = request.form['session']
     return clustering()
+
 
 # Data labeler page for classification
 @app.route('/labeler')
@@ -821,19 +844,21 @@ def labeler():
 
     return render_template(
         "labeler.html",
-        existLabeler = exists_labeler,
-        labelers = labelers,
-        params = params
-        )
+        existLabeler=exists_labeler,
+        labelers=labelers,
+        params=params
+    )
 
-@app.route('/initialize_labeler' , methods = ['POST', 'GET'])
+
+@app.route('/initialize_labeler', methods=['POST', 'GET'])
 def initialize_labeler():
     if request.method == 'POST':
         labelerType = eval(request.form['labeler'])
         app.labeler = LabelerFactory.create(labelerType)
     return labeler()
 
-@app.route('/set_labeler' , methods = ['POST', 'GET'])
+
+@app.route('/set_labeler', methods=['POST', 'GET'])
 def set_labler():
     # check for other scaling types the set methodes
     if request.method == 'POST':
@@ -848,14 +873,14 @@ def set_labler():
                         var[3] = float(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(float(request.form[param[0]]))
+                        # print(float(request.form[param[0]]))
                     elif param[6] == 1:
                         index = params.index(param)
                         var = list(param)
                         var[3] = int(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(int(request.form[param[0]]))
+                        # print(int(request.form[param[0]]))
                 elif param[4] == "text":
                     if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
                         index = params.index(param)
@@ -863,30 +888,30 @@ def set_labler():
                         var[3] = np.inf
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     elif request.form[param[0]] == "None":
                         index = params.index(param)
                         var = list(param)
                         var[3] = None
                         param = tuple(var)
                         params2[index] = param
-                        #print(None)
+                        # print(None)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = request.form[param[0]]
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     # How do we proceed if we really have a string?
-                    #elif isinstance (eval(request.form[param[0]]), float):
+                    # elif isinstance (eval(request.form[param[0]]), float):
                     #    index = params.index(param)
                     #    var = list(param)
                     #    var[3] = float(request.form[param[0]])
                     #    param = tuple(var)
                     #    params2[index] = param
                     #    #print(float(request.form[param[0]]))
-                    #else:
+                    # else:
                     #    print("no right type found : " + request.form[param[0]])
                 elif param[4] == "select":
                     index = params.index(param)
@@ -894,7 +919,7 @@ def set_labler():
                     var[3] = request.form[param[0]]
                     param = tuple(var)
                     params2[index] = param
-                    #print(request.form[param[0]])
+                    # print(request.form[param[0]])
                 elif param[4] == "checkbox":
                     if request.form.get(param[0]):
                         index = params.index(param)
@@ -902,18 +927,19 @@ def set_labler():
                         var[3] = True
                         param = tuple(var)
                         params2[index] = param
-                        #print(True)
+                        # print(True)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = False
                         param = tuple(var)
                         params2[index] = param
-                        #print(False)
+                        # print(False)
 
             app.labeler.set_param_list(params2)
 
     return labeler()
+
 
 # Data splitter page for classification
 @app.route('/splitter')
@@ -932,19 +958,21 @@ def splitter():
 
     return render_template(
         "splitter.html",
-        existSplitter = exists_splitter,
-        splitters = splitters,
-        params = params
-        )
+        existSplitter=exists_splitter,
+        splitters=splitters,
+        params=params
+    )
 
-@app.route('/initialize_splitter' , methods = ['POST', 'GET'])
+
+@app.route('/initialize_splitter', methods=['POST', 'GET'])
 def initialize_splitter():
     if request.method == 'POST':
         splitterType = eval(request.form['splitter'])
         app.splitter = SplitterFactory.create(splitterType)
     return splitter()
 
-@app.route('/set_splitter' , methods = ['POST', 'GET'])
+
+@app.route('/set_splitter', methods=['POST', 'GET'])
 def set_splitter():
     # check for other scaling types the set methodes
     if request.method == 'POST':
@@ -959,14 +987,14 @@ def set_splitter():
                         var[3] = float(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(float(request.form[param[0]]))
+                        # print(float(request.form[param[0]]))
                     elif param[6] == 1:
                         index = params.index(param)
                         var = list(param)
                         var[3] = int(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(int(request.form[param[0]]))
+                        # print(int(request.form[param[0]]))
                 elif param[4] == "text":
                     if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
                         index = params.index(param)
@@ -974,30 +1002,30 @@ def set_splitter():
                         var[3] = np.inf
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     elif request.form[param[0]] == "None":
                         index = params.index(param)
                         var = list(param)
                         var[3] = None
                         param = tuple(var)
                         params2[index] = param
-                        #print(None)
+                        # print(None)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = request.form[param[0]]
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     # How do we proceed if we really have a string?
-                    #elif isinstance (eval(request.form[param[0]]), float):
+                    # elif isinstance (eval(request.form[param[0]]), float):
                     #    index = params.index(param)
                     #    var = list(param)
                     #    var[3] = float(request.form[param[0]])
                     #    param = tuple(var)
                     #    params2[index] = param
                     #    #print(float(request.form[param[0]]))
-                    #else:
+                    # else:
                     #    print("no right type found : " + request.form[param[0]])
                 elif param[4] == "select":
                     index = params.index(param)
@@ -1005,7 +1033,7 @@ def set_splitter():
                     var[3] = request.form[param[0]]
                     param = tuple(var)
                     params2[index] = param
-                    #print(request.form[param[0]])
+                    # print(request.form[param[0]])
                 elif param[4] == "checkbox":
                     if request.form.get(param[0]):
                         index = params.index(param)
@@ -1013,18 +1041,19 @@ def set_splitter():
                         var[3] = True
                         param = tuple(var)
                         params2[index] = param
-                        #print(True)
+                        # print(True)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = False
                         param = tuple(var)
                         params2[index] = param
-                        #print(False)
+                        # print(False)
 
             app.splitter.set_param_list(params2)
 
     return splitter()
+
 
 # classification page
 @app.route('/classification')
@@ -1037,25 +1066,27 @@ def classification():
     exist_classification: bool = False
     params = []
 
-    if isinstance(app.classification , Classification):
+    if isinstance(app.classification, Classification):
         exist_classification = True
         params = app.classification.get_param_list()
 
     return render_template(
         "classification.html",
-        existClassification = exist_classification,
-        classifications = classifications,
-        params = params
+        existClassification=exist_classification,
+        classifications=classifications,
+        params=params
     )
 
-@app.route('/initialize_classification' , methods = ['POST', 'GET'])
+
+@app.route('/initialize_classification', methods=['POST', 'GET'])
 def initialize_classification():
     if request.method == 'POST':
         classificationType = eval(request.form['classification'])
         app.classification = ClassificationFactory.create(classificationType)
     return classification()
 
-@app.route('/set_classification' , methods = ['POST', 'GET'])
+
+@app.route('/set_classification', methods=['POST', 'GET'])
 def set_classification():
     # check for other scaling types the set methodes
     if request.method == 'POST':
@@ -1070,14 +1101,14 @@ def set_classification():
                         var[3] = float(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(float(request.form[param[0]]))
+                        # print(float(request.form[param[0]]))
                     elif param[6] == 1:
                         index = params.index(param)
                         var = list(param)
                         var[3] = int(request.form[param[0]])
                         param = tuple(var)
                         params2[index] = param
-                        #print(int(request.form[param[0]]))
+                        # print(int(request.form[param[0]]))
                 elif param[4] == "text":
                     if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
                         index = params.index(param)
@@ -1085,30 +1116,30 @@ def set_classification():
                         var[3] = np.inf
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     elif request.form[param[0]] == "None":
                         index = params.index(param)
                         var = list(param)
                         var[3] = None
                         param = tuple(var)
                         params2[index] = param
-                        #print(None)
+                        # print(None)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = request.form[param[0]]
                         param = tuple(var)
                         params2[index] = param
-                        #print(np.inf)
+                        # print(np.inf)
                     # How do we proceed if we really have a string?
-                    #elif isinstance (eval(request.form[param[0]]), float):
+                    # elif isinstance (eval(request.form[param[0]]), float):
                     #    index = params.index(param)
                     #    var = list(param)
                     #    var[3] = float(request.form[param[0]])
                     #    param = tuple(var)
                     #    params2[index] = param
                     #    #print(float(request.form[param[0]]))
-                    #else:
+                    # else:
                     #    print("no right type found : " + request.form[param[0]])
                 elif param[4] == "select":
                     index = params.index(param)
@@ -1116,7 +1147,7 @@ def set_classification():
                     var[3] = request.form[param[0]]
                     param = tuple(var)
                     params2[index] = param
-                    #print(request.form[param[0]])
+                    # print(request.form[param[0]])
                 elif param[4] == "checkbox":
                     if request.form.get(param[0]):
                         index = params.index(param)
@@ -1124,35 +1155,39 @@ def set_classification():
                         var[3] = True
                         param = tuple(var)
                         params2[index] = param
-                        #print(True)
+                        # print(True)
                     else:
                         index = params.index(param)
                         var = list(param)
                         var[3] = False
                         param = tuple(var)
                         params2[index] = param
-                        #print(False)
+                        # print(False)
 
             app.classification.set_param_list(params2)
 
     return classification()
 
+
 # Plot settings
 plot_params = []
 parameter_resolution = 20
-description_resolution = "Classification boundary plot resolution, (default=20)\n"\
-                    +"Resolution of classification plot. By default, a 20*20 grid of data points is evaluated to determine the classification boundary."
-plot_params.append(("classBoundaryResolution", "Classification boundary resolution" , description_resolution, parameter_resolution, "number", 1, 1))
+description_resolution = "Classification boundary plot resolution, (default=20)\n" \
+                         + "Resolution of classification plot. By default, a 20*20 grid of data points is evaluated to determine the classification boundary."
+plot_params.append(("classBoundaryResolution", "Classification boundary resolution", description_resolution,
+                    parameter_resolution, "number", 1, 1))
+
 
 @app.route("/plots")
 def plots():
     global plot_params
     return render_template(
-    "plots.html",
-    params = plot_params
+        "plots.html",
+        params=plot_params
     )
 
-@app.route("/set_plots", methods = ['POST', 'GET'])
+
+@app.route("/set_plots", methods=['POST', 'GET'])
 def set_plots():
     global plot_params
     # check for other scaling types the set methodes
@@ -1167,14 +1202,14 @@ def set_plots():
                     var[3] = float(request.form[param[0]])
                     param = tuple(var)
                     params2[index] = param
-                    #print(float(request.form[param[0]]))
+                    # print(float(request.form[param[0]]))
                 elif param[6] == 1:
                     index = params.index(param)
                     var = list(param)
                     var[3] = int(request.form[param[0]])
                     param = tuple(var)
                     params2[index] = param
-                    #print(int(request.form[param[0]]))
+                    # print(int(request.form[param[0]]))
             elif param[4] == "text":
                 if request.form[param[0]] == "inf" or request.form[param[0]] == "np.inf":
                     index = params.index(param)
@@ -1182,30 +1217,30 @@ def set_plots():
                     var[3] = np.inf
                     param = tuple(var)
                     params2[index] = param
-                    #print(np.inf)
+                    # print(np.inf)
                 elif request.form[param[0]] == "None":
                     index = params.index(param)
                     var = list(param)
                     var[3] = None
                     param = tuple(var)
                     params2[index] = param
-                    #print(None)
+                    # print(None)
                 else:
                     index = params.index(param)
                     var = list(param)
                     var[3] = request.form[param[0]]
                     param = tuple(var)
                     params2[index] = param
-                    #print(np.inf)
+                    # print(np.inf)
                 # How do we proceed if we really have a string?
-                #elif isinstance (eval(request.form[param[0]]), float):
+                # elif isinstance (eval(request.form[param[0]]), float):
                 #    index = params.index(param)
                 #    var = list(param)
                 #    var[3] = float(request.form[param[0]])
                 #    param = tuple(var)
                 #    params2[index] = param
                 #    #print(float(request.form[param[0]]))
-                #else:
+                # else:
                 #    print("no right type found : " + request.form[param[0]])
             elif param[4] == "select":
                 index = params.index(param)
@@ -1213,7 +1248,7 @@ def set_plots():
                 var[3] = request.form[param[0]]
                 param = tuple(var)
                 params2[index] = param
-                #print(request.form[param[0]])
+                # print(request.form[param[0]])
             elif param[4] == "checkbox":
                 if request.form.get(param[0]):
                     index = params.index(param)
@@ -1221,14 +1256,14 @@ def set_plots():
                     var[3] = True
                     param = tuple(var)
                     params2[index] = param
-                    #print(True)
+                    # print(True)
                 else:
                     index = params.index(param)
                     var = list(param)
                     var[3] = False
                     param = tuple(var)
                     params2[index] = param
-                    #print(False)
+                    # print(False)
 
         plot_params = params2
 
@@ -1238,87 +1273,98 @@ def set_plots():
 # assume and calculating
 @app.route("/calculating")
 def calculating():
-    #app.strCostumePlan = session["strCostumePlan"]
-    
+    # app.strCostumePlan = session["strCostumePlan"]
+
     simiParams: list = []
-    if isinstance(app.entitySimilarities , EntitySimilarities):
+    if isinstance(app.entitySimilarities, EntitySimilarities):
         simiParams = app.entitySimilarities.get_param_list()
         costume_plan = costumePlanToStr(app.entitySimilarities.get_costume_plan())
     else:
-        simiParams.append(("errorentitySimilarities", "no Entity Similarities Type initialized", " go to entitySimilarities and initialize","failed"))
-        costume_plan = ["No" , "Costume" ,("are", "initialized!","Initialize" ,"entitySimilarity!" )]
+        simiParams.append(("errorentitySimilarities", "no Entity Similarities Type initialized",
+                           " go to entitySimilarities and initialize", "failed"))
+        costume_plan = ["No", "Costume", ("are", "initialized!", "Initialize", "entitySimilarity!")]
 
     scalingParams: list = []
-    if isinstance(app.scaling , Scaling):
+    if isinstance(app.scaling, Scaling):
         scalingParams = app.scaling.get_param_list()
     else:
-        scalingParams.append(("errorScaling", "no Scaling Type initialized", " go to scaling and initialize","failed"))
+        scalingParams.append(("errorScaling", "no Scaling Type initialized", " go to scaling and initialize", "failed"))
 
     clusteringParams: list = []
-    if isinstance(app.clustering , Clustering):
+    if isinstance(app.clustering, Clustering):
         clusteringParams = app.clustering.get_param_list()
     else:
-        clusteringParams.append(("errorClustering", "no Clustering Type initialized", " go to clustering and initialize","failed"))
+        clusteringParams.append(
+            ("errorClustering", "no Clustering Type initialized", " go to clustering and initialize", "failed"))
 
     classificationParams: list = []
-    if isinstance(app.classification , Classification):
+    if isinstance(app.classification, Classification):
         classificationParams = app.classification.get_param_list()
     else:
-        classificationParams.append(("errorClassification", "no Classification Type initialized", " go to classification and initialize","failed"))
+        classificationParams.append(("errorClassification", "no Classification Type initialized",
+                                     " go to classification and initialize", "failed"))
 
-    #flash('Thank you for registering')
+    # flash('Thank you for registering')
     return render_template(
         "calculating.html",
-        strCostumePlan = costume_plan,
-        simiParams = simiParams,
-        scalingParams = scalingParams,
-        clusteringParams = clusteringParams,
-        classificationParams = classificationParams
+        strCostumePlan=costume_plan,
+        simiParams=simiParams,
+        scalingParams=scalingParams,
+        clusteringParams=clusteringParams,
+        classificationParams=classificationParams
     )
 
+
 # start calculating
-@app.route("/start_calculating" , methods = ['POST', 'GET'] )
-def start_calculating():    
+@app.route("/start_calculating", methods=['POST', 'GET'])
+def start_calculating():
     params = []
 
     try:
         min_value = int(request.form['min'])
         max_value = int(request.form['max'])
-        params.append(("minEntity" , "Min. Entity" , "description" , min_value , "header"))
-        params.append(("maxEntity" , "Max. Entity" , "description" , max_value , "header"))
-        
+        params.append(("minEntity", "Min. Entity", "description", min_value, "header"))
+        params.append(("maxEntity", "Max. Entity", "description", max_value, "header"))
+
     except Exception as error:
         flash(" an Error occurs in check min max value. Please try again. Error: " + str(error))
         return calculating()
 
     similarities: np.matrix
     try:
-        similarities = app.entitySimilarities.create_matrix_limited(min_value,max_value)
+        similarities = app.entitySimilarities.create_matrix_limited(min_value, max_value)
         app.distance_matrix = similarities
         sequenz = app.entitySimilarities.get_last_sequenz_id()
-        params.append(("similarityMatrix" , "Distance Matrix" , "The distance matrix shows the distance between two costumes. The range is between 0 and infinity. If the distance between two costumes is assumed to be 0, they are identical." , similarities , "header"))
-        params.append(("lastSequenzID" , "Last Sequenz ID" , "lastSequenceId describes the entity sequence used to create the distance matrix." , sequenz , "header"))
+        params.append(("similarityMatrix", "Distance Matrix",
+                       "The distance matrix shows the distance between two costumes. The range is between 0 and infinity. If the distance between two costumes is assumed to be 0, they are identical.",
+                       similarities, "header"))
+        params.append(("lastSequenzID", "Last Sequenz ID",
+                       "lastSequenceId describes the entity sequence used to create the distance matrix.", sequenz,
+                       "header"))
     except Exception as error:
         flash(" an Error occurs in creating similarity matrix. Please try again. Error: " + str(error))
         return calculating()
 
     try:
-        pos: np.matrix 
+        pos: np.matrix
         pos = app.scaling.scaling(similarities)
         app.embedding = pos
         stress = app.scaling.stress_level()
         ###################TZest#############
-        
 
         #####################################
-        #pos2d: np.matrix 
-        #dim: int = app.scaling.get_dimensions()
-        #app.scaling.set_dimensions(2)
-        #pos2d = app.scaling.scaling(similarities)
-        #app.scaling.set_dimensions(dim)
-        params.append(("positionMatrixND" , "Position Matrix n-Dimensional" , "description" , pos , "header"))
-        params.append(("positionMatrix2D" , "Position Matrix 2-Dimensional" , "In the position matrix, the distances of individual objects (DistanceMatrix) were arranged spatially in such a way that the distances between the objects in space correspond as exactly as possible to the surveyed distance." , None , "header"))
-        params.append(("stressLevel" , "Stress Level" , "The STRESS value (STRESS for STandardized REsidual Sum of Squares, is calculated (according to Kruskal) as the square root of the sum of the squares of the disparities from the distances, divided by the sum of the squared distances. It is a measure of the quality of the position matrix in relation to the distance matrix." , stress , "header"))
+        # pos2d: np.matrix
+        # dim: int = app.scaling.get_dimensions()
+        # app.scaling.set_dimensions(2)
+        # pos2d = app.scaling.scaling(similarities)
+        # app.scaling.set_dimensions(dim)
+        params.append(("positionMatrixND", "Position Matrix n-Dimensional", "description", pos, "header"))
+        params.append(("positionMatrix2D", "Position Matrix 2-Dimensional",
+                       "In the position matrix, the distances of individual objects (DistanceMatrix) were arranged spatially in such a way that the distances between the objects in space correspond as exactly as possible to the surveyed distance.",
+                       None, "header"))
+        params.append(("stressLevel", "Stress Level",
+                       "The STRESS value (STRESS for STandardized REsidual Sum of Squares, is calculated (according to Kruskal) as the square root of the sum of the squares of the disparities from the distances, divided by the sum of the squared distances. It is a measure of the quality of the position matrix in relation to the distance matrix.",
+                       stress, "header"))
     except Exception as error:
         flash(" an Error occurs in creating position matrix. Please try again. Error: " + str(error))
         return calculating()
@@ -1327,11 +1373,13 @@ def start_calculating():
     if isinstance(app.clustering, Clustering):
         try:
             if not app.clustering.get_keep_cluster_mapping() or app.cluster_mapping is None:
-                labels = app.clustering.create_cluster(pos,similarities)
+                labels = app.clustering.create_cluster(pos, similarities)
                 app.cluster_mapping = labels
             else:
                 labels = app.cluster_mapping
-            params.append(("labels" , "Label Matrix" , "The LabelMatrix assigns objects to specific classes according to the clustering method." , labels , "header"))
+            params.append(("labels", "Label Matrix",
+                           "The LabelMatrix assigns objects to specific classes according to the clustering method.",
+                           labels, "header"))
         except Exception as error:
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
             return calculating()
@@ -1342,7 +1390,7 @@ def start_calculating():
     if isinstance(app.classification, Classification):
 
         if not isinstance(app.labeler, Labeler):
-            flash("Configuration error: No labeler set for classification")#
+            flash("Configuration error: No labeler set for classification")  #
             return calculating()
         if not isinstance(app.splitter, Splitter):
             flash("Configuration error: No splitter set for classification")
@@ -1356,15 +1404,19 @@ def start_calculating():
             if not isinstance(app.labeler, clustersLabeler):
                 labels, dict_label_class = app.labeler.get_labels(pos, valid_entities, similarities)
             elif labels is None:
-                raise Exception("Data labeler is '"+ LabelerTypes.get_name(LabelerTypes.clusters) +
+                raise Exception("Data labeler is '" + LabelerTypes.get_name(LabelerTypes.clusters) +
                                 "' but labels are not set. Select clustering type and try again. ")
-            else: # labels as provided from clustering are used, only the label -> class dictionary is missing
+            else:  # labels as provided from clustering are used, only the label -> class dictionary is missing
                 for label in set(labels):
                     dict_label_class[label] = str(label)
 
-            train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels, valid_entities, similarities)
+            train_data, train_labels, test_data, test_labels = app.splitter.get_train_test_set(pos, labels,
+                                                                                               valid_entities,
+                                                                                               similarities)
             decision_fun, support_vectors = app.classification.create_classifier(train_data, train_labels, similarities)
-            params.append(("decision_fun" , "Decision boundary" , "DecisionBoundary describes the allocation boundary between two classes based on the class allocation as well as the location of individual classes" , decision_fun , "header"))
+            params.append(("decision_fun", "Decision boundary",
+                           "DecisionBoundary describes the allocation boundary between two classes based on the class allocation as well as the location of individual classes",
+                           decision_fun, "header"))
         except Exception as error:
             flash(" an Error occurs in creating labels. Please try again. Error: " + str(error))
             return calculating()
@@ -1394,7 +1446,7 @@ def start_calculating():
             plt.figure(1)
             G = gridspec.GridSpec(1, 1)
             ax1 = plt.subplot(G[0, 0])
-            pfc.PlotsForCluster.cluster_2d_plot(dfp_instance ,ax1)
+            pfc.PlotsForCluster.cluster_2d_plot(dfp_instance, ax1)
             plt.savefig('static/clustering.png', dpi=300, bbox_inches='tight')
             plt.close(1)
 
@@ -1404,7 +1456,8 @@ def start_calculating():
             ax1 = plt.subplot(G[0, 0])
             global plot_params
             resolution = plot_params[0][3]
-            PlotsForClassification.classifier_2d_plot(dfp_instance, train_data, train_labels, test_data, test_labels, resolution, dict_label_class, ax1)
+            PlotsForClassification.classifier_2d_plot(dfp_instance, train_data, train_labels, test_data, test_labels,
+                                                      resolution, dict_label_class, ax1)
             plt.savefig('static/classification.png', dpi=300, bbox_inches='tight')
             plt.close(1)
     except Exception as error:
@@ -1415,32 +1468,34 @@ def start_calculating():
 
     return redirect(url_for('result'))
 
-# methodes for result 
+
+# methodes for result
 @app.route("/result")
 def result():
-    if isinstance(app.result , list):
+    if isinstance(app.result, list):
         return render_template(
             "result.html",
-            params = app.result
+            params=app.result
         )
     else:
         flash('No Results are calculated! Redirection to calculation!')
         return calculating()
 
+
 @app.route("/view_result_<value>")
 def view_result(value):
-
     if value == "similarityMatrix":
-        return "<img src=" + url_for("static", filename="similarities.png") + " object-fit: contain' >" 
+        return "<img src=" + url_for("static", filename="similarities.png") + " object-fit: contain' >"
 
     if value == "positionMatrix2D":
         return "<img src=" + url_for("static", filename="scaling.png") + " object-fit: contain' >"
-    
+
     if value == "labels":
         return "<img src=" + url_for("static", filename="clustering.png") + " object-fit: contain' >"
 
     if value == "decision_fun":
         return "<img src=" + url_for("static", filename="classification.png") + " object-fit: contain' >"
+
 
 @app.route("/export_<value>")
 def export(value):
@@ -1454,7 +1509,8 @@ def export(value):
         np.savetxt('./static/cluster_mapping.txt', app.cluster_mapping)
         return redirect(url_for("static", filename="cluster_mapping.txt"), code=302)
 
-@app.route("/result_value_similarity", methods = ['POST', 'GET'])
+
+@app.route("/result_value_similarity", methods=['POST', 'GET'])
 def result_value_similarity():
     try:
         if request.method == 'POST':
@@ -1471,15 +1527,19 @@ def result_value_similarity():
                     for param in app.result:
                         if list(param)[0] == "similarityMatrix":
                             matrix = list(param)[3]
-                            flash(" similarity value: {0} to {1} = {2} \n similarity value: {1} to {0} = {3}".format(min_value,max_value, round(matrix[min_value-lowest_value][max_value-lowest_value],2),round(matrix[max_value-lowest_value][min_value-lowest_value],2)), "similarity")
+                            flash(" similarity value: {0} to {1} = {2} \n similarity value: {1} to {0} = {3}".format(
+                                min_value, max_value,
+                                round(matrix[min_value - lowest_value][max_value - lowest_value], 2),
+                                round(matrix[max_value - lowest_value][min_value - lowest_value], 2)), "similarity")
                             return result()
         flash("Error please check the input!", "similarity")
-    except Exception:   
+    except Exception:
         flash("Error please check the input!", "similarity")
-    
-    return result()            
-            
-@app.route("/result_coordinates", methods = ['POST', 'GET'])
+
+    return result()
+
+
+@app.route("/result_coordinates", methods=['POST', 'GET'])
 def result_coordinates():
     try:
         if request.method == 'POST':
@@ -1491,18 +1551,20 @@ def result_coordinates():
                 if list(param)[0] == "maxEntity":
                     highest_value = list(param)[3]
             if value >= lowest_value and value <= highest_value:
-                    for param in app.result:
-                        if list(param)[0] == "positionMatrixND":
-                            matrix = list(param)[3]
-                            flash("Coordinates of Entity {0}: {1}".format(value,matrix[value-highest_value][:]), "scaling")
-                            return result()
-        flash("Error please check the input!" , "scaling")
-    except Exception:   
-        flash("Error please check the input!" , "scaling")
-    
+                for param in app.result:
+                    if list(param)[0] == "positionMatrixND":
+                        matrix = list(param)[3]
+                        flash("Coordinates of Entity {0}: {1}".format(value, matrix[value - highest_value][:]),
+                              "scaling")
+                        return result()
+        flash("Error please check the input!", "scaling")
+    except Exception:
+        flash("Error please check the input!", "scaling")
+
     return result()
-        
-@app.route("/result_cluster", methods = ['POST', 'GET'])
+
+
+@app.route("/result_cluster", methods=['POST', 'GET'])
 def result_cluster():
     try:
         id_cluster: list = []
@@ -1519,60 +1581,59 @@ def result_cluster():
                         for i in range(len(labels)):
                             if labels[i] == value:
                                 id_cluster.append(sequenz_id[i])
-                        flash("Entities ID for Cluster {0}: {1}".format(value,id_cluster) , "cluster")
+                        flash("Entities ID for Cluster {0}: {1}".format(value, id_cluster), "cluster")
                         return result()
-        flash("Error please check the input!" , "cluster")
-    except Exception:   
-        flash("Error please check the input!" , "cluster")
-    
+        flash("Error please check the input!", "cluster")
+    except Exception:
+        flash("Error please check the input!", "cluster")
+
     return result()
-    
+
+
 @app.route("/table_list")
 def table_list():
     tablelist_bool: bool = True
     entitySimi_bool: bool = True
-    if not isinstance(app.tablelist , list):
+    if not isinstance(app.tablelist, list):
         tablelist_bool = False
         flash("No table list generated")
-    if not isinstance(app.entitySimilarities , EntitySimilarities):
+    if not isinstance(app.entitySimilarities, EntitySimilarities):
         entitySimi_bool = False
         flash("No EntitySimilarities Object instantiated")
 
     return render_template(
-            "entityTable.html",
-            table = app.tablelist,
-            tableListBool = tablelist_bool,
-            entitySimiBool = entitySimi_bool
-        )
+        "entityTable.html",
+        table=app.tablelist,
+        tableListBool=tablelist_bool,
+        entitySimiBool=entitySimi_bool
+    )
 
-@app.route("/instance_table_costume_plan" , methods = ['POST', 'GET'])
+
+@app.route("/instance_table_costume_plan", methods=['POST', 'GET'])
 def instance_table_costume_plan():
-
     sequenz_id = eval(request.form['sequenzId'])
-    
-    if not isinstance(app.entitySimilarities , EntitySimilarities):
+
+    if not isinstance(app.entitySimilarities, EntitySimilarities):
         return home()
 
-    
-    
     entities = app.entitySimilarities.get_list_entities()
     costumeplan = app.entitySimilarities.get_costume_plan()
     show_table_list = []
     header_list = []
     attributes_list = []
-    
+
     header_list.append("ID")
     header_list.append("Referenz Film")
     header_list.append("Referenz Rollen")
     header_list.append("Referenz Kostuem")
-    
+
     for plan in costumeplan:
         if not (plan == costumeplan[0] or plan == costumeplan[1]):
             attributes_list.append(list(plan)[0])
             header_list.append(Attribute.get_name(list(plan)[0]))
-    
+
     show_table_list.append(tuple(header_list))
-    
+
     for entity in entities:
         if entity.id in sequenz_id:
             entityList = []
@@ -1587,14 +1648,15 @@ def instance_table_costume_plan():
 
     return redirect(url_for('table_list'))
 
+
 if __name__ == '__main__':
     port = 5001
     url = "http://127.0.0.1:{0}".format(port)
-    
+
     # prevent opening 2 tabs if debug=True
     if "WERKZEUG_RUN_MAIN" not in os.environ:
         # starts opening the tab if server is up
-        threading.Timer(1.2, lambda: webbrowser.open(url) ).start()
+        threading.Timer(1.2, lambda: webbrowser.open(url)).start()
 
     if "--debug" in sys.argv:
         Logger.initialize(3)
