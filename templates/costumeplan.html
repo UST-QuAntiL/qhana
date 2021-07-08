@@ -197,10 +197,13 @@
                                 <fieldset>
                             {% endif %}
                         {% endfor %}
-                        <input type="text" id="filter" name="filter" size="50"
-                                {% if attribute[0] in filterValues %}
-                               value="{{ filterValues[attribute[0]] }}">
-                                {% endif %}
+                        <input type="text" id="filter" name="filter" size="50" value="
+                            {%- for element in session["strCostumePlan"] -%}
+                                {%- if element[0] == attribute[0] -%}
+                                    {{ element[4] }}
+                                {%- endif -%}
+                            {%- endfor -%}
+                            ">
                         </fieldset>
                 </td>
             </tr>

@@ -260,7 +260,6 @@ def costumeplan():
         transformers=transformers,
         attributeComparers=attributeComparers,
         elementComparers=elementComparers,
-        filterValues={}
     )
 
 
@@ -328,7 +327,8 @@ def initialize_costumeplan():
         Attribute.dominanteFarbe,
         ElementComparerType.wuPalmer,
         AttributeComparerType.symMaxMean,
-        EmptyAttributeAction.ignore
+        EmptyAttributeAction.ignore,
+        "test filter"
     ))
 
     session["costumePlan"] = pickle.dumps(costumePlan)
@@ -369,7 +369,7 @@ def managing_costume_plan_set_attribute(attribute: str):
                     if list(plan)[0] == attributetype:
                         check = False
             if check:
-                costumePlan2.append((attributetype, None, None, None))
+                costumePlan2.append((attributetype, None, None, None, ""))
 
     session["costumePlan"] = pickle.dumps(costumePlan2)
     session["strCostumePlan"] = costumePlanToStr(costumePlan2)
@@ -417,7 +417,8 @@ def managing_costume_plan_attribute(attribute: str, value: str):
             costumePlan.append((attribute, None, None, value))
     session["costumePlan"] = pickle.dumps(costumePlan)
     session["strCostumePlan"] = costumePlanToStr(costumePlan)
-    return costumeplan()
+
+    return costumeplan()  # redirect to /costumeplan
 
 
 def costumePlanToStr(costumePlan: list) -> str:
@@ -439,7 +440,7 @@ def costumePlanToStr(costumePlan: list) -> str:
                 element[3] = EmptyAttributeAction.get_name(element[3])
             else:
                 element[3] = None
-            strCostumePlan.append((element[0], element[1], element[2], element[3]))
+            strCostumePlan.append((element[0], element[1], element[2], element[3], element[4]))
 
 
         elif isinstance(element, AggregatorType):
