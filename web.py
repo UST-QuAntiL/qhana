@@ -407,6 +407,14 @@ def managing_costume_plan_attribute(attribute: str, value: str):
                 element = tuple(var)
                 costumePlan2[index] = element
                 check = False
+            elif isinstance(value, str):
+                index = costumePlan.index(element)
+                var = list(element)
+                var[4] = value
+                element = tuple(var)
+                costumePlan2[index] = element
+                check = False
+
     costumePlan = costumePlan2
     if check:
         if isinstance(value, ElementComparerType):

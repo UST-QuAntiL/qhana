@@ -203,7 +203,7 @@
                                     {{ element[4] }}
                                 {%- endif -%}
                             {%- endfor -%}
-                            ">
+                            ", onchange="document.location.href='/instance_costume_plan/{{ attribute[1] }}/str(\'' + this.value + '\')'">
                         </fieldset>
                 </td>
             </tr>
