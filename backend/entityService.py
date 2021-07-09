@@ -123,7 +123,7 @@ class EntityService:
             if attributeComparerType is not None:
                 self.attributeComparerType[attribute] = attributeComparerType
             self.emptyAttributeAction[attribute] = emptyAttributeAction
-            self.filterRules[attribute] = [filter_str]
+            self.filterRules[attribute] = filter_str.split(",")
 
     """
     Adds a plan to the list. A plan is a list with specifying
@@ -304,10 +304,14 @@ class EntityService:
             return False
 
         for attribute in self.filterRules:
+            value_filtered_entities = set()
+
             for value in self.filterRules[attribute]:
-                entities = list(filter(
+                value_filtered_entities = list(set(filter(
                     lambda e: is_value_in_list_of_values(value, e.get_value(attribute)),  # TODO: extend with infos from the taxonomy, allow more complicated filter expressions
-                    entities))
+                    entities)).union(value_filtered_entities))
+
+            entities = list(value_filtered_entities)
 
         # teporarily disabled permutation
         if useRandom:
