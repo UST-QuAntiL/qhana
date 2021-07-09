@@ -109,11 +109,13 @@ class EntityService:
     or attribute comparer is none, the corresponding
     attribute will be a tag.
     """
-    def add_attribute(self,
+    def add_attribute(
+        self,
         attribute: Attribute,
         elementComparerType: ElementComparerType = None,
         attributeComparerType: AttributeComparerType = None,
-        emptyAttributeAction: EmptyAttributeAction = EmptyAttributeAction.ignore
+        emptyAttributeAction: EmptyAttributeAction = EmptyAttributeAction.ignore,
+        filter_str: str = ""
         ) -> None:
             self.attributes[attribute] = None
             if elementComparerType is not None:
@@ -121,7 +123,7 @@ class EntityService:
             if attributeComparerType is not None:
                 self.attributeComparerType[attribute] = attributeComparerType
             self.emptyAttributeAction[attribute] = emptyAttributeAction
-            return
+            self.filterRules[attribute] = [filter_str]
 
     """
     Adds a plan to the list. A plan is a list with specifying
@@ -135,7 +137,7 @@ class EntityService:
             elif isinstance(element, TransformerType):
                 self.set_transformer(element)
             else:
-                self.add_attribute(element[0], element[1], element[2], element[3])
+                self.add_attribute(element[0], element[1], element[2], element[3], element[4])
         return
 
     """
@@ -143,6 +145,7 @@ class EntityService:
     attribute and value and needs to be found in the dataset
     in order to work with it.
     """
+    # TODO: reuse or replace?
     def add_filter_rule(self, attribute: Attribute, value: any) -> None:
         if attribute not in self.filterRules:
             self.filterRules[attribute] = {value}
@@ -296,7 +299,7 @@ class EntityService:
         for attribute in self.filterRules:
             for value in self.filterRules[attribute]:
                 entities = list(filter(
-                    lambda e: value in e.get_value(attribute),
+                    lambda e: value in e.get_value(attribute),  # TODO: extend with infos from the taxonomy, allow more complicated filter expressions
                     entities))
 
         # teporarily disabled permutation
