@@ -296,10 +296,17 @@ class EntityService:
 
         entities = self.allEntities
 
+        def is_value_in_list_of_values(v: str, lv: List[str]) -> bool:
+            for v2 in lv:
+                if v.lower() == v2.lower():
+                    return True
+
+            return False
+
         for attribute in self.filterRules:
             for value in self.filterRules[attribute]:
                 entities = list(filter(
-                    lambda e: value in e.get_value(attribute),  # TODO: extend with infos from the taxonomy, allow more complicated filter expressions
+                    lambda e: is_value_in_list_of_values(value, e.get_value(attribute)),  # TODO: extend with infos from the taxonomy, allow more complicated filter expressions
                     entities))
 
         # teporarily disabled permutation
