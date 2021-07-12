@@ -308,7 +308,7 @@ class EntityService:
 
             for value in self.filterRules[attribute]:
                 value_filtered_entities = list(set(filter(
-                    lambda e: is_value_in_list_of_values(value, e.get_value(attribute)),  # TODO: extend with infos from the taxonomy, allow more complicated filter expressions
+                    lambda e: is_value_in_list_of_values(value, e.get_value(attribute)) or value == "",  # TODO: extend with infos from the taxonomy, allow more complicated filter expressions
                     entities)).union(value_filtered_entities))
 
             entities = list(value_filtered_entities)
