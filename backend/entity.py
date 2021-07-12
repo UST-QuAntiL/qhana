@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 from typing import List
 from backend.attribute import Attribute
 from backend.logger import Logger
@@ -173,12 +173,41 @@ class EntityFactory:
     A filter for the keys can be specified which is a set with the format
     { (KostuemID, RollenID, FilmID) , ... }
     """
+
+    @staticmethod
+    def _is_accepted_by_filter(entity: Entity, filter_rules: Dict[Attribute, List[str]]) -> bool:
+        """
+        Tests if the entity is accepted by the provided filter rules or if it should be filtered out.
+        :param entity: entity
+        :param filter_rules: filter rules
+        :return: True if accepted, false if not.
+        """
+        def is_value_in_list_of_values(v: str, lv: List[str]) -> bool:
+            for v2 in lv:
+                if v.lower() == v2.lower():
+                    return True
+
+            return False
+
+        for attribute in filter_rules:
+            attr_accepted = False
+
+            for value in filter_rules[attribute]:
+                if is_value_in_list_of_values(value, entity.get_value(attribute)) or value == "":
+                    attr_accepted = True
+
+            if not attr_accepted:
+                return False
+
+        return True
+
     @staticmethod
     def create(
         attributes: List[Attribute],
         database: Database,
         amount: int = 2147483646,
-        keys = None
+        keys=None,
+        filter_rules: Dict[Attribute, List[str]] = {}
         ) -> List[Entity]:
 
         entities = []
@@ -998,19 +1027,20 @@ class EntityFactory:
                             entity_basis.add_attribute(Attribute.farbeindruck)
                             entity_basis.add_value(Attribute.farbeindruck, list(farbeindrucke))
 
-                    entity_basis.set_id(count)
-                    entities.append(entity_basis)
-                    count += 1
-                    if count % printMod == 0:
-                        Logger.normal(str(count) + " / " + str(amount) + " entities loaded")     
-                    if count >= amount:
-                        finished = True
-                        break
+                    if EntityFactory._is_accepted_by_filter(entity_basis, filter_rules):
+                        entity_basis.set_id(count)
+                        entities.append(entity_basis)
+                        count += 1
+                        if count % printMod == 0:
+                            Logger.normal(str(count) + " / " + str(amount) + " entities loaded")
+                        if count >= amount:
+                            finished = True
+                            break
 
-            if finished == True:
+            if finished:
                 break
 
-            if be_basiselement == False:
+            if (not be_basiselement) and EntityFactory._is_accepted_by_filter(entity, filter_rules):
                 entity.set_id(count)
                 entities.append(entity)
                 count += 1
@@ -1018,7 +1048,6 @@ class EntityFactory:
                     Logger.normal(str(count) + " / " + str(amount) + " entities loaded")     
                 if count >= amount:
                     break
-
 
         Logger.normal(str(count) + " entities loaded with " + str(invalid_entries) + " being invalid.")
 

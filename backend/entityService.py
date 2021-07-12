@@ -88,6 +88,7 @@ class EntityService:
         # all entities without filter
         self.allEntities = []
 
+        # TODO: remove?
         # stores the filtered entities
         self.entities = []
 
@@ -160,9 +161,8 @@ class EntityService:
     Creates the entities from the database based on the choosen attributes and amount.
     The default for amount is int max which returns all founded entities.
     """
-    def create_entities(self, database: Database, amount: int = 2147483646) -> List[Entity]:
-        self.allEntities = EntityFactory.create(self.attributes.keys(), database, amount)
-        return
+    def create_entities(self, database: Database, amount: int = 2147483646, filter_rules: Dict[Attribute, List[str]] = {}) -> List[Entity]:
+        self.allEntities = EntityFactory.create(self.attributes.keys(), database, amount, filter_rules=filter_rules)
 
     def create_subset_from_file(self, database: Database, positiveCsvFile: str, negativeCsvFile: str):
         kostuemIDs = []
@@ -274,31 +274,13 @@ class EntityService:
         return self.allEntities
 
     """
-    Gets the entities based on the chosen attributes and the filter.
-    If there already exists filtered entities, those will be returned.
+    Gets the entities with or without permutation.
     """
     def get_entities(self, useRandom: bool = False) -> List[Entity]:
         if len(self.entities) > 0:
             return self.entities
 
         entities = self.allEntities
-
-        def is_value_in_list_of_values(v: str, lv: List[str]) -> bool:
-            for v2 in lv:
-                if v.lower() == v2.lower():
-                    return True
-
-            return False
-
-        for attribute in self.filterRules:
-            value_filtered_entities = set()
-
-            for value in self.filterRules[attribute]:
-                value_filtered_entities = list(set(filter(
-                    lambda e: is_value_in_list_of_values(value, e.get_value(attribute)) or value == "",  # TODO: extend with infos from the taxonomy, allow more complicated filter expressions
-                    entities)).union(value_filtered_entities))
-
-            entities = list(value_filtered_entities)
 
         # teporarily disabled permutation
         if useRandom:

@@ -44,7 +44,7 @@ class EntitySimilarities():
         self.__service.add_plan(self.__costume_plan)
 
         if subsetEnum == None:
-            self.__service.create_entities(db, entity_number)
+            self.__service.create_entities(db, entity_number, filter_rules=self.__service.filterRules)
             self.__entity_number: int = len(self.__service.get_entities(useRandom))
         else:
             self.__service.create_subset(subsetEnum, db)
