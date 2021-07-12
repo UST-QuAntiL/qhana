@@ -141,19 +141,6 @@ class EntityService:
         return
 
     """
-    Adds a filter rule to the list. A filter rule is tuple
-    attribute and value and needs to be found in the dataset
-    in order to work with it.
-    """
-    # TODO: reuse or replace?
-    def add_filter_rule(self, attribute: Attribute, value: any) -> None:
-        if attribute not in self.filterRules:
-            self.filterRules[attribute] = {value}
-        else:
-            self.filterRules[attribute].add(value)
-        return
-
-    """
     Sets the aggregator that will be used to aggregate
     the attribute values.
     """
