@@ -287,7 +287,7 @@ class EntityService:
         return self.allEntities
 
     """
-    Gets the entities based on the choosen attributes and the filter.
+    Gets the entities based on the chosen attributes and the filter.
     If there already exists filtered entities, those will be returned.
     """
     def get_entities(self, useRandom: bool = False) -> List[Entity]:
