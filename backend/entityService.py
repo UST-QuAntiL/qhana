@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from typing import Tuple
 import numpy as np
 from backend.entity import Entity, EntityFactory
@@ -82,8 +82,8 @@ class EntityService:
 
         self.entitiyComparer = None
 
-        # format (attribute, {alue1, value2, ...})
-        self.filterRules = {}
+        # format {attribute: [value1, value2, ...]}
+        self.filterRules: Dict[Attribute, List[str]] = {}
 
         # all entities without filter
         self.allEntities = []
