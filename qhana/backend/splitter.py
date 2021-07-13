@@ -1,15 +1,15 @@
 import enum
-from backend.logger import Logger
+from qhana.backend.logger import Logger
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from typing import List
-from backend.entity import Costume
+from qhana.backend.entity import Costume
 import math
 import random
 from numpy import setdiff1d
 from sklearn.model_selection._split import train_test_split
 from random import randrange
-from backend.classification import get_dict_dataset
+from qhana.backend.classification import get_dict_dataset
 
 """
 Enum for Splitters

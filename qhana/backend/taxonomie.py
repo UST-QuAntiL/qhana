@@ -4,15 +4,15 @@ from typing import List
 from typing import Tuple
 import networkx as nx
 from networkx import Graph
-from backend.database import Database
+from qhana.backend.database import Database
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import subprocess
 import os
 from networkx.readwrite import json_graph
 import simplejson as json
-from backend.singleton import Singleton
-from backend.logger import Logger
+from qhana.backend.singleton import Singleton
+from qhana.backend.logger import Logger
 from enum import Enum
 
 """

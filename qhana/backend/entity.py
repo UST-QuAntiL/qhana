@@ -1,11 +1,11 @@
 from typing import Any, Dict
 from typing import List
-from backend.attribute import Attribute
-from backend.logger import Logger
-from backend.database import Database
-from backend.taxonomie import Taxonomie
+from qhana.backend.attribute import Attribute
+from qhana.backend.logger import Logger
+from qhana.backend.database import Database
+from qhana.backend.taxonomie import Taxonomie
 from datetime import datetime, timedelta
-from backend.attribute import Attribute
+from qhana.backend.attribute import Attribute
 import copy
 
 MUSE_URL = "http://129.69.214.108/"

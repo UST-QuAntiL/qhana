@@ -4,7 +4,7 @@ from math import *
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-from backend.logger import Logger
+from qhana.backend.logger import Logger
 
 class BaseQuantumKMeans():
     """

@@ -1,11 +1,11 @@
-from backend.elementComparer import ElementComparerType, ElementComparer, ElementComparerFactory
-from backend.attributeComparer import AttributeComparerType, AttributeComparer, AttributeComparerFactory
-from backend.transformer import TransformerType, TransformerFactory
-from backend.aggregator import AggregatorType, AggregatorFactory
+from qhana.backend.elementComparer import ElementComparerType, ElementComparer, ElementComparerFactory
+from qhana.backend.attributeComparer import AttributeComparerType, AttributeComparer, AttributeComparerFactory
+from qhana.backend.transformer import TransformerType, TransformerFactory
+from qhana.backend.aggregator import AggregatorType, AggregatorFactory
 import enum
-from backend.attribute import Attribute
-from backend.entity import Entity
-from backend.logger import Logger
+from qhana.backend.attribute import Attribute
+from qhana.backend.entity import Entity
+from qhana.backend.logger import Logger
 from typing import Any
 
 """ 

@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Any
 import enum
 import math
-from backend.logger import Logger
+from qhana.backend.logger import Logger
 
 """ 
 Defines an enum to list up all available transformer

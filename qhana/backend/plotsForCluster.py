@@ -1,15 +1,15 @@
-import backend.dataForPlots as dfp
+import qhana.backend.dataForPlots as dfp
 from typing import List
 import numpy as np
-from backend.entity import Costume
+from qhana.backend.entity import Costume
 from matplotlib import pyplot as plt
 from matplotlib import cm as cm
 from matplotlib import colors as cl
 import re
 from matplotlib.collections import LineCollection
-from backend.logger import Logger, LogLevel
+from qhana.backend.logger import Logger, LogLevel
 import pandas as pd
-from backend.attribute import Attribute
+from qhana.backend.attribute import Attribute
 
 class PlotsForCluster():
 

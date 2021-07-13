@@ -3,8 +3,8 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
 import enum
-from backend.logger import Logger
-from backend.attribute import Attribute
+from qhana.backend.logger import Logger
+from qhana.backend.attribute import Attribute
 
 """ 
 Defines an enum to list up all available attribute comparer.

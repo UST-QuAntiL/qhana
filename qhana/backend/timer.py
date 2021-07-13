@@ -1,5 +1,5 @@
 import time 
-from backend.logger import Logger, LogLevel
+from qhana.backend.logger import Logger, LogLevel
 import datetime
 
 class Timer():

@@ -1,8 +1,8 @@
 import enum
 from typing import Any
-from backend.taxonomie import Taxonomie, TaxonomieType
-from backend.logger import Logger
-from backend.database import Database
+from qhana.backend.taxonomie import Taxonomie, TaxonomieType
+from qhana.backend.logger import Logger
+from qhana.backend.database import Database
 
 """
 This class is an enum for all attributes.

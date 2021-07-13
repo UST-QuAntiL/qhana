@@ -1,7 +1,7 @@
 from mysql.connector import MySQLConnection
 from configparser import ConfigParser
-from backend.singleton import Singleton
-from backend.logger import Logger
+from qhana.backend.singleton import Singleton
+from qhana.backend.logger import Logger
 import os
 
 

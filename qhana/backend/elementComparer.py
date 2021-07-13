@@ -4,14 +4,14 @@ from typing import Any
 import enum
 import networkx as nx
 from networkx import Graph
-from backend.taxonomie import Taxonomie
-from backend.logger import Logger
+from qhana.backend.taxonomie import Taxonomie
+from qhana.backend.logger import Logger
 import numpy as np
-from backend.logger import Logger
+from qhana.backend.logger import Logger
 import os
 import json
 import math
-from backend.timer import Timer
+from qhana.backend.timer import Timer
 
 """ 
 Defines an enum to list up all available element comparer

@@ -3,12 +3,12 @@ from abc import abstractmethod
 from typing import Any
 import enum
 import numpy as np
-from backend.logger import Logger, LogLevel
+from qhana.backend.logger import Logger, LogLevel
 from sklearn.cluster import OPTICS, KMeans
 from sklearn_extra.cluster import KMedoids
-from backend.entity import Costume
+from qhana.backend.entity import Costume
 from typing import List
-from backend.quantumKMeans import NegativeRotationQuantumKMeans, DestructiveInterferenceQuantumKMeans, \
+from qhana.backend.quantumKMeans import NegativeRotationQuantumKMeans, DestructiveInterferenceQuantumKMeans, \
     StatePreparationQuantumKMeans, PositiveCorrelationQuantumKmeans
 
 from qiskit import Aer
@@ -21,10 +21,10 @@ from qiskit.optimization.applications.ising.common import sample_most_likely
 from qiskit import IBMQ
 
 import networkx as nx
-from backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
-from backend.sdpMaxCutSolver import SdpMaxCutSolver
-from backend.bmMaxCutSolver import BmMaxCutSolver
-from backend.timer import Timer
+from qhana.backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
+from qhana.backend.sdpMaxCutSolver import SdpMaxCutSolver
+from qhana.backend.bmMaxCutSolver import BmMaxCutSolver
+from qhana.backend.timer import Timer
 
 """
 Enums for Clustertyps

@@ -1,17 +1,17 @@
 from typing import List, Dict
 from typing import Tuple
 import numpy as np
-from backend.entity import Entity, EntityFactory
-from backend.attribute import Attribute
-from backend.attributeComparer import AttributeComparerType, AttributeComparerFactory
-from backend.elementComparer import ElementComparerType, ElementComparerFactory
-from backend.aggregator import AggregatorFactory, AggregatorType
-from backend.transformer import TransformerFactory, TransformerType
-from backend.database import Database
-from backend.entityComparer import EntityComparer, EmptyAttributeAction
+from qhana.backend.entity import Entity, EntityFactory
+from qhana.backend.attribute import Attribute
+from qhana.backend.attributeComparer import AttributeComparerType, AttributeComparerFactory
+from qhana.backend.elementComparer import ElementComparerType, ElementComparerFactory
+from qhana.backend.aggregator import AggregatorFactory, AggregatorType
+from qhana.backend.transformer import TransformerFactory, TransformerType
+from qhana.backend.database import Database
+from qhana.backend.entityComparer import EntityComparer, EmptyAttributeAction
 import os
 import shutil
-from backend.logger import Logger, LogLevel
+from qhana.backend.logger import Logger, LogLevel
 import enum
 
 Subset5PositiveFileName = "./subsets/5/PositiveSubset5.csv"

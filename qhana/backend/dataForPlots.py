@@ -1,5 +1,5 @@
 import numpy as np
-from backend.entity import Costume
+from qhana.backend.entity import Costume
 from typing import List
 from sklearn.decomposition import PCA
 

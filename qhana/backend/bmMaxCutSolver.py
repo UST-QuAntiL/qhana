@@ -1,11 +1,11 @@
-from backend.maxCutSolver import MaxCutSolver
+from qhana.backend.maxCutSolver import MaxCutSolver
 import networkx as nx
 from itertools import chain, combinations
 from typing import Set
 from typing import Any
 from collections.abc import Iterable
-from backend.logger import Logger
-from thirdparty.maxcut import MaxCutBM
+from qhana.backend.logger import Logger
+from qhana.thirdparty.maxcut import MaxCutBM
 
 class BmMaxCutSolver(MaxCutSolver):
     """

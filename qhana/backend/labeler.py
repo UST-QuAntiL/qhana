@@ -1,11 +1,11 @@
 import enum
-from backend.logger import Logger
+from qhana.backend.logger import Logger
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from typing import List
-from backend.entity import Costume
+from qhana.backend.entity import Costume
 import math
-from backend.attribute import Attribute
+from qhana.backend.attribute import Attribute
 
 
 """

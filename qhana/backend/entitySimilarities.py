@@ -1,17 +1,17 @@
-from backend.entityService import EntityService
-from backend.attributeComparer import AttributeComparerType
-from backend.entity import Costume, CostumeFactory, Entity, EntityFactory
-from backend.elementComparer import ElementComparerType
-from backend.entityComparer import CostumeComparer, EmptyAttributeAction
-from backend.transformer import TransformerType
-from backend.aggregator import AggregatorType
-from backend.attribute import Attribute
-from backend.database import Database
-from backend.logger import Logger, LogLevel
+from qhana.backend.entityService import EntityService
+from qhana.backend.attributeComparer import AttributeComparerType
+from qhana.backend.entity import Costume, CostumeFactory, Entity, EntityFactory
+from qhana.backend.elementComparer import ElementComparerType
+from qhana.backend.entityComparer import CostumeComparer, EmptyAttributeAction
+from qhana.backend.transformer import TransformerType
+from qhana.backend.aggregator import AggregatorType
+from qhana.backend.attribute import Attribute
+from qhana.backend.database import Database
+from qhana.backend.logger import Logger, LogLevel
 import numpy as np
 from typing import List
 import random as rd
-from backend.entityService import Subset
+from qhana.backend.entityService import Subset
 
 # class creates and manage similarity matrizes 
 class EntitySimilarities():

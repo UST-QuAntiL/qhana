@@ -4,10 +4,10 @@ from typing import Any
 import enum
 import numpy as np
 from typing import List
-import backend.scaling as scal
-import backend.clustering as clu
+import qhana.backend.scaling as scal
+import qhana.backend.clustering as clu
 #import backend.similarities as sim
-import backend.entitySimilarities as esim
+import qhana.backend.entitySimilarities as esim
 
 class DataForSavingAndLoading(metaclass=ABCMeta):
     """

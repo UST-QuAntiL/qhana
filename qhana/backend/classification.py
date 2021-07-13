@@ -6,9 +6,9 @@ from abc import ABCMeta, abstractmethod
 import random
 from ast import literal_eval as make_tuple
 
-from backend.logger import Logger
-from backend.entity import Costume
-from backend.clustering import QuantumBackends  # TODO: separate from clustering
+from qhana.backend.logger import Logger
+from qhana.backend.entity import Costume
+from qhana.backend.clustering import QuantumBackends  # TODO: separate from clustering
 
 from sklearn import svm
 from sklearn.neural_network import MLPClassifier
@@ -23,7 +23,7 @@ from qiskit.algorithms.optimizers import ADAM, AQGD, BOBYQA, COBYLA, NELDER_MEAD
 import torch
 from torch.optim import Adadelta, Adagrad, Adam, AdamW, SparseAdam, Adamax, ASGD, SGD, Rprop, RMSprop, LBFGS
 import torch.nn as nn
-from backend.QNN import DressedQNN
+from qhana.backend.QNN import DressedQNN
 
 """
 Enum for Classifications

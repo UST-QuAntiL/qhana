@@ -3,17 +3,17 @@ from abc import abstractmethod
 from typing import Any
 import enum
 #from backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForCostumeSimilarities, DataForScaling, DataForClustering, DataForEntitySimilarities, DataForCostumePlan
-from backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForScaling, DataForClustering, DataForEntitySimilarities, DataForCostumePlan
-from backend.logger import Logger, LogLevel
+from qhana.backend.dataForSavingAndLoading import DataForSavingAndLoading, DataForScaling, DataForClustering, DataForEntitySimilarities, DataForCostumePlan
+from qhana.backend.logger import Logger, LogLevel
 import numpy as np
 from typing import List
 import os
 import pickle
 import sys as sys
-import backend.scaling as scal
-import backend.clustering as clu
+import qhana.backend.scaling as scal
+import qhana.backend.clustering as clu
 #import backend.similarities as sim
-import backend.entitySimilarities as esim
+import qhana.backend.entitySimilarities as esim
 
 class SavingAndLoadingType(enum.Enum):
     costumePlan         = 1

@@ -1,7 +1,7 @@
-from backend.entity import Costume
-from backend.database import Database
-from backend.entityComparer import CostumeComparer
-from backend.logger import Logger, LogLevel
+from qhana.backend.entity import Costume
+from qhana.backend.database import Database
+from qhana.backend.entityComparer import CostumeComparer
+from qhana.backend.logger import Logger, LogLevel
 import numpy as np
 from typing import List
 import random as rd

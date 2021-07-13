@@ -1,8 +1,8 @@
-import backend.dataForPlots as dfp
+import qhana.backend.dataForPlots as dfp
 import numpy as np
 from matplotlib import cm
-from backend.logger import Logger, LogLevel
-from backend.attribute import Attribute
+from qhana.backend.logger import Logger, LogLevel
+from qhana.backend.attribute import Attribute
 from math import ceil
 from sklearn import metrics
 
