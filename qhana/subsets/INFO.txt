@@ -1,0 +1,29 @@
+Insgesamt gibt es 4 Testsets mit jeweils 5, 10, 25 bzw. 40 Kostümen.
+Es wurden nur Kostüme aus "Highschool Komödien" betrachtet.
+Bei der Auswahl wurde versucht in zwei Kategorien zu unterscheiden (Positiv/Negativ).
+
+"Positiv" beschreibt einen Erwachsenen, gepflegten, hell gekleideten Menschen.
+"Negativ" beschreibt einen Jugendlichen (<30 Jahre), nicht sonderlich gepflegten, dunkel gekleideten Menschen.
+
+Ist die Gesamtanzahl an Kostümen ungerade (5 und 25) so besitzt das positive Subset ein Kostüm mehr als das Negative.
+Pro Subset und Negativ/Positiv gibt es ein html file, welches die Attribute gemäß dem "vereinfachten" Model aufzeigt.
+
+Außerdem gibt es jeweils einen csv export, sodass programmatisch auf die IDs (KostuemID, RollenID, FilmID) zugegriffen werden kann.
+
+Zusätzlich sind die sql files mit dabei, sodass nachvollziehen werden kann wie die Daten aus der Datenbank geladen werden.
+
+Die Kostüme für die Subsets 5 und 10 wurden händisch ausgewählt. Die Kostüme für die Subsets 25 und 50 wurden zufällig aus dem gesamten Pool an "negativen" bzw. "positiven" Kostümen gewählt.
+
+Ein Kostüm wird als "positiv" bezeichnet, wenn:
+Genre = Highschool Komödie
+DominanteCharaktereigenschaft in (aktiv, gut, stark)
+DominanteFarbe in (Hellblau, Hellgrün, Hellbraun, Hellgrau)
+DominanterZustand in (ordentlich, neu, sauber, gebügelt)
+DominanterAlterseindruck in (30ern, 40ern, 50ern)
+
+Ein Kostüm wird als "negativ" bezeichnet, wenn:
+Genre = Highschool Komödie
+DominanteCharaktereigenschaft in (böse, passiv, schwach)
+DominanteFarbe in (Dunkelblau, Dunkelgrün, Dunkelbraun, Dunkelviolett)
+DominanterZustand in (alt, verwaschen, ausgewaschen, verschwitzt, fleckig, nass, abgetragen, dreckig, beschmutzt, kaputt, unordentlich)
+DominanterAlterseindruck in (20ern, Jugendlicher)

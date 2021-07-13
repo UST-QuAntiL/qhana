@@ -210,6 +210,7 @@ class EntityService:
                 return elem
         return None
 
+    # TODO: use for dataloader
     def create_subset(self, subsetEnum: Subset, database: Database) -> List[Entity]:
         if subsetEnum == Subset.subset5:
             self.create_subset_from_file(database, Subset5PositiveFileName, Subset5NegativeFileName)
