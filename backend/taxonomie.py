@@ -333,6 +333,9 @@ class Taxonomie:
                 Logger.error("\"" + str(taxonomieType) + "\" is a unknown taxonomieType")
         
         taxonomie = Taxonomie(taxonomieType, graph)
+
+        Taxonomie.taxonomiePool[taxonomieType] = taxonomie
+
         return taxonomie
 
     """
