@@ -175,6 +175,42 @@ class EntityFactory:
     """
 
     @staticmethod
+    def _is_value_in_list_of_values(v: str, lv: List[str]) -> bool:
+        for v2 in lv:
+            if v.lower() == v2.lower():
+                return True
+
+        return False
+
+    @staticmethod
+    def _expand_filter_term(attribute: Attribute, filter_term: str) -> List[str]:
+        if filter_term.startswith("*"):
+            value = filter_term[1:].lower()
+            taxonomy_type = Attribute.get_taxonomie_type(attribute)
+            taxonomy = Taxonomie.create_from_db(taxonomy_type)
+
+            lowercase_adj = {}
+
+            k: str
+            v: Dict
+
+            for k, v in taxonomy.graph.adj.items():
+                lowercase_adj[k.lower()] = [item.lower() for item in v.keys()]
+
+            processed_nodes = []
+            new_nodes = [value]
+
+            while len(new_nodes) > 0:
+                current_node = new_nodes.pop()
+
+                new_nodes.extend(lowercase_adj[current_node])
+                processed_nodes.append(current_node)
+
+            return processed_nodes
+        else:
+            return [filter_term]
+
+    @staticmethod
     def _is_accepted_by_filter(entity: Entity, filter_rules: Dict[Attribute, List[str]]) -> bool:
         """
         Tests if the entity is accepted by the provided filter rules or if it should be filtered out.
@@ -182,18 +218,15 @@ class EntityFactory:
         :param filter_rules: filter rules
         :return: True if accepted, false if not.
         """
-        def is_value_in_list_of_values(v: str, lv: List[str]) -> bool:
-            for v2 in lv:
-                if v.lower() == v2.lower():
-                    return True
-
-            return False
-
         for attribute in filter_rules:
             attr_accepted = False
+            expanded_rules = [
+                new_term
+                for term in filter_rules[attribute]
+                for new_term in EntityFactory._expand_filter_term(attribute, term)]
 
-            for value in filter_rules[attribute]:
-                if is_value_in_list_of_values(value, entity.get_value(attribute)) or value == "":
+            for value in expanded_rules:
+                if EntityFactory._is_value_in_list_of_values(value, entity.get_value(attribute)) or value == "":
                     attr_accepted = True
 
             if not attr_accepted:
