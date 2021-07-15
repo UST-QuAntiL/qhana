@@ -24,9 +24,9 @@ Subset40PositiveFileName = "./subsets/40/PositiveSubset40.csv"
 Subset40NegativeFileName = "./subsets/40/NegativeSubset40.csv"
 
 class Subset(enum.Enum):
-    subset5 = "Subset5",
-    subset10 = "Subset10",
-    subset25 = "Subset25",
+    subset5 = "Subset5"
+    subset10 = "Subset10"
+    subset25 = "Subset25"
     subset40 = "Subset40"
 
     @staticmethod
