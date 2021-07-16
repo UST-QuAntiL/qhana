@@ -1,6 +1,8 @@
 from typing import List, Dict
 from typing import Tuple
 import numpy as np
+
+import qhana
 from qhana.backend.entity import Entity, EntityFactory
 from qhana.backend.attribute import Attribute
 from qhana.backend.attributeComparer import AttributeComparerType, AttributeComparerFactory
@@ -14,14 +16,14 @@ import shutil
 from qhana.backend.logger import Logger, LogLevel
 import enum
 
-Subset5PositiveFileName = "./subsets/5/PositiveSubset5.csv"
-Subset5NegativeFileName = "./subsets/5/NegativeSubset5.csv"
-Subset10PositiveFileName = "./subsets/10/PositiveSubset10.csv"
-Subset10NegativeFileName = "./subsets/10/NegativeSubset10.csv"
-Subset25PositiveFileName = "./subsets/25/PositiveSubset25.csv"
-Subset25NegativeFileName = "./subsets/25/NegativeSubset25.csv"
-Subset40PositiveFileName = "./subsets/40/PositiveSubset40.csv"
-Subset40NegativeFileName = "./subsets/40/NegativeSubset40.csv"
+Subset5PositiveFileName = os.path.dirname(qhana.__file__) + "/subsets/5/PositiveSubset5.csv"
+Subset5NegativeFileName = os.path.dirname(qhana.__file__) + "/subsets/5/NegativeSubset5.csv"
+Subset10PositiveFileName = os.path.dirname(qhana.__file__) + "/subsets/10/PositiveSubset10.csv"
+Subset10NegativeFileName = os.path.dirname(qhana.__file__) + "/subsets/10/NegativeSubset10.csv"
+Subset25PositiveFileName = os.path.dirname(qhana.__file__) + "/subsets/25/PositiveSubset25.csv"
+Subset25NegativeFileName = os.path.dirname(qhana.__file__) + "/subsets/25/NegativeSubset25.csv"
+Subset40PositiveFileName = os.path.dirname(qhana.__file__) + "/subsets/40/PositiveSubset40.csv"
+Subset40NegativeFileName = os.path.dirname(qhana.__file__) + "/subsets/40/NegativeSubset40.csv"
 
 class Subset(enum.Enum):
     subset5 = "Subset5"
