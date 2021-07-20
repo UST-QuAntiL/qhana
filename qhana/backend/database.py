@@ -69,6 +69,13 @@ class Database(Singleton):
             self.connected = True
             Logger.debug("Successfully connected to database")
 
+    def open_with_params(self, host: str, user: str, password: str, database: str):
+        self.__connection = MySQLConnection(host=host, user=user, password=password, database=database)
+
+        if self.__connection.is_connected():
+            self.connected = True
+            Logger.debug("Successfully connected to database")
+
     def close(self) -> None:
         """
         Closes the database connection.
