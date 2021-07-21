@@ -20,26 +20,26 @@ import matplotlib.gridspec as gridspec
 from backend.similarities import Similarities
 from typing import List
 import sys
-from backend.timer import Timer
-import backend.scaling as scal
-import backend.clustering as clu
-import backend.dataForPlots as dfp
-import backend.plotsForCluster as pfc
-from backend.entity import Costume, CostumeFactory, Entity, EntityFactory
-from backend.entityComparer import CostumeComparer, EmptyAttributeAction
-from backend.attributeComparer import AttributeComparerType
-from backend.aggregator import AggregatorType
-from backend.elementComparer import ElementComparerType, WuPalmer
-from backend.transformer import TransformerType
-from backend.entityService import EntityService
+from qhana.backend.timer import Timer
+import qhana.backend.scaling as scal
+import qhana.backend.clustering as clu
+import qhana.backend.dataForPlots as dfp
+import qhana.backend.plotsForCluster as pfc
+from qhana.backend.entity import Costume, CostumeFactory, Entity, EntityFactory
+from qhana.backend.entityComparer import CostumeComparer, EmptyAttributeAction
+from qhana.backend.attributeComparer import AttributeComparerType
+from qhana.backend.aggregator import AggregatorType
+from qhana.backend.elementComparer import ElementComparerType, WuPalmer
+from qhana.backend.transformer import TransformerType
+from qhana.backend.entityService import EntityService
 import random
-import backend.savingAndLoading as sal
-from backend.entitySimilarities import EntitySimilarities
+import qhana.backend.savingAndLoading as sal
+from qhana.backend.entitySimilarities import EntitySimilarities
 import concurrent.futures
 from multiprocessing import Pool
-from backend.entityService import Subset
-from backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
-from backend.sdpMaxCutSolver import SdpMaxCutSolver
+from qhana.backend.entityService import Subset
+from qhana.backend.classicNaiveMaxCutSolver import ClassicNaiveMaxCutSolver
+from qhana.backend.sdpMaxCutSolver import SdpMaxCutSolver
 import networkx as nx
 
 # Used for creating the namespaces from parsing

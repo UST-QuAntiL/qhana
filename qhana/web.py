@@ -1,9 +1,9 @@
 from flask import Flask, render_template, url_for, session, send_file, request, flash, redirect
 import threading, webbrowser
-from backend.attribute import Attribute
-from backend.taxonomie import TaxonomieType, Taxonomie
-from backend.logger import Logger
-from backend.database import Database
+from qhana.backend.attribute import Attribute
+from qhana.backend.taxonomie import TaxonomieType, Taxonomie
+from qhana.backend.logger import Logger
+from qhana.backend.database import Database
 import os
 from os.path import basename
 from mysql.connector import Error
@@ -11,32 +11,32 @@ import shutil
 import zipfile
 import io
 import pathlib
-from backend.aggregator import AggregatorType
-from backend.transformer import TransformerType
-from backend.attributeComparer import AttributeComparerType
-from backend.elementComparer import ElementComparerType
-from backend.entityComparer import EmptyAttributeAction
+from qhana.backend.aggregator import AggregatorType
+from qhana.backend.transformer import TransformerType
+from qhana.backend.attributeComparer import AttributeComparerType
+from qhana.backend.elementComparer import ElementComparerType
+from qhana.backend.entityComparer import EmptyAttributeAction
 import pickle
-import backend.savingAndLoading as sal
-from backend.entitySimilarities import EntitySimilarities
-import backend.dataForPlots as dfp
+import qhana.backend.savingAndLoading as sal
+from qhana.backend.entitySimilarities import EntitySimilarities
+import qhana.backend.dataForPlots as dfp
 import matplotlib
-from backend.classification import ClassificationTypes, ClassificationFactory, Classification
+from qhana.backend.classification import ClassificationTypes, ClassificationFactory, Classification
 from tkinter.constants import NO
-from backend.plotsForClassification import PlotsForClassification
-from backend.labeler import LabelerTypes, Labeler, LabelerFactory, clustersLabeler
-from backend.splitter import SplitterTypes, Splitter, SplitterFactory
+from qhana.backend.plotsForClassification import PlotsForClassification
+from qhana.backend.labeler import LabelerTypes, Labeler, LabelerFactory, clustersLabeler
+from qhana.backend.splitter import SplitterTypes, Splitter, SplitterFactory
 import sys
 
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
-import backend.plotsForCluster as pfc
+import qhana.backend.plotsForCluster as pfc
 import numpy as np
-from backend.scaling import ScalingType, ScalingFactory, Scaling, MultidimensionalScaling
-from backend.clustering import ClusteringType, ClusteringFactory, Clustering, Optics
+from qhana.backend.scaling import ScalingType, ScalingFactory, Scaling, MultidimensionalScaling
+from qhana.backend.clustering import ClusteringType, ClusteringFactory, Clustering, Optics
 import numpy as np
-from backend.entityService import Subset
+from qhana.backend.entityService import Subset
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
