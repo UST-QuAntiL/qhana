@@ -1,5 +1,5 @@
 import enum
-from typing import Any
+from typing import Any, Optional
 from qhana.backend.taxonomie import Taxonomie, TaxonomieType
 from qhana.backend.logger import Logger
 from qhana.backend.database import Database
@@ -212,7 +212,7 @@ class Attribute(enum.Enum):
     while a taxonomie type can be used by multiple attributes.
     """
     @staticmethod
-    def get_taxonomie_type(attribute) -> str:
+    def get_taxonomie_type(attribute) -> Optional[TaxonomieType]:
         if attribute == Attribute.ortsbegebenheit:
             return TaxonomieType.ortsbegebenheit
         elif attribute == Attribute.dominanteFarbe:
@@ -284,7 +284,6 @@ class Attribute(enum.Enum):
         else:
             Logger.error("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
             raise ValueError("No taxonomie type for attribute \"" + str(attribute) + "\" specified")
-        return
 
     """
     Gets the base on which this attribute can be compared

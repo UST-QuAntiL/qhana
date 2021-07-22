@@ -183,11 +183,11 @@ class EntityFactory:
         return False
 
     @staticmethod
-    def _expand_filter_term(attribute: Attribute, filter_term: str) -> List[str]:
+    def _expand_filter_term(attribute: Attribute, filter_term: str, db: Database) -> List[str]:
         if filter_term.startswith("*"):
             value = filter_term[1:].lower()
             taxonomy_type = Attribute.get_taxonomie_type(attribute)
-            taxonomy = Taxonomie.create_from_db(taxonomy_type)
+            taxonomy = Taxonomie.create_from_db(taxonomy_type, db)
 
             lowercase_adj = {}
 
@@ -211,7 +211,7 @@ class EntityFactory:
             return [filter_term]
 
     @staticmethod
-    def _is_accepted_by_filter(entity: Entity, filter_rules: Dict[Attribute, List[str]]) -> bool:
+    def _is_accepted_by_filter(entity: Entity, filter_rules: Dict[Attribute, List[str]], db: Database) -> bool:
         """
         Tests if the entity is accepted by the provided filter rules or if it should be filtered out.
         :param entity: entity
@@ -223,7 +223,7 @@ class EntityFactory:
             expanded_rules = [
                 new_term
                 for term in filter_rules[attribute]
-                for new_term in EntityFactory._expand_filter_term(attribute, term)]
+                for new_term in EntityFactory._expand_filter_term(attribute, term, db)]
 
             for value in expanded_rules:
                 if EntityFactory._is_value_in_list_of_values(value, entity.get_value(attribute)) or value == "":
@@ -1060,7 +1060,7 @@ class EntityFactory:
                             entity_basis.add_attribute(Attribute.farbeindruck)
                             entity_basis.add_value(Attribute.farbeindruck, list(farbeindrucke))
 
-                    if EntityFactory._is_accepted_by_filter(entity_basis, filter_rules):
+                    if EntityFactory._is_accepted_by_filter(entity_basis, filter_rules, database):
                         entity_basis.set_id(count)
                         entities.append(entity_basis)
                         count += 1
@@ -1073,7 +1073,7 @@ class EntityFactory:
             if finished:
                 break
 
-            if (not be_basiselement) and EntityFactory._is_accepted_by_filter(entity, filter_rules):
+            if (not be_basiselement) and EntityFactory._is_accepted_by_filter(entity, filter_rules, database):
                 entity.set_id(count)
                 entities.append(entity)
                 count += 1
