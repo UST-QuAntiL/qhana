@@ -328,7 +328,7 @@ def initialize_costumeplan():
         ElementComparerType.wuPalmer,
         AttributeComparerType.symMaxMean,
         EmptyAttributeAction.ignore,
-        "test filter"
+        ""
     ))
 
     session["costumePlan"] = pickle.dumps(costumePlan)
