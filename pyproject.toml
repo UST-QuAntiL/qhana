@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "QHAna"
+name = "qhana"
+version = "0.1.0"
 description = "Quantum Humanities Analysis Tool"
 authors = ["Daniel Fink", "Felix Truger", "Marcel Messer"]
-version = "0.1.0"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
@@ -15,10 +15,16 @@ colorama = "^0.4.4"
 scikit-learn = "^0.24.2"
 scikit-learn-extra = "^0.2.0"
 pandas = "^1.2.4"
-flask = "1.1.2"
 pylatexenc = "^2.10"
 pip = "^21.1.2"
 qiskit = "^0.27.0"
 qiskit-machine-learning = "^0.1.0"
 torch = "^1.9.0"
 cvxpy = "^1.1.13"
+Flask = "^2.0.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
