@@ -10,7 +10,7 @@ class Database(Singleton):
     Represents the database class for db connection.
     """
 
-    config_file_default = "config.ini"
+    config_file_default = "../config.ini"
     """
     Specifies the default for the config file
     """
