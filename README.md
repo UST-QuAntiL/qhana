@@ -124,7 +124,7 @@ The file must lay in the top directory, i.e. the same directory as the *main.py*
 All fetures are available in the Web GUI wich can be run using the following command:
 
 ```
-python web.py
+PYTHONPATH="." python qhana/web.py
 ```
 
 Thereby, a WSGI server will be started in the background and the home page of the application will be shown automatically.
